@@ -30,8 +30,13 @@ public static class DependencyInjection
         services.AddScoped(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
         services.AddScoped(typeof(IPipelineBehavior<,>), typeof(UnhandledExceptionBehavior<,>));
 
-        // Session-scoped services.
-        services.AddScoped<ISessionRegistry, SessionRegistry>();
+        // The session spans the whole app run (one signed-in operator per
+        // desktop instance), and the shell opens a fresh DI scope per module
+        // navigation. So the session store MUST be a singleton — a scoped
+        // registry would give every module scope an empty session and every
+        // request would fail with "Authentication required". The ICurrentUser
+        // adapter stays scoped and simply reads the singleton session.
+        services.AddSingleton<ISessionRegistry, SessionRegistry>();
         services.AddScoped<ICurrentUser, CurrentUserAdapter>();
 
         services.AddSingleton<IDateTime, SystemDateTime>();

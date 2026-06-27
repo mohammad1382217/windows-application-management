@@ -10,34 +10,34 @@
         </Grid.RowDefinitions>
 
         <!-- Register new weapon -->
-        <Border Grid.Row="0" Background="White" BorderBrush="#FFE0E0E0" BorderThickness="1" Padding="12" Margin="0,0,0,12">
+        <Border Grid.Row="0" Style="{StaticResource Card}" Padding="12" Margin="0,0,0,12">
             <StackPanel Orientation="Horizontal">
-                <TextBlock Text="Number:" Style="{StaticResource FieldLabel}"/>
+                <TextBlock Text="شماره سلاح:" Style="{StaticResource FieldLabel}"/>
                 <TextBox Text="{Binding NewWeaponNumber, UpdateSourceTrigger=PropertyChanged}" Width="140" Padding="4" Margin="0,0,8,0"/>
-                <TextBlock Text="Type:" Style="{StaticResource FieldLabel}"/>
+                <TextBlock Text="نوع:" Style="{StaticResource FieldLabel}"/>
                 <ComboBox ItemsSource="{Binding WeaponTypes}" SelectedItem="{Binding NewWeaponType}" Width="130" Padding="4" Margin="0,0,8,0"/>
-                <TextBlock Text="Model:" Style="{StaticResource FieldLabel}"/>
+                <TextBlock Text="مدل:" Style="{StaticResource FieldLabel}"/>
                 <TextBox Text="{Binding NewModel, UpdateSourceTrigger=PropertyChanged}" Width="120" Padding="4" Margin="0,0,8,0"/>
-                <Button Content="+ Register" Style="{StaticResource PrimaryButton}" Command="{Binding AddCommand}"/>
+                <Button Content="افزودن" Style="{StaticResource PrimaryButton}" Command="{Binding AddCommand}"/>
             </StackPanel>
         </Border>
 
         <!-- Toolbar -->
         <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,8">
-            <Button Content="Issue" Style="{StaticResource PrimaryButton}" Command="{Binding IssueCommand}" Margin="0,0,8,0"/>
-            <Button Content="Return" Style="{StaticResource PrimaryButton}" Command="{Binding ReturnCommand}" Margin="0,0,8,0"/>
-            <Button Content="📜 History" Style="{StaticResource PrimaryButton}" Command="{Binding HistoryCommand}" Margin="0,0,8,0"/>
-            <Button Content="🖨 Print All" Style="{StaticResource PrimaryButton}" Command="{Binding PrintAllCommand}"/>
+            <Button Content="تخصیص" Style="{StaticResource PrimaryButton}" Command="{Binding IssueCommand}" Margin="0,0,8,0"/>
+            <Button Content="بازگرداندن" Style="{StaticResource PrimaryButton}" Command="{Binding ReturnCommand}" Margin="0,0,8,0"/>
+            <Button Content="سابقه" Style="{StaticResource PrimaryButton}" Command="{Binding HistoryCommand}" Margin="0,0,8,0"/>
+            <Button Content="چاپ همه" Style="{StaticResource PrimaryButton}" Command="{Binding PrintAllCommand}"/>
         </StackPanel>
 
-        <Border Grid.Row="2" Background="White" BorderBrush="#FFE0E0E0" BorderThickness="1">
+        <Border Grid.Row="2" Style="{StaticResource Card}">
             <DataGrid ItemsSource="{Binding Items}" SelectedItem="{Binding Selected}" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False">
                 <DataGrid.Columns>
-                    <DataGridTextColumn Header="Number" Binding="{Binding WeaponNumber}" Width="140"/>
-                    <DataGridTextColumn Header="Type" Binding="{Binding Type}" Width="120"/>
-                    <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="110"/>
-                    <DataGridTextColumn Header="Model" Binding="{Binding Model}" Width="120"/>
-                    <DataGridTextColumn Header="Assigned To" Binding="{Binding CurrentlyAssignedSoldierId}" Width="120"/>
+                    <DataGridTextColumn Header="شماره سلاح" Binding="{Binding WeaponNumber}" Width="140"/>
+                    <DataGridTextColumn Header="نوع" Binding="{Binding Type}" Width="120"/>
+                    <DataGridTextColumn Header="وضعیت" Binding="{Binding Status}" Width="110"/>
+                    <DataGridTextColumn Header="مدل" Binding="{Binding Model}" Width="120"/>
+                    <DataGridTextColumn Header="تخصیص‌یافته به" Binding="{Binding CurrentlyAssignedSoldierId}" Width="120"/>
                 </DataGrid.Columns>
             </DataGrid>
         </Border>

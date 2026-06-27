@@ -1,70 +1,99 @@
 <Window x:Class="MilOps.Presentation.Views.SoldierEditorWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Soldier" Height="560" Width="440"
-        WindowStartupLocation="CenterOwner" ResizeMode="CanMinimize"
+        Title="سرباز" Height="680" Width="480" MinHeight="480"
+        WindowStartupLocation="CenterOwner" ResizeMode="CanResize"
         Background="{DynamicResource SurfaceBrush}">
-    <Grid Margin="20">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
-            <RowDefinition Height="Auto"/>
-        </Grid.RowDefinitions>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="120"/>
-            <ColumnDefinition Width="*"/>
-        </Grid.ColumnDefinitions>
+    <Border Style="{StaticResource Card}" Margin="16" Padding="0">
+        <DockPanel>
+            <!-- Always-visible action bar (docked bottom so Save is never clipped) -->
+            <Border DockPanel.Dock="Bottom" Background="#F4F7FA" CornerRadius="0,0,10,10"
+                    BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,1,0,0" Padding="20,14">
+                <StackPanel>
+                    <TextBlock Text="{Binding ErrorMessage}" TextWrapping="Wrap"
+                               Foreground="{DynamicResource DangerBrush}" Margin="0,0,0,8"
+                               Visibility="{Binding ErrorMessage, Converter={StaticResource NullToCollapsedConverter}}"/>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Button Grid.Column="0" Content="ذخیره" Style="{StaticResource PrimaryButton}"
+                                Command="{Binding SaveCommand}" IsDefault="True"
+                                IsEnabled="{Binding IsNotBusy}" Padding="0,10" Margin="0,0,6,0"/>
+                        <Button Grid.Column="1" Content="انصراف" Style="{StaticResource SecondaryButton}"
+                                Command="{Binding CancelCommand}" IsCancel="True" Padding="0,10" Margin="6,0,0,0"/>
+                    </Grid>
+                </StackPanel>
+            </Border>
 
-        <TextBlock Grid.Row="0" Grid.Column="0" Text="First Name*" Style="{StaticResource FieldLabel}"/>
-        <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding FirstName, UpdateSourceTrigger=PropertyChanged}" Margin="0,4" Padding="6,4"/>
+            <!-- Scrollable field area -->
+            <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="20,18">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="120"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
 
-        <TextBlock Grid.Row="1" Grid.Column="0" Text="Last Name*" Style="{StaticResource FieldLabel}"/>
-        <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding LastName, UpdateSourceTrigger=PropertyChanged}" Margin="0,4" Padding="6,4"/>
+                    <TextBlock Grid.Row="0" Grid.Column="0" Text="نام*" Style="{StaticResource FieldLabel}"/>
+                    <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding FirstName, UpdateSourceTrigger=PropertyChanged}" Margin="0,6"/>
 
-        <TextBlock Grid.Row="2" Grid.Column="0" Text="Father Name" Style="{StaticResource FieldLabel}"/>
-        <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding FatherName, UpdateSourceTrigger=PropertyChanged}" Margin="0,4" Padding="6,4"/>
+                    <TextBlock Grid.Row="1" Grid.Column="0" Text="نام خانوادگی*" Style="{StaticResource FieldLabel}"/>
+                    <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding LastName, UpdateSourceTrigger=PropertyChanged}" Margin="0,6"/>
 
-        <TextBlock Grid.Row="3" Grid.Column="0" Text="Rank*" Style="{StaticResource FieldLabel}"/>
-        <TextBox Grid.Row="3" Grid.Column="1" Text="{Binding Rank, UpdateSourceTrigger=PropertyChanged}" Margin="0,4" Padding="6,4"/>
+                    <TextBlock Grid.Row="2" Grid.Column="0" Text="نام پدر" Style="{StaticResource FieldLabel}"/>
+                    <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding FatherName, UpdateSourceTrigger=PropertyChanged}" Margin="0,6"/>
 
-        <TextBlock Grid.Row="4" Grid.Column="0" Text="National Code*" Style="{StaticResource FieldLabel}"/>
-        <TextBox Grid.Row="4" Grid.Column="1" Text="{Binding NationalCode, UpdateSourceTrigger=PropertyChanged}" Margin="0,4" Padding="6,4"/>
+                    <TextBlock Grid.Row="3" Grid.Column="0" Text="درجه*" Style="{StaticResource FieldLabel}"/>
+                    <TextBox Grid.Row="3" Grid.Column="1" Text="{Binding Rank, UpdateSourceTrigger=PropertyChanged}" Margin="0,6"/>
 
-        <TextBlock Grid.Row="5" Grid.Column="0" Text="Personnel Code*" Style="{StaticResource FieldLabel}"/>
-        <TextBox Grid.Row="5" Grid.Column="1" Text="{Binding PersonnelCode, UpdateSourceTrigger=PropertyChanged}" Margin="0,4" Padding="6,4"/>
+                    <TextBlock Grid.Row="4" Grid.Column="0" Text="کد ملی*" Style="{StaticResource FieldLabel}"/>
+                    <TextBox Grid.Row="4" Grid.Column="1" Text="{Binding NationalCode, UpdateSourceTrigger=PropertyChanged}" Margin="0,6"/>
 
-        <TextBlock Grid.Row="6" Grid.Column="0" Text="Department" Style="{StaticResource FieldLabel}"/>
-        <TextBox Grid.Row="6" Grid.Column="1" Text="{Binding DepartmentName, UpdateSourceTrigger=PropertyChanged}" Margin="0,4" Padding="6,4"/>
+                    <TextBlock Grid.Row="5" Grid.Column="0" Text="کد پرسنلی*" Style="{StaticResource FieldLabel}"/>
+                    <TextBox Grid.Row="5" Grid.Column="1" Text="{Binding PersonnelCode, UpdateSourceTrigger=PropertyChanged}" Margin="0,6"/>
 
-        <TextBlock Grid.Row="7" Grid.Column="0" Text="Health*" Style="{StaticResource FieldLabel}"/>
-        <ComboBox Grid.Row="7" Grid.Column="1" ItemsSource="{Binding HealthTypes}" SelectedItem="{Binding HealthType}" Margin="0,4" Padding="6,4"/>
+                    <TextBlock Grid.Row="6" Grid.Column="0" Text="یگان/بخش" Style="{StaticResource FieldLabel}"/>
+                    <TextBox Grid.Row="6" Grid.Column="1" Text="{Binding DepartmentName, UpdateSourceTrigger=PropertyChanged}" Margin="0,6"/>
 
-        <TextBlock Grid.Row="8" Grid.Column="0" Text="Entry Date" Style="{StaticResource FieldLabel}"/>
-        <DatePicker Grid.Row="8" Grid.Column="1" SelectedDate="{Binding EntryDate}" Margin="0,4"/>
+                    <TextBlock Grid.Row="7" Grid.Column="0" Text="وضعیت سلامت*" Style="{StaticResource FieldLabel}"/>
+                    <ComboBox Grid.Row="7" Grid.Column="1" ItemsSource="{Binding HealthTypes}" SelectedItem="{Binding HealthType}" Margin="0,6"/>
 
-        <TextBlock Grid.Row="9" Grid.Column="0" Text="Service Start*" Style="{StaticResource FieldLabel}"/>
-        <DatePicker Grid.Row="9" Grid.Column="1" SelectedDate="{Binding ServiceStartDate}" Margin="0,4"/>
+                    <TextBlock Grid.Row="8" Grid.Column="0" Text="تاریخ ورود" Style="{StaticResource FieldLabel}" VerticalAlignment="Top" Margin="0,10,8,0"/>
+                    <StackPanel Grid.Row="8" Grid.Column="1" Margin="0,6">
+                        <TextBox Text="{Binding EntryDate, Converter={StaticResource JalaliDateConverter}, UpdateSourceTrigger=LostFocus}"/>
+                        <TextBlock Style="{StaticResource Caption}" Text="نمونه: ۱۴۰۳/۰۳/۰۷" Margin="2,2,0,0"/>
+                    </StackPanel>
 
-        <TextBlock Grid.Row="10" Grid.Column="0" Text="Service End*" Style="{StaticResource FieldLabel}"/>
-        <DatePicker Grid.Row="10" Grid.Column="1" SelectedDate="{Binding ServiceEndDate}" Margin="0,4"/>
+                    <TextBlock Grid.Row="9" Grid.Column="0" Text="شروع خدمت*" Style="{StaticResource FieldLabel}" VerticalAlignment="Top" Margin="0,10,8,0"/>
+                    <StackPanel Grid.Row="9" Grid.Column="1" Margin="0,6">
+                        <TextBox Text="{Binding ServiceStartDate, Converter={StaticResource JalaliDateConverter}, UpdateSourceTrigger=LostFocus}"/>
+                        <TextBlock Style="{StaticResource Caption}" Text="نمونه: ۱۴۰۳/۰۳/۰۷" Margin="2,2,0,0"/>
+                    </StackPanel>
 
-        <CheckBox Grid.Row="11" Grid.Column="1" Content="Active (available for duty)" IsChecked="{Binding IsActive}" Margin="0,8"/>
+                    <TextBlock Grid.Row="10" Grid.Column="0" Text="پایان خدمت*" Style="{StaticResource FieldLabel}" VerticalAlignment="Top" Margin="0,10,8,0"/>
+                    <StackPanel Grid.Row="10" Grid.Column="1" Margin="0,6">
+                        <TextBox Text="{Binding ServiceEndDate, Converter={StaticResource JalaliDateConverter}, UpdateSourceTrigger=LostFocus}"/>
+                        <TextBlock Style="{StaticResource Caption}" Text="نمونه: ۱۴۰۳/۰۳/۰۷" Margin="2,2,0,0"/>
+                    </StackPanel>
 
-        <TextBlock Grid.Row="13" Grid.Column="0" Grid.ColumnSpan="2" Text="{Binding ErrorMessage}" Foreground="{DynamicResource DangerBrush}" Margin="0,8,0,0"/>
-        <StackPanel Grid.Row="13" Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Bottom">
-            <Button Content="Save" Style="{StaticResource PrimaryButton}" Command="{Binding SaveCommand}" Margin="0,0,8,0" IsEnabled="{Binding IsNotBusy}"/>
-            <Button Content="Cancel" Style="{StaticResource PrimaryButton}" Command="{Binding CancelCommand}"/>
-        </StackPanel>
-    </Grid>
+                    <CheckBox Grid.Row="11" Grid.Column="1" Content="فعال (آماده به خدمت)" IsChecked="{Binding IsActive}" Margin="0,12"/>
+                </Grid>
+            </ScrollViewer>
+        </DockPanel>
+    </Border>
 </Window>

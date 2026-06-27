@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="clr-namespace:MilOps.Presentation.ViewModels"
         xmlns:v="clr-namespace:MilOps.Presentation.Views"
-        Title="MilOps" Height="720" Width="1180"
+        Title="میل‌اپس" Height="740" Width="1200"
         WindowStartupLocation="CenterScreen"
         Background="{DynamicResource SurfaceBrush}">
     <Window.Resources>
@@ -32,32 +32,38 @@
 
     <DockPanel>
         <!-- Top banner -->
-        <Border DockPanel.Dock="Top" Background="{DynamicResource PrimaryBrush}" Padding="16,10">
+        <Border DockPanel.Dock="Top" Background="{DynamicResource PrimaryBrush}" Padding="20,12">
+            <Border.Effect>
+                <DropShadowEffect Color="#33000000" BlurRadius="10" ShadowDepth="1" Direction="270"/>
+            </Border.Effect>
             <DockPanel>
-                <TextBlock Text="🛡 MilOps" Foreground="White" FontSize="18" FontWeight="Bold" VerticalAlignment="Center"/>
-                <TextBlock Text="{Binding CurrentTitle}" Foreground="White" FontSize="16" Margin="24,0,0,0" VerticalAlignment="Center"/>
-                <TextBlock Text="{Binding UserBanner}" Foreground="#FFE0E0E0" DockPanel.Dock="Right" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,16,0"/>
-                <Button Content="Sign Out" Command="{Binding LogoutCommand}" DockPanel.Dock="Right" HorizontalAlignment="Right"
-                        Background="Transparent" Foreground="White" BorderBrush="White" BorderThickness="1" Padding="12,4"/>
+                <TextBlock Text="🛡 میل‌اپس" Foreground="White" FontSize="18" FontWeight="Bold" VerticalAlignment="Center"/>
+                <Border Background="#33FFFFFF" CornerRadius="6" Padding="10,3" Margin="16,0,0,0" VerticalAlignment="Center">
+                    <TextBlock Text="{Binding CurrentTitle}" Foreground="White" FontSize="14" VerticalAlignment="Center"/>
+                </Border>
+                <Button Content="خروج" Command="{Binding LogoutCommand}" DockPanel.Dock="Right" HorizontalAlignment="Right"
+                        Style="{StaticResource SecondaryButton}" Foreground="White" BorderBrush="White" Padding="14,5"/>
+                <TextBlock Text="{Binding UserBanner}" Foreground="#FFE6ECF2" DockPanel.Dock="Right" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,16,0"/>
             </DockPanel>
         </Border>
 
-        <!-- Left navigation -->
-        <Border DockPanel.Dock="Left" Width="200" Background="White" BorderBrush="#FFE0E0E0" BorderThickness="0,0,1,0">
-            <StackPanel Margin="8,12">
-                <Button Content="👥  Soldiers" Style="{StaticResource PrimaryButton}" Margin="0,4" HorizontalAlignment="Stretch"
+        <!-- Side navigation (RTL mirrors Left -> visual right) -->
+        <Border DockPanel.Dock="Left" Width="210" Background="White" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1,0,0,0">
+            <StackPanel Margin="10,14">
+                <TextBlock Text="منو" Style="{StaticResource Caption}" Margin="6,0,6,8"/>
+                <Button Content="👥  سربازان" Margin="0,4" HorizontalAlignment="Stretch" HorizontalContentAlignment="Right"
                         Command="{Binding ShowSoldiersCommand}" Visibility="{Binding CanManageSoldiers, Converter={StaticResource BoolToVisConverter}}"/>
-                <Button Content="📅  Guard Schedule" Style="{StaticResource PrimaryButton}" Margin="0,4" HorizontalAlignment="Stretch"
+                <Button Content="📅  برنامه نگهبانی" Margin="0,4" HorizontalAlignment="Stretch" HorizontalContentAlignment="Right"
                         Command="{Binding ShowSchedulesCommand}" Visibility="{Binding CanManageSchedules, Converter={StaticResource BoolToVisConverter}}"/>
-                <Button Content="🔫  Weapons" Style="{StaticResource PrimaryButton}" Margin="0,4" HorizontalAlignment="Stretch"
+                <Button Content="🔫  تسلیحات" Margin="0,4" HorizontalAlignment="Stretch" HorizontalContentAlignment="Right"
                         Command="{Binding ShowWeaponsCommand}" Visibility="{Binding CanManageWeapons, Converter={StaticResource BoolToVisConverter}}"/>
-                <Button Content="🏖  Leaves" Style="{StaticResource PrimaryButton}" Margin="0,4" HorizontalAlignment="Stretch"
+                <Button Content="🏖  مرخصی‌ها" Margin="0,4" HorizontalAlignment="Stretch" HorizontalContentAlignment="Right"
                         Command="{Binding ShowLeavesCommand}" Visibility="{Binding CanManageLeaves, Converter={StaticResource BoolToVisConverter}}"/>
-                <Button Content="🔑  Tokens" Style="{StaticResource PrimaryButton}" Margin="0,4" HorizontalAlignment="Stretch"
+                <Button Content="🔑  توکن‌ها" Margin="0,4" HorizontalAlignment="Stretch" HorizontalContentAlignment="Right"
                         Command="{Binding ShowTokensCommand}" Visibility="{Binding CanManageTokens, Converter={StaticResource BoolToVisConverter}}"/>
-                <Button Content="⚙  Users" Style="{StaticResource PrimaryButton}" Margin="0,4" HorizontalAlignment="Stretch"
+                <Button Content="⚙  کاربران" Margin="0,4" HorizontalAlignment="Stretch" HorizontalContentAlignment="Right"
                         Command="{Binding ShowUsersCommand}" Visibility="{Binding CanManageUsers, Converter={StaticResource BoolToVisConverter}}"/>
-                <Button Content="📜  Audit Log" Style="{StaticResource PrimaryButton}" Margin="0,4" HorizontalAlignment="Stretch"
+                <Button Content="📜  گزارش حسابرسی" Margin="0,4" HorizontalAlignment="Stretch" HorizontalContentAlignment="Right"
                         Command="{Binding ShowAuditCommand}" Visibility="{Binding CanViewAudit, Converter={StaticResource BoolToVisConverter}}"/>
             </StackPanel>
         </Border>
@@ -65,9 +71,30 @@
         <!-- Content host -->
         <Grid>
             <ContentControl Content="{Binding Current}"/>
-            <TextBlock Text="Select a module from the left to begin." HorizontalAlignment="Center" VerticalAlignment="Center"
-                       FontSize="14" Foreground="Gray"
-                       Visibility="{Binding Current, Converter={StaticResource NullToCollapsedConverter}, ConverterParameter=inverse}"/>
+
+            <!-- Welcome dashboard (shown until a module is opened) -->
+            <Border Style="{StaticResource Card}" Padding="40,32" MaxWidth="560"
+                    VerticalAlignment="Center" HorizontalAlignment="Center"
+                    Visibility="{Binding Current, Converter={StaticResource NullToVisibilityConverter}, ConverterParameter=inverse}">
+                <StackPanel HorizontalAlignment="Center">
+                    <Border Width="84" Height="84" CornerRadius="42" Background="{DynamicResource PrimaryBrush}"
+                            HorizontalAlignment="Center" Margin="0,0,0,20">
+                        <TextBlock Text="🛡" FontSize="40" Foreground="White"
+                                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                    <TextBlock Text="به سامانهٔ میل‌اپس خوش آمدید" FontSize="22" FontWeight="Bold"
+                               Foreground="{DynamicResource TextBrush}" HorizontalAlignment="Center"/>
+                    <TextBlock Text="سامانهٔ مدیریت یگان نظامی" FontSize="14"
+                               Foreground="{DynamicResource MutedBrush}" HorizontalAlignment="Center" Margin="0,6,0,0"/>
+                    <Border Background="#EAF1F8" CornerRadius="8" Padding="16,12" Margin="0,24,0,0">
+                        <TextBlock Text="برای شروع، یک بخش را از منوی سمت راست انتخاب کنید."
+                                   FontSize="13" Foreground="{DynamicResource PrimaryBrush}"
+                                   HorizontalAlignment="Center" TextWrapping="Wrap" TextAlignment="Center"/>
+                    </Border>
+                    <TextBlock Text="{Binding UserBanner}" FontSize="12"
+                               Foreground="{DynamicResource MutedBrush}" HorizontalAlignment="Center" Margin="0,16,0,0"/>
+                </StackPanel>
+            </Border>
         </Grid>
     </DockPanel>
 </Window>

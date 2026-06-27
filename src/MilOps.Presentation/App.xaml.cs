@@ -20,8 +20,17 @@ public partial class App : System.Windows.Application
 
     public App()
     {
+        // Build the fully-configured logger (rolling file sink etc.) ONCE and make
+        // it the static Log.Logger. The no-arg UseSerilog() below routes all
+        // Microsoft.Extensions.Logging through it.
+        //
+        // NOTE: the previous `UseSerilog((_, cfg) => CreateLogger())` bound to the
+        // Action overload, which DISCARDED the returned logger and installed the
+        // empty (sink-less) `cfg` it passed in — so nothing was ever written.
+        Log.Logger = LoggingConfiguration.CreateLogger();
+
         _host = Host.CreateDefaultBuilder()
-            .UseSerilog((_, __) => LoggingConfiguration.CreateLogger())
+            .UseSerilog()
             .ConfigureAppConfiguration((_, cfg) =>
             {
                 cfg.SetBasePath(AppContext.BaseDirectory);
@@ -62,10 +71,23 @@ public partial class App : System.Windows.Application
     protected override async void OnStartup(StartupEventArgs e)
     {
         // Fatal-error guard: never crash silently; show the user a message.
+        // The log sink is async (buffered), so we MUST flush before the process
+        // dies or the crash details never reach disk.
         AppDomain.CurrentDomain.UnhandledException += (_, args) =>
+        {
             Log.Fatal((Exception)args.ExceptionObject, "Unhandled AppDomain exception.");
+            Log.CloseAndFlush();
+        };
         DispatcherUnhandledException += (_, args) =>
-        { Log.Error(args.Exception, "Dispatcher unhandled exception."); };
+        {
+            Log.Error(args.Exception, "Dispatcher unhandled exception.");
+            MessageBox.Show(
+                "An unexpected error occurred.\n\n" + FlattenException(args.Exception),
+                "MilOps — Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            // Keep the app alive so a single UI fault doesn't kill the session;
+            // the error is logged and shown.
+            args.Handled = true;
+        };
 
         await _host.StartAsync();
 
@@ -78,6 +100,7 @@ public partial class App : System.Windows.Application
         catch (Exception ex)
         {
             Log.Fatal(ex, "Database initialization failed.");
+            Log.CloseAndFlush();
             MessageBox.Show(
                 "Failed to initialize the encrypted database. See the log file for details.\n\n" +
                 FlattenException(ex),
@@ -88,11 +111,28 @@ public partial class App : System.Windows.Application
             return;
         }
 
-        // The login window is StartupUri; resolve it through DI so its VM is injected.
-        StartupUri = null;
-        var login = _host.Services.GetRequiredService<LoginWindow>();
-        login.Show();
-        MainWindow = login; // treat login as the main window until auth succeeds
+        // StartupUri is intentionally not set in App.xaml; we resolve the login
+        // window through DI so its LoginViewModel dependency is injected.
+        try
+        {
+            var login = _host.Services.GetRequiredService<LoginWindow>();
+            login.Show();
+            MainWindow = login; // treat login as the main window until auth succeeds
+            Log.Information("Login window shown.");
+        }
+        catch (Exception ex)
+        {
+            Log.Fatal(ex, "Failed to create or show the login window.");
+            Log.CloseAndFlush();
+            MessageBox.Show(
+                "Failed to open the login window. See the log file for details.\n\n" +
+                FlattenException(ex),
+                "MilOps — Startup Error",
+                MessageBoxButton.OK,
+                MessageBoxImage.Error);
+            Shutdown(1);
+            return;
+        }
 
         base.OnStartup(e);
     }

@@ -59,17 +59,17 @@ public sealed class SecretProtector : IDisposable
             return UnprotectFile(path);
 
         // First run: generate and protect a new secret.
+        //
+        // IMPORTANT: do NOT zero `fresh` here. It IS the value we return, and the
+        // caller owns clearing it (see the method summary). Zeroing it in a
+        // finally would hand the caller an all-zero key: the DB would then be
+        // CREATED with a zero key while the real key is persisted to disk, so
+        // every later reopen fails with SQLITE_NOTADB. ProtectAndWrite only
+        // clears its own wrapped copy, never the input secret.
         var fresh = RandomNumberGenerator.GetBytes(byteLength);
-        try
-        {
-            ProtectAndWrite(path, fresh);
-            _logger.LogInformation("Generated and protected new secret '{Purpose}'.", purpose);
-            return fresh;
-        }
-        finally
-        {
-            CryptographicOperations.ZeroMemory(fresh);
-        }
+        ProtectAndWrite(path, fresh);
+        _logger.LogInformation("Generated and protected new secret '{Purpose}'.", purpose);
+        return fresh;
     }
 
     private byte[] UnprotectFile(string path)

@@ -9,28 +9,40 @@
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,12">
-            <TextBlock Text="From (UTC):" Style="{StaticResource FieldLabel}"/>
-            <DatePicker SelectedDate="{Binding From}" Margin="0,0,8,0"/>
-            <TextBlock Text="To (UTC):" Style="{StaticResource FieldLabel}"/>
-            <DatePicker SelectedDate="{Binding To}" Margin="0,0,8,0"/>
-            <TextBlock Text="Action:" Style="{StaticResource FieldLabel}"/>
-            <ComboBox ItemsSource="{Binding Actions}" SelectedItem="{Binding ActionFilter}" Width="150" Padding="4"/>
-            <Button Content="Query" Style="{StaticResource PrimaryButton}" Command="{Binding LoadCommand}" Margin="8,0,0,0"/>
-            <Button Content="✔ Verify Chain" Style="{StaticResource PrimaryButton}" Command="{Binding VerifyCommand}" Margin="8,0,0,0"/>
-            <Button Content="🖨 Print" Style="{StaticResource PrimaryButton}" Command="{Binding PrintCommand}"/>
-        </StackPanel>
+        <Border Grid.Row="0" Style="{StaticResource Card}" Margin="0,0,0,12" Padding="12">
+            <StackPanel Orientation="Horizontal">
+                <StackPanel Margin="0,0,12,0">
+                    <TextBlock Text="از تاریخ:" Style="{StaticResource FieldLabel}"/>
+                    <TextBox Text="{Binding From, Converter={StaticResource JalaliDateConverter}, UpdateSourceTrigger=LostFocus}" Width="120"/>
+                    <TextBlock Style="{StaticResource Caption}" Text="۱۴۰۳/۰۳/۰۷"/>
+                </StackPanel>
+                <StackPanel Margin="0,0,12,0">
+                    <TextBlock Text="تا تاریخ:" Style="{StaticResource FieldLabel}"/>
+                    <TextBox Text="{Binding To, Converter={StaticResource JalaliDateConverter}, UpdateSourceTrigger=LostFocus}" Width="120"/>
+                    <TextBlock Style="{StaticResource Caption}" Text="۱۴۰۳/۰۳/۰۷"/>
+                </StackPanel>
+                <StackPanel Margin="0,0,12,0">
+                    <TextBlock Text="عملیات:" Style="{StaticResource FieldLabel}"/>
+                    <ComboBox ItemsSource="{Binding Actions}" SelectedItem="{Binding ActionFilter}" Width="150" Padding="4"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Bottom">
+                    <Button Content="جست‌وجو" Style="{StaticResource PrimaryButton}" Command="{Binding LoadCommand}" Margin="0,0,8,0"/>
+                    <Button Content="بررسی صحت زنجیره" Style="{StaticResource SecondaryButton}" Command="{Binding VerifyCommand}" Margin="0,0,8,0"/>
+                    <Button Content="چاپ" Style="{StaticResource SecondaryButton}" Command="{Binding PrintCommand}"/>
+                </StackPanel>
+            </StackPanel>
+        </Border>
 
-        <Border Grid.Row="2" Background="White" BorderBrush="#FFE0E0E0" BorderThickness="1">
+        <Border Grid.Row="2" Style="{StaticResource Card}" Padding="0">
             <DataGrid ItemsSource="{Binding Items}" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False">
                 <DataGrid.Columns>
-                    <DataGridTextColumn Header="Seq" Binding="{Binding Sequence}" Width="60"/>
-                    <DataGridTextColumn Header="When (UTC)" Binding="{Binding OccurredAtUtc, StringFormat=u}" Width="160"/>
-                    <DataGridTextColumn Header="Action" Binding="{Binding Action}" Width="140"/>
-                    <DataGridTextColumn Header="User" Binding="{Binding Username}" Width="120"/>
-                    <DataGridTextColumn Header="Entity" Binding="{Binding EntityType}" Width="120"/>
-                    <DataGridTextColumn Header="Details" Binding="{Binding Details}" Width="*"/>
-                    <DataGridTextColumn Header="Hash" Binding="{Binding RowHashPreview}" Width="110"/>
+                    <DataGridTextColumn Header="ترتیب" Binding="{Binding Sequence}" Width="60"/>
+                    <DataGridTextColumn Header="زمان" Binding="{Binding OccurredAtUtc, Converter={StaticResource JalaliDateTimeConverter}}" Width="160"/>
+                    <DataGridTextColumn Header="عملیات" Binding="{Binding Action}" Width="140"/>
+                    <DataGridTextColumn Header="کاربر" Binding="{Binding Username}" Width="120"/>
+                    <DataGridTextColumn Header="موجودیت" Binding="{Binding EntityType}" Width="120"/>
+                    <DataGridTextColumn Header="جزئیات" Binding="{Binding Details}" Width="*"/>
+                    <DataGridTextColumn Header="درهم‌سازی" Binding="{Binding RowHashPreview}" Width="110"/>
                 </DataGrid.Columns>
             </DataGrid>
         </Border>

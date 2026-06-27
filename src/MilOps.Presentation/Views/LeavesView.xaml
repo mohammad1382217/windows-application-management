@@ -9,38 +9,48 @@
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <Border Grid.Row="0" Background="White" BorderBrush="#FFE0E0E0" BorderThickness="1" Padding="12" Margin="0,0,0,12">
+        <Border Grid.Row="0" Style="{StaticResource Card}" Margin="0,0,0,12">
             <StackPanel Orientation="Horizontal">
-                <TextBlock Text="Soldier ID:" Style="{StaticResource FieldLabel}"/>
-                <TextBox Text="{Binding NewSoldierId, UpdateSourceTrigger=PropertyChanged}" Width="80" Padding="4" Margin="0,0,8,0"/>
-                <TextBlock Text="Start:" Style="{StaticResource FieldLabel}"/>
-                <DatePicker SelectedDate="{Binding NewStart}" Margin="0,0,8,0"/>
-                <TextBlock Text="End:" Style="{StaticResource FieldLabel}"/>
-                <DatePicker SelectedDate="{Binding NewEnd}" Margin="0,0,8,0"/>
-                <TextBlock Text="Reason:" Style="{StaticResource FieldLabel}"/>
-                <TextBox Text="{Binding NewReason, UpdateSourceTrigger=PropertyChanged}" Width="180" Padding="4" Margin="0,0,8,0"/>
-                <Button Content="+ Request" Style="{StaticResource PrimaryButton}" Command="{Binding RequestCommand}"/>
+                <StackPanel Margin="0,0,12,0">
+                    <TextBlock Text="شناسه سرباز" Style="{StaticResource FieldLabel}"/>
+                    <TextBox Text="{Binding NewSoldierId, UpdateSourceTrigger=PropertyChanged}" Width="80" Padding="4"/>
+                </StackPanel>
+                <StackPanel Margin="0,0,12,0">
+                    <TextBlock Text="شروع" Style="{StaticResource FieldLabel}"/>
+                    <TextBox Text="{Binding NewStart, Converter={StaticResource JalaliDateConverter}, UpdateSourceTrigger=LostFocus}" Width="120" Padding="4"/>
+                    <TextBlock Style="{StaticResource Caption}" Text="۱۴۰۳/۰۳/۰۷"/>
+                </StackPanel>
+                <StackPanel Margin="0,0,12,0">
+                    <TextBlock Text="پایان" Style="{StaticResource FieldLabel}"/>
+                    <TextBox Text="{Binding NewEnd, Converter={StaticResource JalaliDateConverter}, UpdateSourceTrigger=LostFocus}" Width="120" Padding="4"/>
+                    <TextBlock Style="{StaticResource Caption}" Text="۱۴۰۳/۰۳/۰۷"/>
+                </StackPanel>
+                <StackPanel Margin="0,0,12,0">
+                    <TextBlock Text="علت" Style="{StaticResource FieldLabel}"/>
+                    <TextBox Text="{Binding NewReason, UpdateSourceTrigger=PropertyChanged}" Width="180" Padding="4"/>
+                </StackPanel>
+                <Button Content="+ درخواست" Style="{StaticResource PrimaryButton}" Command="{Binding RequestCommand}" VerticalAlignment="Bottom"/>
             </StackPanel>
         </Border>
 
         <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,8">
-            <TextBlock Text="Filter:" Style="{StaticResource FieldLabel}"/>
+            <TextBlock Text="فیلتر" Style="{StaticResource FieldLabel}"/>
             <ComboBox ItemsSource="{Binding Statuses}" SelectedItem="{Binding StatusFilter}" Width="120" Padding="4"/>
-            <Button Content="Refresh" Style="{StaticResource PrimaryButton}" Command="{Binding LoadCommand}" Margin="8,0,0,0"/>
-            <Button Content="Approve" Style="{StaticResource PrimaryButton}" Command="{Binding ApproveCommand}" Margin="8,0,0,0"/>
-            <Button Content="Reject" Style="{StaticResource DangerButton}" Command="{Binding RejectCommand}" Margin="8,0,0,0"/>
-            <Button Content="🖨 Print" Style="{StaticResource PrimaryButton}" Command="{Binding PrintCommand}"/>
+            <Button Content="بازخوانی" Style="{StaticResource SecondaryButton}" Command="{Binding LoadCommand}" Margin="8,0,0,0"/>
+            <Button Content="تأیید" Style="{StaticResource AccentButton}" Command="{Binding ApproveCommand}" Margin="8,0,0,0"/>
+            <Button Content="رد" Style="{StaticResource DangerButton}" Command="{Binding RejectCommand}" Margin="8,0,0,0"/>
+            <Button Content="🖨 چاپ" Style="{StaticResource SecondaryButton}" Command="{Binding PrintCommand}" Margin="8,0,0,0"/>
         </StackPanel>
 
-        <Border Grid.Row="2" Background="White" BorderBrush="#FFE0E0E0" BorderThickness="1">
+        <Border Grid.Row="2" Style="{StaticResource Card}">
             <DataGrid ItemsSource="{Binding Items}" SelectedItem="{Binding Selected}" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False">
                 <DataGrid.Columns>
-                    <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="50"/>
-                    <DataGridTextColumn Header="Soldier" Binding="{Binding SoldierId}" Width="80"/>
-                    <DataGridTextColumn Header="Start" Binding="{Binding StartDate, StringFormat=yyyy-MM-dd}" Width="110"/>
-                    <DataGridTextColumn Header="End" Binding="{Binding EndDate, StringFormat=yyyy-MM-dd}" Width="110"/>
-                    <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="100"/>
-                    <DataGridTextColumn Header="Reason" Binding="{Binding Reason}" Width="*"/>
+                    <DataGridTextColumn Header="شناسه" Binding="{Binding Id}" Width="50"/>
+                    <DataGridTextColumn Header="سرباز" Binding="{Binding SoldierId}" Width="80"/>
+                    <DataGridTextColumn Header="شروع" Binding="{Binding StartDate, Converter={StaticResource JalaliDateConverter}}" Width="110"/>
+                    <DataGridTextColumn Header="پایان" Binding="{Binding EndDate, Converter={StaticResource JalaliDateConverter}}" Width="110"/>
+                    <DataGridTextColumn Header="وضعیت" Binding="{Binding Status}" Width="100"/>
+                    <DataGridTextColumn Header="علت" Binding="{Binding Reason}" Width="*"/>
                 </DataGrid.Columns>
             </DataGrid>
         </Border>

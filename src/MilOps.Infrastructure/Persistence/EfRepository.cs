@@ -50,7 +50,7 @@ public sealed class EfRepository<T> : IRepository<T> where T : class
 }
 
 /// <summary>EF Core UnitOfWork wrapping SaveChanges and transactions.</summary>
-public sealed class EfUnitOfWork : IUnitOfWork
+public sealed class EfUnitOfWork : IUnitOfWork, IDisposable
 {
     private readonly MilOpsDbContext _db;
     public EfUnitOfWork(MilOpsDbContext db) => _db = db;
@@ -64,5 +64,13 @@ public sealed class EfUnitOfWork : IUnitOfWork
         catch { await tx.RollbackAsync(ct); throw; }
     }
 
-    public ValueTask DisposeAsync() => _db.DisposeAsync();
+    // The DbContext's lifetime is owned by DbContextAccessor and the DI scope —
+    // NOT by the unit of work — so we must NOT dispose _db here (doing so caused
+    // a double-dispose of the shared context). We still satisfy
+    // IUnitOfWork : IAsyncDisposable, and we ALSO implement IDisposable so the
+    // container can dispose us during a SYNCHRONOUS scope.Dispose() (the shell
+    // disposes navigation scopes synchronously). Without IDisposable the
+    // container throws "type only implements IAsyncDisposable".
+    public void Dispose() { }
+    public ValueTask DisposeAsync() => ValueTask.CompletedTask;
 }

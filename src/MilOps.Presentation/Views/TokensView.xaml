@@ -9,7 +9,7 @@
         </Grid.RowDefinitions>
 
         <!-- Generation form -->
-        <Border Grid.Row="0" Background="White" BorderBrush="#FFE0E0E0" BorderThickness="1" Padding="12" Margin="0,0,0,12">
+        <Border Grid.Row="0" Style="{StaticResource Card}" Margin="0,0,0,12">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
@@ -25,49 +25,51 @@
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
 
-                <TextBlock Grid.Row="0" Grid.ColumnSpan="4" Text="Generate Authorization Token" FontWeight="Bold" Margin="0,0,0,8"/>
+                <TextBlock Grid.Row="0" Grid.ColumnSpan="4" Text="صدور توکن مجوز" FontWeight="Bold" Margin="0,0,0,8"/>
 
                 <StackPanel Grid.Row="1" Grid.Column="0" Margin="0,0,8,4">
-                    <TextBlock Text="First Name" Style="{StaticResource FieldLabel}"/>
+                    <TextBlock Text="نام" Style="{StaticResource FieldLabel}"/>
                     <TextBox Text="{Binding FirstName}" Padding="4"/>
                 </StackPanel>
                 <StackPanel Grid.Row="1" Grid.Column="1" Margin="0,0,8,4">
-                    <TextBlock Text="Last Name" Style="{StaticResource FieldLabel}"/>
+                    <TextBlock Text="نام خانوادگی" Style="{StaticResource FieldLabel}"/>
                     <TextBox Text="{Binding LastName}" Padding="4"/>
                 </StackPanel>
                 <StackPanel Grid.Row="1" Grid.Column="2" Margin="0,0,8,4">
-                    <TextBlock Text="National Code" Style="{StaticResource FieldLabel}"/>
+                    <TextBlock Text="کد ملی" Style="{StaticResource FieldLabel}"/>
                     <TextBox Text="{Binding NationalCode}" Padding="4"/>
                 </StackPanel>
                 <StackPanel Grid.Row="1" Grid.Column="3" Margin="0,0,0,4">
-                    <TextBlock Text="Personnel Code" Style="{StaticResource FieldLabel}"/>
+                    <TextBlock Text="کد پرسنلی" Style="{StaticResource FieldLabel}"/>
                     <TextBox Text="{Binding PersonnelCode}" Padding="4"/>
                 </StackPanel>
 
                 <StackPanel Grid.Row="2" Grid.Column="0" Margin="0,0,8,4">
-                    <TextBlock Text="Rank" Style="{StaticResource FieldLabel}"/>
+                    <TextBlock Text="درجه" Style="{StaticResource FieldLabel}"/>
                     <TextBox Text="{Binding Rank}" Padding="4"/>
                 </StackPanel>
                 <StackPanel Grid.Row="2" Grid.Column="1" Margin="0,0,8,4">
-                    <TextBlock Text="Service Start" Style="{StaticResource FieldLabel}"/>
-                    <DatePicker SelectedDate="{Binding ServiceStart}"/>
+                    <TextBlock Text="شروع خدمت" Style="{StaticResource FieldLabel}"/>
+                    <TextBox Text="{Binding ServiceStart, Converter={StaticResource JalaliDateConverter}, UpdateSourceTrigger=LostFocus}" Width="120" Padding="4"/>
+                    <TextBlock Style="{StaticResource Caption}" Text="۱۴۰۳/۰۳/۰۷"/>
                 </StackPanel>
                 <StackPanel Grid.Row="2" Grid.Column="2" Margin="0,0,8,4">
-                    <TextBlock Text="Service End" Style="{StaticResource FieldLabel}"/>
-                    <DatePicker SelectedDate="{Binding ServiceEnd}"/>
+                    <TextBlock Text="پایان خدمت" Style="{StaticResource FieldLabel}"/>
+                    <TextBox Text="{Binding ServiceEnd, Converter={StaticResource JalaliDateConverter}, UpdateSourceTrigger=LostFocus}" Width="120" Padding="4"/>
+                    <TextBlock Style="{StaticResource Caption}" Text="۱۴۰۳/۰۳/۰۷"/>
                 </StackPanel>
                 <StackPanel Grid.Row="2" Grid.Column="3" Margin="0,0,0,4">
-                    <TextBlock Text="Purpose" Style="{StaticResource FieldLabel}"/>
+                    <TextBlock Text="هدف" Style="{StaticResource FieldLabel}"/>
                     <ComboBox ItemsSource="{Binding Purposes}" SelectedItem="{Binding Purpose}" Padding="4"/>
                 </StackPanel>
 
                 <StackPanel Grid.Row="3" Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Bottom" Margin="0,8,8,0">
-                    <TextBlock Text="Valid (days):" Style="{StaticResource FieldLabel}"/>
+                    <TextBlock Text="اعتبار (روز):" Style="{StaticResource FieldLabel}"/>
                     <TextBox Text="{Binding ValidDays}" Width="60" Padding="4"/>
                 </StackPanel>
 
-                <StackPanel Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="4" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,8,0,0">
-                    <Button Content="🔐 Generate Token" Style="{StaticResource PrimaryButton}" Command="{Binding GenerateCommand}" IsEnabled="{Binding IsNotBusy}"/>
+                <StackPanel Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="4" Orientation="Horizontal" HorizontalAlignment="Left" Margin="0,8,0,0">
+                    <Button Content="صدور توکن" Style="{StaticResource PrimaryButton}" Command="{Binding GenerateCommand}" IsEnabled="{Binding IsNotBusy}"/>
                 </StackPanel>
             </Grid>
         </Border>
@@ -79,21 +81,21 @@
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
             <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,8">
-                <TextBlock Text="Filter:" Style="{StaticResource FieldLabel}"/>
+                <TextBlock Text="فیلتر:" Style="{StaticResource FieldLabel}"/>
                 <ComboBox ItemsSource="{Binding Statuses}" SelectedItem="{Binding StatusFilter}" Width="120" Padding="4"/>
-                <Button Content="Refresh" Style="{StaticResource PrimaryButton}" Command="{Binding LoadCommand}" Margin="8,0,0,0"/>
-                <Button Content="Revoke" Style="{StaticResource DangerButton}" Command="{Binding RevokeCommand}" Margin="8,0,0,0"/>
+                <Button Content="بازخوانی" Style="{StaticResource PrimaryButton}" Command="{Binding LoadCommand}" Margin="8,0,0,0"/>
+                <Button Content="ابطال" Style="{StaticResource DangerButton}" Command="{Binding RevokeCommand}" Margin="8,0,0,0"/>
             </StackPanel>
-            <Border Grid.Row="1" Background="White" BorderBrush="#FFE0E0E0" BorderThickness="1">
+            <Border Grid.Row="1" Style="{StaticResource Card}">
                 <DataGrid ItemsSource="{Binding Items}" SelectedItem="{Binding Selected}" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False">
                     <DataGrid.Columns>
-                        <DataGridTextColumn Header="Preview" Binding="{Binding Preview}" Width="120"/>
-                        <DataGridTextColumn Header="Holder" Binding="{Binding LastName}" Width="120"/>
-                        <DataGridTextColumn Header="Nat. Code" Binding="{Binding NationalCode}" Width="110"/>
-                        <DataGridTextColumn Header="Purpose" Binding="{Binding Purpose}" Width="140"/>
-                        <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="90"/>
-                        <DataGridTextColumn Header="Issued (UTC)" Binding="{Binding IssuedAtUtc, StringFormat=u}" Width="150"/>
-                        <DataGridTextColumn Header="Expires (UTC)" Binding="{Binding ExpiresAtUtc, StringFormat=u}" Width="150"/>
+                        <DataGridTextColumn Header="پیش‌نمایش" Binding="{Binding Preview}" Width="120"/>
+                        <DataGridTextColumn Header="نام خانوادگی" Binding="{Binding LastName}" Width="120"/>
+                        <DataGridTextColumn Header="کد ملی" Binding="{Binding NationalCode}" Width="110"/>
+                        <DataGridTextColumn Header="هدف" Binding="{Binding Purpose}" Width="140"/>
+                        <DataGridTextColumn Header="وضعیت" Binding="{Binding Status}" Width="90"/>
+                        <DataGridTextColumn Header="تاریخ صدور" Binding="{Binding IssuedAtUtc, Converter={StaticResource JalaliDateTimeConverter}}" Width="150"/>
+                        <DataGridTextColumn Header="تاریخ انقضا" Binding="{Binding ExpiresAtUtc, Converter={StaticResource JalaliDateTimeConverter}}" Width="150"/>
                     </DataGrid.Columns>
                 </DataGrid>
             </Border>

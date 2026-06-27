@@ -21,7 +21,7 @@ public sealed partial class MainViewModel : ViewModelBase
     private readonly ISender _sender;
 
     private ViewModelBase? _current;
-    private string _currentTitle = "Dashboard";
+    private string _currentTitle = "میز کار";
     private IServiceScope? _currentScope;
 
     public MainViewModel(IServiceProvider services, ICurrentUser user,
@@ -54,13 +54,13 @@ public sealed partial class MainViewModel : ViewModelBase
     public bool CanManageLeaves => _user.Has(Permission.LeaveRead);
     public bool CanViewAudit => _user.Has(Permission.AuditRead);
 
-    [RelayCommand] private void ShowSoldiers() => Navigate<SoldiersViewModel>("Soldiers");
-    [RelayCommand] private void ShowSchedules() => Navigate<SchedulesViewModel>("Daily Guard Schedule");
-    [RelayCommand] private void ShowWeapons() => Navigate<WeaponsViewModel>("Weapons & Ammunition");
-    [RelayCommand] private void ShowLeaves() => Navigate<LeavesViewModel>("Leave Management");
-    [RelayCommand] private void ShowTokens() => Navigate<TokensViewModel>("Commander Tokens");
-    [RelayCommand] private void ShowUsers() => Navigate<UsersViewModel>("User Management");
-    [RelayCommand] private void ShowAudit() => Navigate<AuditViewModel>("Audit Log");
+    [RelayCommand] private void ShowSoldiers() => Navigate<SoldiersViewModel>("سربازان");
+    [RelayCommand] private void ShowSchedules() => Navigate<SchedulesViewModel>("برنامه نگهبانی روزانه");
+    [RelayCommand] private void ShowWeapons() => Navigate<WeaponsViewModel>("تسلیحات و مهمات");
+    [RelayCommand] private void ShowLeaves() => Navigate<LeavesViewModel>("مدیریت مرخصی");
+    [RelayCommand] private void ShowTokens() => Navigate<TokensViewModel>("توکن‌های فرمانده");
+    [RelayCommand] private void ShowUsers() => Navigate<UsersViewModel>("مدیریت کاربران");
+    [RelayCommand] private void ShowAudit() => Navigate<AuditViewModel>("گزارش حسابرسی");
 
     private void Navigate<T>(string title) where T : ViewModelBase
     {
@@ -76,7 +76,7 @@ public sealed partial class MainViewModel : ViewModelBase
     [RelayCommand]
     private async Task LogoutAsync()
     {
-        if (!_dialogs.Confirm("Sign out of MilOps?")) return;
+        if (!_dialogs.Confirm("از سامانه میل‌اپس خارج می‌شوید؟")) return;
         await _sender.Send(new MilOps.Application.Authentication.LogoutCommand());
         _nav.ShowLogin();
         foreach (Window w in System.Windows.Application.Current.Windows)

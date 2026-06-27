@@ -10,27 +10,32 @@
         </Grid.RowDefinitions>
 
         <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,12">
-            <TextBlock Text="Date:" Style="{StaticResource FieldLabel}"/>
-            <DatePicker SelectedDate="{Binding Date}" Margin="0,0,8,0"/>
-            <Button Content="Load" Style="{StaticResource PrimaryButton}" Command="{Binding LoadCommand}" Margin="0,0,8,0"/>
-            <Button Content="✓ Approve" Style="{StaticResource PrimaryButton}" Command="{Binding ApproveCommand}" Margin="0,0,8,0"/>
-            <Button Content="🖨 Print Schedule" Style="{StaticResource PrimaryButton}" Command="{Binding PrintCommand}"/>
+            <TextBlock Text="تاریخ:" Style="{StaticResource FieldLabel}" VerticalAlignment="Center"/>
+            <StackPanel Margin="0,0,8,0">
+                <TextBox Text="{Binding Date, Converter={StaticResource JalaliDateConverter}, UpdateSourceTrigger=LostFocus}" Width="120"/>
+                <TextBlock Text="۱۴۰۳/۰۳/۰۷" Style="{StaticResource Caption}"/>
+            </StackPanel>
+            <Button Content="بارگذاری" Style="{StaticResource PrimaryButton}" Command="{Binding LoadCommand}" Margin="0,0,8,0"/>
+            <Button Content="✓ تأیید" Style="{StaticResource AccentButton}" Command="{Binding ApproveCommand}" Margin="0,0,8,0"/>
+            <Button Content="🖨 چاپ برنامه" Style="{StaticResource SecondaryButton}" Command="{Binding PrintCommand}"/>
         </StackPanel>
 
         <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,8">
-            <TextBlock Text="Status: " Style="{StaticResource FieldLabel}"/>
+            <TextBlock Text="وضعیت: " Style="{StaticResource FieldLabel}"/>
             <TextBlock Text="{Binding Current.Status}" FontWeight="Bold"/>
-            <TextBlock Text="{Binding Current.Date, StringFormat='  ·  Date: {0:yyyy-MM-dd}'}" Margin="16,0,0,0"/>
+            <TextBlock Margin="16,0,0,0">
+                <Run Text="·  تاریخ: "/><Run Text="{Binding Current.Date, Converter={StaticResource JalaliDateConverter}}"/>
+            </TextBlock>
         </StackPanel>
 
-        <Border Grid.Row="2" Background="White" BorderBrush="#FFE0E0E0" BorderThickness="1">
+        <Border Grid.Row="2" Style="{StaticResource Card}">
             <DataGrid ItemsSource="{Binding Assignments}" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False">
                 <DataGrid.Columns>
-                    <DataGridTextColumn Header="Soldier ID" Binding="{Binding SoldierId}" Width="100"/>
-                    <DataGridTextColumn Header="Post" Binding="{Binding Post}" Width="160"/>
-                    <DataGridTextColumn Header="Shift" Binding="{Binding Shift}" Width="100"/>
-                    <DataGridTextColumn Header="Hours" Binding="{Binding ShiftStart}" Width="120"/>
-                    <DataGridTextColumn Header="Note" Binding="{Binding Note}" Width="*"/>
+                    <DataGridTextColumn Header="شناسه سرباز" Binding="{Binding SoldierId}" Width="100"/>
+                    <DataGridTextColumn Header="پست" Binding="{Binding Post}" Width="160"/>
+                    <DataGridTextColumn Header="شیفت" Binding="{Binding Shift}" Width="100"/>
+                    <DataGridTextColumn Header="ساعت" Binding="{Binding ShiftStart}" Width="120"/>
+                    <DataGridTextColumn Header="ملاحظات" Binding="{Binding Note}" Width="*"/>
                 </DataGrid.Columns>
             </DataGrid>
         </Border>
