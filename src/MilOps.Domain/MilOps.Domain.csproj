@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>$(TargetFrameworkBase)</TargetFramework>
+    <RootNamespace>MilOps.Domain</RootNamespace>
+    <AssemblyName>MilOps.Domain</AssemblyName>
+  </PropertyGroup>
+
+  <!-- Domain has no third-party dependencies. Pure C# / framework only. -->
+  <ItemGroup>
+    <Using Include="System.Text.RegularExpressions" />
+  </ItemGroup>
+
+  <!-- Allow Infrastructure to construct hashed AuditLog rows (audit pipeline). -->
+  <ItemGroup>
+    <InternalsVisibleTo Include="MilOps.Infrastructure" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,104 @@
+# =========================
+# Visual Studio
+# =========================
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# =========================
+# Build
+# =========================
+[Bb]in/
+[Oo]bj/
+x64/
+x86/
+Debug/
+Release/
+
+# =========================
+# Publish
+# =========================
+publish/
+Publish/
+artifacts/
+
+# =========================
+# Rider / JetBrains
+# =========================
+.idea/
+*.sln.iml
+
+# =========================
+# ReSharper
+# =========================
+_ReSharper*/
+*.DotSettings.user
+
+# =========================
+# NuGet
+# =========================
+*.nupkg
+*.snupkg
+packages/
+!packages/build/
+
+# =========================
+# Logs
+# =========================
+*.log
+logs/
+
+# =========================
+# SQLite / Local Database
+# (اگر دیتابیس نمونه داخل ریپو ندارید)
+# =========================
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite3
+
+# =========================
+# Local Settings
+# =========================
+appsettings.Development.json
+appsettings.Local.json
+
+# =========================
+# Test Results
+# =========================
+TestResults/
+*.trx
+coverage/
+coverage.*
+
+# =========================
+# Windows
+# =========================
+Thumbs.db
+Desktop.ini
+
+# =========================
+# OS
+# =========================
+.DS_Store
+
+# =========================
+# Visual Studio Code
+# =========================
+.vscode/
+
+# =========================
+# Temporary files
+# =========================
+*.tmp
+*.temp
+*.cache
+
+# =========================
+# Single-file publish
+# =========================
+*.pdb
+*.xml

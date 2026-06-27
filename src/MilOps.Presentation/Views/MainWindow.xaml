@@ -1,0 +1,73 @@
+<Window x:Class="MilOps.Presentation.Views.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="clr-namespace:MilOps.Presentation.ViewModels"
+        xmlns:v="clr-namespace:MilOps.Presentation.Views"
+        Title="MilOps" Height="720" Width="1180"
+        WindowStartupLocation="CenterScreen"
+        Background="{DynamicResource SurfaceBrush}">
+    <Window.Resources>
+        <DataTemplate DataType="{x:Type vm:SoldiersViewModel}">
+            <v:SoldiersView/>
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:SchedulesViewModel}">
+            <v:SchedulesView/>
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:WeaponsViewModel}">
+            <v:WeaponsView/>
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:LeavesViewModel}">
+            <v:LeavesView/>
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:TokensViewModel}">
+            <v:TokensView/>
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:UsersViewModel}">
+            <v:UsersView/>
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:AuditViewModel}">
+            <v:AuditView/>
+        </DataTemplate>
+    </Window.Resources>
+
+    <DockPanel>
+        <!-- Top banner -->
+        <Border DockPanel.Dock="Top" Background="{DynamicResource PrimaryBrush}" Padding="16,10">
+            <DockPanel>
+                <TextBlock Text="🛡 MilOps" Foreground="White" FontSize="18" FontWeight="Bold" VerticalAlignment="Center"/>
+                <TextBlock Text="{Binding CurrentTitle}" Foreground="White" FontSize="16" Margin="24,0,0,0" VerticalAlignment="Center"/>
+                <TextBlock Text="{Binding UserBanner}" Foreground="#FFE0E0E0" DockPanel.Dock="Right" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,16,0"/>
+                <Button Content="Sign Out" Command="{Binding LogoutCommand}" DockPanel.Dock="Right" HorizontalAlignment="Right"
+                        Background="Transparent" Foreground="White" BorderBrush="White" BorderThickness="1" Padding="12,4"/>
+            </DockPanel>
+        </Border>
+
+        <!-- Left navigation -->
+        <Border DockPanel.Dock="Left" Width="200" Background="White" BorderBrush="#FFE0E0E0" BorderThickness="0,0,1,0">
+            <StackPanel Margin="8,12">
+                <Button Content="👥  Soldiers" Style="{StaticResource PrimaryButton}" Margin="0,4" HorizontalAlignment="Stretch"
+                        Command="{Binding ShowSoldiersCommand}" Visibility="{Binding CanManageSoldiers, Converter={StaticResource BoolToVisConverter}}"/>
+                <Button Content="📅  Guard Schedule" Style="{StaticResource PrimaryButton}" Margin="0,4" HorizontalAlignment="Stretch"
+                        Command="{Binding ShowSchedulesCommand}" Visibility="{Binding CanManageSchedules, Converter={StaticResource BoolToVisConverter}}"/>
+                <Button Content="🔫  Weapons" Style="{StaticResource PrimaryButton}" Margin="0,4" HorizontalAlignment="Stretch"
+                        Command="{Binding ShowWeaponsCommand}" Visibility="{Binding CanManageWeapons, Converter={StaticResource BoolToVisConverter}}"/>
+                <Button Content="🏖  Leaves" Style="{StaticResource PrimaryButton}" Margin="0,4" HorizontalAlignment="Stretch"
+                        Command="{Binding ShowLeavesCommand}" Visibility="{Binding CanManageLeaves, Converter={StaticResource BoolToVisConverter}}"/>
+                <Button Content="🔑  Tokens" Style="{StaticResource PrimaryButton}" Margin="0,4" HorizontalAlignment="Stretch"
+                        Command="{Binding ShowTokensCommand}" Visibility="{Binding CanManageTokens, Converter={StaticResource BoolToVisConverter}}"/>
+                <Button Content="⚙  Users" Style="{StaticResource PrimaryButton}" Margin="0,4" HorizontalAlignment="Stretch"
+                        Command="{Binding ShowUsersCommand}" Visibility="{Binding CanManageUsers, Converter={StaticResource BoolToVisConverter}}"/>
+                <Button Content="📜  Audit Log" Style="{StaticResource PrimaryButton}" Margin="0,4" HorizontalAlignment="Stretch"
+                        Command="{Binding ShowAuditCommand}" Visibility="{Binding CanViewAudit, Converter={StaticResource BoolToVisConverter}}"/>
+            </StackPanel>
+        </Border>
+
+        <!-- Content host -->
+        <Grid>
+            <ContentControl Content="{Binding Current}"/>
+            <TextBlock Text="Select a module from the left to begin." HorizontalAlignment="Center" VerticalAlignment="Center"
+                       FontSize="14" Foreground="Gray"
+                       Visibility="{Binding Current, Converter={StaticResource NullToCollapsedConverter}, ConverterParameter=inverse}"/>
+        </Grid>
+    </DockPanel>
+</Window>

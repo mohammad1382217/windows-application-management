@@ -1,0 +1,29 @@
+<Project Sdk="WixToolset.Sdk/5.0.2">
+
+  <PropertyGroup>
+    <OutputName>MilOpsSetup</OutputName>
+    <OutputType>Package</OutputType>
+    <!-- Opt out of Central Package Management: the WiX SDK resolves its own
+         extension packages and doesn't participate in the solution's CPM. -->
+    <ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>
+    <!-- Product version is injected by the release script via /p:MilOpsVersion= -->
+    <MilOpsVersion Condition="'$(MilOpsVersion)' == ''">1.0.0</MilOpsVersion>
+    <!-- PublishDir is passed by the release script; default to a relative path
+         so the project also builds standalone from the repo. -->
+    <PublishDir Condition="'$(PublishDir)' == ''">..\src\MilOps.Presentation\bin\Release\publish\</PublishDir>
+    <!-- Bridge MSBuild properties into WiX preprocessor variables ($(var.X)). -->
+    <DefineConstants>MilOpsVersion=$(MilOpsVersion);PublishDir=$(PublishDir)</DefineConstants>
+    <!-- ICE69 (WIX1076) is benign here: per-user shortcuts (HKCU-keyed per ICE43)
+         reference a per-machine file (file-keyed per ICE69). Both rules cannot be
+         satisfied at once; the documented resolution is the same-feature cross-
+         reference, which WiX accepts. Suppress the resulting advisory warning. -->
+    <SuppressSpecificValidationWarnings>ICE69</SuppressSpecificValidationWarnings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Standard WiX UI extension (InstallDir wizard: Welcome/License/EULA/InstallDir/Progress). -->
+    <PackageReference Include="WixToolset.UI.wixext" Version="5.0.2" />
+    <PackageReference Include="WixToolset.Util.wixext" Version="5.0.2" />
+  </ItemGroup>
+
+</Project>

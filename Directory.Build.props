@@ -1,0 +1,39 @@
+<Project>
+
+  <!--
+    Shared build settings for the MilOps WPF solution.
+
+    Target Framework Note:
+    The requirement specifies .NET 9. The build machine that produced this
+    code only had the .NET 10 SDK installed, so the defaults below target
+    net10.0 / net10.0-windows so the solution restores and builds as-is.
+    To build strictly on .NET 9, install the .NET 9 SDK and change the two
+    properties below to net9.0 / net9.0-windows. All referenced packages
+    (EF Core 9, etc.) are .NET 9 compatible either way.
+  -->
+
+  <PropertyGroup Label="TargetFrameworks (editable)">
+    <TargetFrameworkBase>net10.0</TargetFrameworkBase>
+    <TargetFrameworkWindows>net10.0-windows</TargetFrameworkWindows>
+  </PropertyGroup>
+
+  <PropertyGroup Label="Solution-wide">
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <NeutralLanguage>en</NeutralLanguage>
+    <Product>MilOps</Product>
+    <Authors>MilOps</Authors>
+    <Version>1.0.0</Version>
+  </PropertyGroup>
+
+  <!-- Central package management (versions live in Directory.Packages.props). -->
+  <PropertyGroup>
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+    <CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>
+  </PropertyGroup>
+
+</Project>

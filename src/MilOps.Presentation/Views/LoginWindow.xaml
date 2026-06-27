@@ -1,0 +1,45 @@
+<Window x:Class="MilOps.Presentation.Views.LoginWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="MilOps — Secure Login" Height="420" Width="400"
+        WindowStartupLocation="CenterScreen" ResizeMode="CanMinimize"
+        Background="{DynamicResource SurfaceBrush}">
+    <Grid Margin="32">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="16"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="8"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="16"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <Border Grid.Row="0" Background="{DynamicResource PrimaryBrush}" CornerRadius="8" Padding="16,12" Margin="0,0,0,8">
+            <StackPanel HorizontalAlignment="Center">
+                <TextBlock Text="🛡 MilOps" Foreground="White" FontSize="26" FontWeight="Bold" HorizontalAlignment="Center"/>
+                <TextBlock Text="Military Unit Management — Secure Access" Foreground="#FFE0E0E0" FontSize="11" HorizontalAlignment="Center"/>
+            </StackPanel>
+        </Border>
+
+        <TextBlock Grid.Row="1" Text="Username" Style="{StaticResource FieldLabel}"/>
+        <TextBox Grid.Row="3" x:Name="UsernameBox" Text="{Binding Username, UpdateSourceTrigger=PropertyChanged}"
+                 Padding="8,6" FontSize="14"/>
+
+        <TextBlock Grid.Row="4" Text="Password" Style="{StaticResource FieldLabel}"/>
+        <PasswordBox Grid.Row="5" x:Name="PasswordBox" Padding="8,6" FontSize="14" PasswordChanged="PasswordBox_PasswordChanged"/>
+
+        <Button Grid.Row="7" Content="Sign In" Style="{StaticResource PrimaryButton}"
+                Command="{Binding LoginCommand}" Padding="0,10" FontSize="14"
+                IsEnabled="{Binding IsNotBusy}"/>
+
+        <TextBlock Grid.Row="8" Text="{Binding Hint}" Foreground="{DynamicResource DangerBrush}"
+                   TextWrapping="Wrap" Margin="0,8,0,0" Visibility="{Binding Hint, Converter={StaticResource NullToCollapsedConverter}}"/>
+
+        <ProgressBar Grid.Row="10" IsIndeterminate="True" Height="3" Visibility="{Binding IsBusy, Converter={StaticResource BoolToVisConverter}}"/>
+    </Grid>
+</Window>

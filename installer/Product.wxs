@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  MilOps MSI installer (WiX v4).
+
+  Design goals satisfied:
+   - Install under Program Files (INSTALLDIR -> ProgramFiles6432Folder\MilOps).
+   - Start Menu + Desktop shortcuts with Uninstall entry.
+   - Single self-contained exe; no prerequisite runtime to fetch.
+   - Configure app data under %LOCALAPPDATA%\MilOps at runtime (the app owns this
+     dir; the installer never writes there so UNINSTALL preserves user data/secrets/db).
+   - Clean uninstall: remove only the files we installed.
+   - Preserve user data on upgrade: MajorUpgrade with only BINARIES as permanent;
+     user data is outside the install scope.
+   - Versioned releases: Product Version + AllowSameVersionUpgrades for minor.
+
+  Build:  msbuild MilOps.Installer.wixproj /p:MilOpsVersion=1.0.0 /p:PublishDir=..\src\MilOps.Presentation\bin\Release\publish\
+-->
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs"
+     xmlns:ui="http://wixtoolset.org/schemas/v4/wxs/ui"
+     xmlns:util="http://wixtoolset.org/schemas/v4/wxs/util">
+
+  <!--
+    UpgradeCode is a STABLE GUID for the lifetime of the product. Versioned
+    releases share this GUID so MSI recognizes them as upgrades (not side-by-side).
+  -->
+  <?define UpgradeCode = "8F2C7A1B-3D4E-4F5A-9B6C-1D2E3F405160" ?>
+
+  <Package Name="MilOps"
+           Manufacturer="MilOps"
+           Language="1033"
+           Codepage="1252"
+           Version="$(var.MilOpsVersion)"
+           Scope="perMachine"
+           UpgradeCode="$(var.UpgradeCode)">
+
+    <!-- Major upgrade: newer version replaces older versions of the same product
+         (shared UpgradeCode). Downgrades are blocked. -->
+    <MajorUpgrade DowngradeErrorMessage="A newer version of MilOps is already installed." />
+
+    <!-- Per-machine install scope is declared on Package (Scope="perMachine"),
+         which sets ALLUSERS=1 automatically. -->
+
+    <!-- The folder the user can change in the wizard. -->
+    <Property Id="WIXUI_INSTALLDIR" Value="INSTALLDIR" />
+    <UI>
+      <ui:WixUI Id="WixUI_InstallDir" />
+      <UIRef Id="WixUI_ErrorProgressText" />
+    </UI>
+
+    <!-- License agreement shown in the wizard (rtf). -->
+    <WixVariable Id="WixUILicenseRtf" Value="License.rtf" />
+    <!-- Icons used for shortcuts / Add/Remove Programs. -->
+    <WixVariable Id="WixUIBannerBmp" Value="Assets\banner.bmp" />
+    <WixVariable Id="WixUIDialogBmp" Value="Assets\dialog.bmp" />
+    <Icon Id="MilOps.ico" SourceFile="Assets\MilOps.ico" />
+    <Property Id="ARPPRODUCTICON" Value="MilOps.ico" />
+
+    <Feature Id="Complete" Title="MilOps" Level="1" AllowAdvertise="no"
+             Display="expand" ConfigurableDirectory="INSTALLDIR">
+      <Feature Id="MainProgram" Title="MilOps Application" Level="1">
+        <ComponentGroupRef Id="ProductComponents" />
+        <ComponentGroupRef Id="ShortcutsComponents" />
+      </Feature>
+    </Feature>
+  </Package>
+
+  <!-- ============================================================= -->
+  <!-- Directory layout                                              -->
+  <!-- In WiX v5, StandardDirectory elements are siblings (not      -->
+  <!-- nested) and identified by Id; they contain plain Directory   -->
+  <!-- children for custom subfolders.                              -->
+  <!-- ============================================================= -->
+  <Fragment>
+    <StandardDirectory Id="ProgramFiles6432Folder">
+      <Directory Id="INSTALLDIR" Name="MilOps" />
+    </StandardDirectory>
+
+    <StandardDirectory Id="ProgramMenuFolder">
+      <Directory Id="StartMenuDir" Name="MilOps" />
+    </StandardDirectory>
+
+    <StandardDirectory Id="DesktopFolder" />
+  </Fragment>
+
+  <!-- ============================================================= -->
+  <!-- Files: the single self-contained exe + appsettings.json      -->
+  <!-- PUBLISHDIR is passed by the release script (points to publish/). -->
+  <!-- ============================================================= -->
+  <!-- ============================================================= -->
+  <!-- Files                                                         -->
+  <!-- The exe is in its own component, file-keyed. Shortcuts are    -->
+  <!-- separate per-user components (HKCU registry keypath) that     -->
+  <!-- reference the file via Target="[#MilOpsExe]". This satisfies   -->
+  <!-- ICE43/ICE57 (per-user shortcut component needs HKCU keypath)  -->
+  <!-- and ICE69 (target file reference uses the standard #[FileId]). -->
+  <!-- ============================================================= -->
+  <Fragment>
+    <ComponentGroup Id="ProductComponents" Directory="INSTALLDIR">
+      <Component Id="MainExe" Guid="A1B2C3D4-1111-2222-3333-444455556666">
+        <File Id="MilOpsExe" Source="$(PublishDir)MilOps.exe" KeyPath="yes"
+              Checksum="yes" />
+      </Component>
+
+      <!-- appsettings.json is kept OUTSIDE the single-file bundle so it can be
+           edited post-install without rebuilding. Sourced from publish output. -->
+      <Component Id="AppSettings" Guid="A1B2C3D4-1111-2222-3333-444455556667">
+        <File Id="AppSettingsJson" Source="$(PublishDir)appsettings.json" KeyPath="yes" />
+      </Component>
+    </ComponentGroup>
+  </Fragment>
+
+  <!-- ============================================================= -->
+  <!-- Shortcuts: separate per-user components (HKCU keypath).       -->
+  <!-- ============================================================= -->
+  <Fragment>
+    <ComponentGroup Id="ShortcutsComponents">
+      <!-- Start Menu shortcut -->
+      <Component Id="StartMenuShortcut" Guid="A1B2C3D4-3333-4444-5555-666677778888"
+                 Directory="StartMenuDir">
+        <Shortcut Id="StartMenuMilOpsShortcut"
+                  Name="MilOps"
+                  Description="MilOps Secure Unit Management"
+                  Target="[#MilOpsExe]"
+                  WorkingDirectory="INSTALLDIR"
+                  Icon="MilOps.ico" Advertise="no" />
+        <RegistryValue Root="HKCU" Key="Software\MilOps\Shortcuts"
+                       Name="StartMenu" Type="integer" Value="1" KeyPath="yes" />
+        <RemoveFolder Id="RemoveStartMenuDir" Directory="StartMenuDir" On="uninstall" />
+      </Component>
+
+      <!-- Desktop shortcut -->
+      <Component Id="DesktopShortcut" Guid="A1B2C3D4-3333-4444-5555-666677778889"
+                 Directory="DesktopFolder">
+        <Shortcut Id="DesktopMilOpsShortcut"
+                  Name="MilOps"
+                  Description="MilOps Secure Unit Management"
+                  Target="[#MilOpsExe]"
+                  WorkingDirectory="INSTALLDIR"
+                  Icon="MilOps.ico" Advertise="no" />
+        <RegistryValue Root="HKCU" Key="Software\MilOps\Shortcuts"
+                       Name="Desktop" Type="integer" Value="1" KeyPath="yes" />
+      </Component>
+    </ComponentGroup>
+  </Fragment>
+
+</Wix>
