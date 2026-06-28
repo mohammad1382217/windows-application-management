@@ -54,7 +54,7 @@ public sealed partial class LeavesViewModel : ViewModelBase
     [RelayCommand]
     private async Task RequestAsync()
     {
-        if (NewSoldierId <= 0) { ErrorMessage = "Soldier ID required."; return; }
+        if (NewSoldierId <= 0) { ErrorMessage = "شناسه سرباز الزامی است."; return; }
         await RunAsync(async () =>
         {
             var r = await _sender.Send(new CreateLeaveCommand(NewSoldierId,
@@ -81,7 +81,7 @@ public sealed partial class LeavesViewModel : ViewModelBase
     private async Task RejectAsync()
     {
         if (Selected is null) return;
-        var reason = InputDialog.Prompt("Rejection reason:", "Reject Leave", "");
+        var reason = InputDialog.Prompt("دلیل رد مرخصی:", "رد مرخصی", "");
         if (string.IsNullOrWhiteSpace(reason)) return;
         await RunAsync(async () =>
         {

@@ -1,4 +1,4 @@
-using FluentValidation;
+﻿using FluentValidation;
 using MediatR;
 using MilOps.Application.Behaviors;
 using MilOps.Application.Common;
@@ -103,7 +103,7 @@ public class WeaponHandlers :
     public async Task<Result> Handle(IssueWeaponCommand c, CancellationToken ct)
     {
         var w = await _weapons.GetByIdAsync(c.WeaponId, ct);
-        if (w is null) return Result.Failure("NOT_FOUND", "Weapon not found.");
+        if (w is null) return Result.Failure("NOT_FOUND", "سلاح یافت نشد.");
         try
         {
             w.IssueTo(c.SoldierId, _user.UserId ?? 0, _time.UtcNow, c.Note);
@@ -119,7 +119,7 @@ public class WeaponHandlers :
     public async Task<Result> Handle(ReturnWeaponCommand c, CancellationToken ct)
     {
         var w = await _weapons.GetByIdAsync(c.WeaponId, ct);
-        if (w is null) return Result.Failure("NOT_FOUND", "Weapon not found.");
+        if (w is null) return Result.Failure("NOT_FOUND", "سلاح یافت نشد.");
         try
         {
             w.Return(_user.UserId ?? 0, _time.UtcNow, c.ReturnedAmmunition, c.Note);

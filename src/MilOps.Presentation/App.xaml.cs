@@ -57,6 +57,7 @@ public partial class App : System.Windows.Application
                 services.AddTransient<SoldierEditorViewModel>();
                 services.AddTransient<TokensViewModel>();
                 services.AddTransient<SchedulesViewModel>();
+                services.AddTransient<ScheduleBuilderViewModel>();
                 services.AddTransient<WeaponsViewModel>();
                 services.AddTransient<LeavesViewModel>();
                 services.AddTransient<UsersViewModel>();

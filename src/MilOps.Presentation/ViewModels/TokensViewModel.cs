@@ -76,13 +76,13 @@ public sealed partial class TokensViewModel : ViewModelBase
             // Show the plaintext EXACTLY ONCE. It cannot be retrieved again.
             Clipboard.SetText(r.Value.PlaintextToken);
             _dialogs.Info(
-                "TOKEN CREATED — store it securely.\n\n" +
-                $"Holder: {r.Value.FirstName} {r.Value.LastName}\n" +
-                $"Purpose: {r.Value.Purpose}\n" +
-                $"Expires (UTC): {r.Value.ExpiresAtUtc:u}\n\n" +
-                $"Token (copied to clipboard):\n{r.Value.PlaintextToken}\n\n" +
-                "This token will never be shown again. Only a hashed copy is stored.",
-                "Token Generated");
+                "توکن ایجاد شد — آن را در جای امنی ذخیره کنید.\n\n" +
+                $"دارنده: {r.Value.FirstName} {r.Value.LastName}\n" +
+                $"هدف: {r.Value.Purpose}\n" +
+                $"انقضا (UTC): {r.Value.ExpiresAtUtc:u}\n\n" +
+                $"توکن (در کلیپ‌بورد کپی شد):\n{r.Value.PlaintextToken}\n\n" +
+                "این توکن دیگر نمایش داده نخواهد شد. فقط نسخه هش‌شده ذخیره می‌شود.",
+                "توکن ایجاد شد");
             await LoadAsync();
         }, "Generating token...");
     }
@@ -92,7 +92,7 @@ public sealed partial class TokensViewModel : ViewModelBase
     {
         if (Selected is null) return;
         var reason = InputDialog.Prompt(
-            "Reason for revoking this token?", "Revoke Token", "No longer needed");
+            "دلیل ابطال این توکن؟", "ابطال توکن", "دیگر نیازی ندارد");
         if (string.IsNullOrWhiteSpace(reason)) return;
 
         await RunAsync(async () =>

@@ -1,4 +1,6 @@
+using System.ComponentModel;
 using System.Globalization;
+using System.Reflection;
 using System.Windows;
 using System.Windows.Data;
 using MilOps.Presentation.Common;
@@ -98,6 +100,24 @@ public sealed class BoolToVisibilityConverter : IValueConverter
 
     public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
         => value is Visibility v && v == Visibility.Visible;
+}
+
+/// <summary>
+/// Converts an enum value to its Persian [Description] attribute.
+/// Falls back to the raw enum name if no attribute is set.
+/// </summary>
+public sealed class EnumDescriptionConverter : IValueConverter
+{
+    public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+    {
+        if (value is null) return string.Empty;
+        var field = value.GetType().GetField(value.ToString()!);
+        var attr = field?.GetCustomAttribute<DescriptionAttribute>();
+        return attr?.Description ?? value.ToString() ?? string.Empty;
+    }
+
+    public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+        => throw new NotSupportedException();
 }
 
 /// <summary>Inverted bool. Handy for IsNotBusy bindings.</summary>

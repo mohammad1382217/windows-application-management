@@ -50,6 +50,13 @@ public sealed partial class SchedulesViewModel : ViewModelBase
         });
     }
 
+    [RelayCommand]
+    private void Create()
+    {
+        var builder = new ScheduleBuilderWindow(Date) { Owner = System.Windows.Application.Current.MainWindow };
+        if (builder.ShowDialog() == true) _ = LoadAsync();
+    }
+
     [RelayCommand(CanExecute = nameof(CanApprove))]
     private async Task ApproveAsync()
     {

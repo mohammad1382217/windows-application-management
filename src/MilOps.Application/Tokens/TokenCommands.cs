@@ -1,4 +1,4 @@
-using FluentValidation;
+﻿using FluentValidation;
 using MediatR;
 using MilOps.Application.Behaviors;
 using MilOps.Application.Common;
@@ -97,7 +97,7 @@ public class TokenCommandHandlers :
     public async Task<Result> Handle(RevokeTokenCommand c, CancellationToken ct)
     {
         var token = await _tokens.GetByIdAsync(c.Id, ct);
-        if (token is null) return Result.Failure("NOT_FOUND", "Token not found.");
+        if (token is null) return Result.Failure("NOT_FOUND", "توکن یافت نشد.");
 
         try
         {

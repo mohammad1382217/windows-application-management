@@ -76,7 +76,7 @@ public class UserHandlers :
             var existing = await _users.FirstOrDefaultAsync(
                 new UserByUsernameSpec(c.Username), ct);
             if (existing is not null)
-                return Result.Failure<int>("USER_EXISTS", "Username already exists.");
+                return Result.Failure<int>("USER_EXISTS", "این نام کاربری قبلاً ثبت شده است.");
 
             var user = User.Create(
                 PersonName.Create(c.FullName, "Full name"),
@@ -95,7 +95,7 @@ public class UserHandlers :
     public async Task<Result> Handle(ChangePasswordCommand c, CancellationToken ct)
     {
         var user = await _users.GetByIdAsync(c.UserId, ct);
-        if (user is null) return Result.Failure("NOT_FOUND", "User not found.");
+        if (user is null) return Result.Failure("NOT_FOUND", "کاربر یافت نشد.");
         try
         {
             user.ChangePassword(_hasher.Hash(c.NewPassword));
@@ -113,9 +113,9 @@ public class UserHandlers :
     public async Task<Result> Handle(DeactivateUserCommand c, CancellationToken ct)
     {
         var user = await _users.GetByIdAsync(c.UserId, ct);
-        if (user is null) return Result.Failure("NOT_FOUND", "User not found.");
+        if (user is null) return Result.Failure("NOT_FOUND", "کاربر یافت نشد.");
         if (user.Id == _user.UserId)
-            return Result.Failure("USER_SELF", "You cannot deactivate your own account.");
+            return Result.Failure("USER_SELF", "امکان غیرفعال‌سازی حساب خود وجود ندارد.");
         try
         {
             user.Deactivate();

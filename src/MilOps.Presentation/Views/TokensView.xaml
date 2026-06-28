@@ -1,6 +1,7 @@
 <UserControl x:Class="MilOps.Presentation.Views.TokensView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             FlowDirection="RightToLeft"
              Loaded="TokensView_Loaded">
     <Grid Margin="16">
         <Grid.RowDefinitions>
@@ -8,98 +9,128 @@
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <!-- Generation form -->
-        <Border Grid.Row="0" Style="{StaticResource Card}" Margin="0,0,0,12">
-            <Grid>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                </Grid.RowDefinitions>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="*"/>
-                </Grid.ColumnDefinitions>
+        <!-- Issue form card -->
+        <Border Grid.Row="0" CornerRadius="12" ClipToBounds="True"
+                BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" Margin="0,0,0,12">
+            <DockPanel>
+                <!-- Header -->
+                <Border DockPanel.Dock="Top" Padding="22,16">
+                    <Border.Background>
+                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                            <GradientStop Color="#4A1E7A" Offset="0"/>
+                            <GradientStop Color="#6C3AAA" Offset="1"/>
+                        </LinearGradientBrush>
+                    </Border.Background>
+                    <DockPanel>
+                        <Border DockPanel.Dock="Right" Width="46" Height="46" CornerRadius="23"
+                                Background="#22FFFFFF" VerticalAlignment="Center">
+                            <TextBlock Text="🔑" FontSize="22" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <StackPanel VerticalAlignment="Center" Margin="0,0,14,0">
+                            <TextBlock Text="توکن‌های فرمانده" Foreground="White" FontSize="18" FontWeight="Bold"/>
+                            <TextBlock Text="صدور مجوز خروج موقت از پایگاه" Foreground="#CCA8F0" FontSize="12" Margin="0,3,0,0"/>
+                        </StackPanel>
+                    </DockPanel>
+                </Border>
 
-                <TextBlock Grid.Row="0" Grid.ColumnSpan="4" Text="صدور توکن مجوز" FontWeight="Bold" Margin="0,0,0,8"/>
+                <!-- Fields -->
+                <Grid Margin="18,16">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
 
-                <StackPanel Grid.Row="1" Grid.Column="0" Margin="0,0,8,4">
-                    <TextBlock Text="نام" Style="{StaticResource FieldLabel}"/>
-                    <TextBox Text="{Binding FirstName}" Padding="4"/>
-                </StackPanel>
-                <StackPanel Grid.Row="1" Grid.Column="1" Margin="0,0,8,4">
-                    <TextBlock Text="نام خانوادگی" Style="{StaticResource FieldLabel}"/>
-                    <TextBox Text="{Binding LastName}" Padding="4"/>
-                </StackPanel>
-                <StackPanel Grid.Row="1" Grid.Column="2" Margin="0,0,8,4">
-                    <TextBlock Text="کد ملی" Style="{StaticResource FieldLabel}"/>
-                    <TextBox Text="{Binding NationalCode}" Padding="4"/>
-                </StackPanel>
-                <StackPanel Grid.Row="1" Grid.Column="3" Margin="0,0,0,4">
-                    <TextBlock Text="کد پرسنلی" Style="{StaticResource FieldLabel}"/>
-                    <TextBox Text="{Binding PersonnelCode}" Padding="4"/>
-                </StackPanel>
+                    <StackPanel Grid.Row="0" Grid.Column="0" Margin="0,0,10,10">
+                        <TextBlock Text="نام" Style="{StaticResource FieldLabel}" Margin="0,0,0,5"/>
+                        <TextBox Text="{Binding FirstName}"/>
+                    </StackPanel>
+                    <StackPanel Grid.Row="0" Grid.Column="1" Margin="0,0,10,10">
+                        <TextBlock Text="نام خانوادگی" Style="{StaticResource FieldLabel}" Margin="0,0,0,5"/>
+                        <TextBox Text="{Binding LastName}"/>
+                    </StackPanel>
+                    <StackPanel Grid.Row="0" Grid.Column="2" Margin="0,0,10,10">
+                        <TextBlock Text="کد ملی" Style="{StaticResource FieldLabel}" Margin="0,0,0,5"/>
+                        <TextBox Text="{Binding NationalCode}" FlowDirection="LeftToRight"/>
+                    </StackPanel>
+                    <StackPanel Grid.Row="0" Grid.Column="3" Margin="0,0,0,10">
+                        <TextBlock Text="کد پرسنلی" Style="{StaticResource FieldLabel}" Margin="0,0,0,5"/>
+                        <TextBox Text="{Binding PersonnelCode}" FlowDirection="LeftToRight"/>
+                    </StackPanel>
 
-                <StackPanel Grid.Row="2" Grid.Column="0" Margin="0,0,8,4">
-                    <TextBlock Text="درجه" Style="{StaticResource FieldLabel}"/>
-                    <TextBox Text="{Binding Rank}" Padding="4"/>
-                </StackPanel>
-                <StackPanel Grid.Row="2" Grid.Column="1" Margin="0,0,8,4">
-                    <TextBlock Text="شروع خدمت" Style="{StaticResource FieldLabel}"/>
-                    <TextBox Text="{Binding ServiceStart, Converter={StaticResource JalaliDateConverter}, UpdateSourceTrigger=LostFocus}" Width="120" Padding="4"/>
-                    <TextBlock Style="{StaticResource Caption}" Text="۱۴۰۳/۰۳/۰۷"/>
-                </StackPanel>
-                <StackPanel Grid.Row="2" Grid.Column="2" Margin="0,0,8,4">
-                    <TextBlock Text="پایان خدمت" Style="{StaticResource FieldLabel}"/>
-                    <TextBox Text="{Binding ServiceEnd, Converter={StaticResource JalaliDateConverter}, UpdateSourceTrigger=LostFocus}" Width="120" Padding="4"/>
-                    <TextBlock Style="{StaticResource Caption}" Text="۱۴۰۳/۰۳/۰۷"/>
-                </StackPanel>
-                <StackPanel Grid.Row="2" Grid.Column="3" Margin="0,0,0,4">
-                    <TextBlock Text="هدف" Style="{StaticResource FieldLabel}"/>
-                    <ComboBox ItemsSource="{Binding Purposes}" SelectedItem="{Binding Purpose}" Padding="4"/>
-                </StackPanel>
+                    <StackPanel Grid.Row="1" Grid.Column="0" Margin="0,0,10,10">
+                        <TextBlock Text="درجه" Style="{StaticResource FieldLabel}" Margin="0,0,0,5"/>
+                        <TextBox Text="{Binding Rank}"/>
+                    </StackPanel>
+                    <StackPanel Grid.Row="1" Grid.Column="1" Margin="0,0,10,10">
+                        <TextBlock Text="شروع خدمت" Style="{StaticResource FieldLabel}" Margin="0,0,0,5"/>
+                        <TextBox Style="{StaticResource DateInputBox}"
+                                 Text="{Binding ServiceStart, Converter={StaticResource JalaliDateConverter}, UpdateSourceTrigger=LostFocus}"
+                                 FlowDirection="LeftToRight"/>
+                    </StackPanel>
+                    <StackPanel Grid.Row="1" Grid.Column="2" Margin="0,0,10,10">
+                        <TextBlock Text="پایان خدمت" Style="{StaticResource FieldLabel}" Margin="0,0,0,5"/>
+                        <TextBox Style="{StaticResource DateInputBox}"
+                                 Text="{Binding ServiceEnd, Converter={StaticResource JalaliDateConverter}, UpdateSourceTrigger=LostFocus}"
+                                 FlowDirection="LeftToRight"/>
+                    </StackPanel>
+                    <StackPanel Grid.Row="1" Grid.Column="3" Margin="0,0,0,10">
+                        <TextBlock Text="هدف مجوز" Style="{StaticResource FieldLabel}" Margin="0,0,0,5"/>
+                        <ComboBox ItemsSource="{Binding Purposes}" SelectedItem="{Binding Purpose}"/>
+                    </StackPanel>
 
-                <StackPanel Grid.Row="3" Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Bottom" Margin="0,8,8,0">
-                    <TextBlock Text="اعتبار (روز):" Style="{StaticResource FieldLabel}"/>
-                    <TextBox Text="{Binding ValidDays}" Width="60" Padding="4"/>
-                </StackPanel>
-
-                <StackPanel Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="4" Orientation="Horizontal" HorizontalAlignment="Left" Margin="0,8,0,0">
-                    <Button Content="صدور توکن" Style="{StaticResource PrimaryButton}" Command="{Binding GenerateCommand}" IsEnabled="{Binding IsNotBusy}"/>
-                </StackPanel>
-            </Grid>
+                    <StackPanel Grid.Row="2" Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                        <TextBlock Text="اعتبار (روز):" Style="{StaticResource FieldLabel}" Margin="0,0,8,0"/>
+                        <TextBox Text="{Binding ValidDays}" Width="70" FlowDirection="LeftToRight"/>
+                    </StackPanel>
+                    <Button Grid.Row="2" Grid.Column="3" Content="🔑 صدور توکن"
+                            Style="{StaticResource PrimaryButton}"
+                            Command="{Binding GenerateCommand}" IsEnabled="{Binding IsNotBusy}"
+                            Padding="0,9" HorizontalAlignment="Stretch"/>
+                </Grid>
+            </DockPanel>
         </Border>
 
-        <!-- Existing tokens -->
-        <Grid Grid.Row="1">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="*"/>
-            </Grid.RowDefinitions>
-            <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,8">
-                <TextBlock Text="فیلتر:" Style="{StaticResource FieldLabel}"/>
-                <ComboBox ItemsSource="{Binding Statuses}" SelectedItem="{Binding StatusFilter}" Width="120" Padding="4"/>
-                <Button Content="بازخوانی" Style="{StaticResource PrimaryButton}" Command="{Binding LoadCommand}" Margin="8,0,0,0"/>
-                <Button Content="ابطال" Style="{StaticResource DangerButton}" Command="{Binding RevokeCommand}" Margin="8,0,0,0"/>
-            </StackPanel>
-            <Border Grid.Row="1" Style="{StaticResource Card}">
-                <DataGrid ItemsSource="{Binding Items}" SelectedItem="{Binding Selected}" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False">
+        <!-- Tokens list -->
+        <Border Grid.Row="1" CornerRadius="12" ClipToBounds="True"
+                BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1">
+            <DockPanel>
+                <Border DockPanel.Dock="Top" Background="White" Padding="14,11"
+                        BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,0,1">
+                    <StackPanel Orientation="Horizontal">
+                        <Button Content="✕ ابطال توکن" Style="{StaticResource DangerButton}"
+                                Command="{Binding RevokeCommand}" Padding="14,7" Margin="0,0,8,0"/>
+                        <Button Content="بازخوانی" Style="{StaticResource SecondaryButton}"
+                                Command="{Binding LoadCommand}" Padding="14,7" Margin="0,0,16,0"/>
+                        <TextBlock Text="فیلتر:" Style="{StaticResource FieldLabel}" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                        <ComboBox ItemsSource="{Binding Statuses}" SelectedItem="{Binding StatusFilter}" Width="130"/>
+                    </StackPanel>
+                </Border>
+
+                <TextBlock DockPanel.Dock="Bottom" Text="{Binding ErrorMessage}"
+                           Foreground="{DynamicResource DangerBrush}" Margin="14,6,14,0" TextWrapping="Wrap"
+                           Visibility="{Binding ErrorMessage, Converter={StaticResource NullToCollapsedConverter}}"/>
+
+                <DataGrid FlowDirection="RightToLeft"
+                          ItemsSource="{Binding Items}" SelectedItem="{Binding Selected}"
+                          AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False">
                     <DataGrid.Columns>
-                        <DataGridTextColumn Header="پیش‌نمایش" Binding="{Binding Preview}" Width="120"/>
-                        <DataGridTextColumn Header="نام خانوادگی" Binding="{Binding LastName}" Width="120"/>
-                        <DataGridTextColumn Header="کد ملی" Binding="{Binding NationalCode}" Width="110"/>
-                        <DataGridTextColumn Header="هدف" Binding="{Binding Purpose}" Width="140"/>
-                        <DataGridTextColumn Header="وضعیت" Binding="{Binding Status}" Width="90"/>
-                        <DataGridTextColumn Header="تاریخ صدور" Binding="{Binding IssuedAtUtc, Converter={StaticResource JalaliDateTimeConverter}}" Width="150"/>
-                        <DataGridTextColumn Header="تاریخ انقضا" Binding="{Binding ExpiresAtUtc, Converter={StaticResource JalaliDateTimeConverter}}" Width="150"/>
+                        <DataGridTextColumn Header="پیش‌نمایش"   Binding="{Binding Preview}"                                            Width="120"/>
+                        <DataGridTextColumn Header="نام خانوادگی" Binding="{Binding LastName}"                                          Width="130"/>
+                        <DataGridTextColumn Header="کد ملی"       Binding="{Binding NationalCode}"                                      Width="120"/>
+                        <DataGridTextColumn Header="هدف"           Binding="{Binding Purpose, Converter={StaticResource EnumDescriptionConverter}}"   Width="150"/>
+                        <DataGridTextColumn Header="وضعیت"         Binding="{Binding Status,  Converter={StaticResource EnumDescriptionConverter}}"   Width="90"/>
+                        <DataGridTextColumn Header="صدور"          Binding="{Binding IssuedAtUtc,  Converter={StaticResource JalaliDateTimeConverter}}" Width="150"/>
+                        <DataGridTextColumn Header="انقضا"         Binding="{Binding ExpiresAtUtc, Converter={StaticResource JalaliDateTimeConverter}}" Width="150"/>
                     </DataGrid.Columns>
                 </DataGrid>
-            </Border>
-        </Grid>
-        <TextBlock Grid.Row="1" Text="{Binding ErrorMessage}" Foreground="{DynamicResource DangerBrush}" VerticalAlignment="Bottom"/>
+            </DockPanel>
+        </Border>
     </Grid>
 </UserControl>

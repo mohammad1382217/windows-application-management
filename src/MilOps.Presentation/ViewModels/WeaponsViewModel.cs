@@ -46,7 +46,7 @@ public sealed partial class WeaponsViewModel : ViewModelBase
     [RelayCommand]
     private async Task AddAsync()
     {
-        if (string.IsNullOrWhiteSpace(NewWeaponNumber)) { ErrorMessage = "Weapon number required."; return; }
+        if (string.IsNullOrWhiteSpace(NewWeaponNumber)) { ErrorMessage = "شماره سلاح الزامی است."; return; }
         await RunAsync(async () =>
         {
             var r = await _sender.Send(new CreateWeaponCommand(NewWeaponNumber, NewWeaponType, NewModel));
@@ -61,9 +61,9 @@ public sealed partial class WeaponsViewModel : ViewModelBase
     private async Task IssueAsync()
     {
         if (Selected is null) return;
-        var soldierIdText = InputDialog.Prompt("Soldier ID to issue this weapon to:", "Issue Weapon", "");
-        if (!int.TryParse(soldierIdText, out var soldierId)) { _dialogs.Warning("Invalid soldier ID."); return; }
-        var note = InputDialog.Prompt("Note (optional):", "Issue Weapon", "") ?? string.Empty;
+        var soldierIdText = InputDialog.Prompt("شناسه سرباز برای تحویل سلاح:", "تحویل سلاح", "");
+        if (!int.TryParse(soldierIdText, out var soldierId)) { _dialogs.Warning("شناسه سرباز نامعتبر است."); return; }
+        var note = InputDialog.Prompt("یادداشت (اختیاری):", "تحویل سلاح", "") ?? string.Empty;
         await RunAsync(async () =>
         {
             var r = await _sender.Send(new IssueWeaponCommand(Selected.Id, soldierId, note));
@@ -76,7 +76,7 @@ public sealed partial class WeaponsViewModel : ViewModelBase
     private async Task ReturnAsync()
     {
         if (Selected is null) return;
-        var ammoText = InputDialog.Prompt("Returned ammunition count (optional):", "Return Weapon", "0");
+        var ammoText = InputDialog.Prompt("تعداد مهمات بازگشتی (اختیاری):", "بازگرداندن سلاح", "0");
         int.TryParse(ammoText, out var ammo);
         await RunAsync(async () =>
         {

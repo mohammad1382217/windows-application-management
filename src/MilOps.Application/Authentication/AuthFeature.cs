@@ -93,13 +93,13 @@ public class LoginHandler : IRequestHandler<LoginCommand, Result<LoginResult>>,
                     // caller still gets the AUTH_FAILED result rather than a DB error.
                 }
             }
-            return Result.Failure<LoginResult>("AUTH_FAILED", "Invalid username or password.");
+            return Result.Failure<LoginResult>("AUTH_FAILED", "نام کاربری یا گذرواژه اشتباه است.");
         }
 
         if (!user.IsActive)
-            return Result.Failure<LoginResult>("AUTH_DISABLED", "Account is disabled.");
+            return Result.Failure<LoginResult>("AUTH_DISABLED", "حساب کاربری غیرفعال است.");
         if (user.IsLockedOut)
-            return Result.Failure<LoginResult>("AUTH_LOCKED", "Account is locked after repeated failures.");
+            return Result.Failure<LoginResult>("AUTH_LOCKED", "حساب به دلیل تلاش‌های مکرر قفل شده است.");
 
         user.RecordSuccessfulLogin();
         user.ResetLockout();

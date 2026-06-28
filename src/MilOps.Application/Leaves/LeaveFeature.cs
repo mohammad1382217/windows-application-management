@@ -1,4 +1,4 @@
-using FluentValidation;
+﻿using FluentValidation;
 using MediatR;
 using MilOps.Application.Behaviors;
 using MilOps.Application.Common;
@@ -96,7 +96,7 @@ public class LeaveHandlers :
     public async Task<Result> Handle(ApproveLeaveCommand c, CancellationToken ct)
     {
         var l = await _leaves.GetByIdAsync(c.Id, ct);
-        if (l is null) return Result.Failure("NOT_FOUND", "Leave not found.");
+        if (l is null) return Result.Failure("NOT_FOUND", "مرخصی یافت نشد.");
         try
         {
             l.Approve(_user.UserId ?? 0, _time.UtcNow);
@@ -112,7 +112,7 @@ public class LeaveHandlers :
     public async Task<Result> Handle(RejectLeaveCommand c, CancellationToken ct)
     {
         var l = await _leaves.GetByIdAsync(c.Id, ct);
-        if (l is null) return Result.Failure("NOT_FOUND", "Leave not found.");
+        if (l is null) return Result.Failure("NOT_FOUND", "مرخصی یافت نشد.");
         try
         {
             l.Reject(_user.UserId ?? 0, _time.UtcNow, c.Reason);

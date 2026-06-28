@@ -1,4 +1,4 @@
-using FluentValidation;
+﻿using FluentValidation;
 using MediatR;
 using MilOps.Application.Behaviors;
 using MilOps.Application.Common;
@@ -102,7 +102,7 @@ public class ScheduleHandlers :
     public async Task<Result> Handle(ApproveScheduleCommand c, CancellationToken ct)
     {
         var s = await _schedules.GetByIdAsync(c.Id, ct);
-        if (s is null) return Result.Failure("NOT_FOUND", "Schedule not found.");
+        if (s is null) return Result.Failure("NOT_FOUND", "برنامه یافت نشد.");
         try
         {
             s.Approve(_user.UserId ?? 0, _time.UtcNow);

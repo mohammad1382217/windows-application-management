@@ -1,7 +1,8 @@
 <Application x:Class="MilOps.Presentation.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:conv="clr-namespace:MilOps.Presentation.Converters">
+             xmlns:conv="clr-namespace:MilOps.Presentation.Converters"
+             xmlns:enums="clr-namespace:MilOps.Domain.Enums;assembly=MilOps.Domain">
     <!-- StartupUri is intentionally omitted: App.xaml.cs resolves the LoginWindow
          from DI so its LoginViewModel dependency is injected. -->
     <Application.Resources>
@@ -11,13 +12,52 @@
             </ResourceDictionary.MergedDictionaries>
 
             <!-- Value converters shared across all views. -->
-            <conv:NullToCollapsedConverter x:Key="NullToCollapsedConverter" />
-            <conv:NullToVisibilityConverter x:Key="NullToVisibilityConverter" />
-            <conv:BoolToVisibilityConverter x:Key="BoolToVisConverter" />
-            <conv:InverseBoolConverter x:Key="InverseBoolConverter" />
-            <conv:JalaliDateConverter x:Key="JalaliDateConverter" />
-            <conv:JalaliDateTimeConverter x:Key="JalaliDateTimeConverter" />
-            <conv:PersianDigitsConverter x:Key="PersianDigitsConverter" />
+            <conv:NullToCollapsedConverter   x:Key="NullToCollapsedConverter" />
+            <conv:NullToVisibilityConverter  x:Key="NullToVisibilityConverter" />
+            <conv:BoolToVisibilityConverter  x:Key="BoolToVisConverter" />
+            <conv:InverseBoolConverter       x:Key="InverseBoolConverter" />
+            <conv:JalaliDateConverter        x:Key="JalaliDateConverter" />
+            <conv:JalaliDateTimeConverter    x:Key="JalaliDateTimeConverter" />
+            <conv:PersianDigitsConverter     x:Key="PersianDigitsConverter" />
+            <conv:EnumDescriptionConverter   x:Key="EnumDescriptionConverter" />
+
+            <!-- Implicit DataTemplates: enum values display their Persian [Description].
+                 These apply to ALL ComboBoxes / ContentPresenters showing these types
+                 without requiring per-ComboBox ItemTemplate changes. -->
+            <DataTemplate DataType="{x:Type enums:Role}">
+                <TextBlock Text="{Binding Converter={StaticResource EnumDescriptionConverter}}"/>
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type enums:HealthType}">
+                <TextBlock Text="{Binding Converter={StaticResource EnumDescriptionConverter}}"/>
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type enums:WeaponType}">
+                <TextBlock Text="{Binding Converter={StaticResource EnumDescriptionConverter}}"/>
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type enums:WeaponStatus}">
+                <TextBlock Text="{Binding Converter={StaticResource EnumDescriptionConverter}}"/>
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type enums:TokenStatus}">
+                <TextBlock Text="{Binding Converter={StaticResource EnumDescriptionConverter}}"/>
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type enums:TokenPurpose}">
+                <TextBlock Text="{Binding Converter={StaticResource EnumDescriptionConverter}}"/>
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type enums:LeaveStatus}">
+                <TextBlock Text="{Binding Converter={StaticResource EnumDescriptionConverter}}"/>
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type enums:ShiftNumber}">
+                <TextBlock Text="{Binding Converter={StaticResource EnumDescriptionConverter}}"/>
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type enums:ScheduleStatus}">
+                <TextBlock Text="{Binding Converter={StaticResource EnumDescriptionConverter}}"/>
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type enums:AuditAction}">
+                <TextBlock Text="{Binding Converter={StaticResource EnumDescriptionConverter}}"/>
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type enums:GuardPost}">
+                <TextBlock Text="{Binding Converter={StaticResource EnumDescriptionConverter}}"/>
+            </DataTemplate>
+
         </ResourceDictionary>
     </Application.Resources>
 </Application>

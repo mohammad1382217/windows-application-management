@@ -52,11 +52,11 @@ public class CreateSoldierValidator : AbstractValidator<CreateSoldierCommand>
         RuleFor(x => x.FatherName).MaximumLength(60).When(x => x.FatherName is not null);
         RuleFor(x => x.Rank).NotEmpty().MaximumLength(40);
         RuleFor(x => x.NationalCode).NotEmpty().Matches("^[0-9]{10}$")
-            .WithMessage("National code must be exactly 10 digits.");
+            .WithMessage("کد ملی باید دقیقاً ۱۰ رقم باشد.");
         RuleFor(x => x.PersonnelCode).NotEmpty().MaximumLength(12);
         RuleFor(x => x.DepartmentName).MaximumLength(80);
         RuleFor(x => x.ServiceEndDate).GreaterThan(x => x.ServiceStartDate)
-            .WithMessage("Service end must be after service start.");
+            .WithMessage("تاریخ پایان خدمت باید بعد از تاریخ شروع باشد.");
     }
 }
 
@@ -121,7 +121,7 @@ public class SoldierCommandHandlers :
     public async Task<Result> Handle(UpdateSoldierCommand c, CancellationToken ct)
     {
         var soldier = await _soldiers.GetByIdAsync(c.Id, ct);
-        if (soldier is null) return Result.Failure("NOT_FOUND", "Soldier not found.");
+        if (soldier is null) return Result.Failure("NOT_FOUND", "سرباز یافت نشد.");
 
         try
         {
@@ -145,7 +145,7 @@ public class SoldierCommandHandlers :
     public async Task<Result> Handle(DeleteSoldierCommand c, CancellationToken ct)
     {
         var soldier = await _soldiers.GetByIdAsync(c.Id, ct);
-        if (soldier is null) return Result.Failure("NOT_FOUND", "Soldier not found.");
+        if (soldier is null) return Result.Failure("NOT_FOUND", "سرباز یافت نشد.");
 
         try
         {

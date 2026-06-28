@@ -1,0 +1,193 @@
+<Window x:Class="MilOps.Presentation.Views.ScheduleBuilderWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="افزودن برنامه نگهبانی"
+        Width="940" Height="620"
+        MinWidth="740" MinHeight="480"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="CanResize"
+        Background="{DynamicResource SurfaceBrush}"
+        FlowDirection="RightToLeft">
+
+    <Border ClipToBounds="True">
+        <DockPanel>
+
+            <!-- Header -->
+            <Border DockPanel.Dock="Top" Padding="24,20">
+                <Border.Background>
+                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                        <GradientStop Color="#1A3A5C" Offset="0"/>
+                        <GradientStop Color="#215080" Offset="1"/>
+                    </LinearGradientBrush>
+                </Border.Background>
+                <DockPanel>
+                    <Border DockPanel.Dock="Right" Width="48" Height="48" CornerRadius="24"
+                            Background="#22FFFFFF" VerticalAlignment="Center">
+                        <TextBlock Text="📋" FontSize="22" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                    <StackPanel VerticalAlignment="Center" Margin="0,0,14,0">
+                        <TextBlock Text="افزودن برنامه نگهبانی" Foreground="White" FontSize="17" FontWeight="Bold"/>
+                        <TextBlock Text="تعیین پست‌ها، شیفت‌ها و نگهبانان برای یک روز" Foreground="#90B8D8" FontSize="11" Margin="0,4,0,0"/>
+                    </StackPanel>
+                </DockPanel>
+            </Border>
+
+            <!-- Bottom action bar -->
+            <Border DockPanel.Dock="Bottom" Background="#F4F7FA"
+                    BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,1,0,0"
+                    Padding="24,14">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Text="{Binding ErrorMessage}" TextWrapping="Wrap"
+                               Foreground="{DynamicResource DangerBrush}" VerticalAlignment="Center"
+                               Visibility="{Binding ErrorMessage, Converter={StaticResource NullToCollapsedConverter}}"/>
+                    <Button Grid.Column="1" Content="ذخیره برنامه" Style="{StaticResource PrimaryButton}"
+                            Command="{Binding SaveCommand}" IsEnabled="{Binding IsNotBusy}"
+                            Padding="22,10" Margin="0,0,10,0"/>
+                    <Button Grid.Column="2" Content="انصراف" Style="{StaticResource SecondaryButton}"
+                            Command="{Binding CancelCommand}" Padding="16,10"/>
+                </Grid>
+            </Border>
+
+            <!-- Main scrollable area -->
+            <ScrollViewer VerticalScrollBarVisibility="Auto" Background="White">
+                <StackPanel Margin="22,18">
+
+                    <!-- Date + Remarks -->
+                    <Grid Margin="0,0,0,18">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="190"/>
+                            <ColumnDefinition Width="16"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0">
+                            <TextBlock Text="تاریخ برنامه *" Style="{StaticResource FieldLabel}" Margin="0,0,0,5"/>
+                            <TextBox Style="{StaticResource DateInputBox}"
+                                     Text="{Binding Date, Converter={StaticResource JalaliDateConverter}, UpdateSourceTrigger=LostFocus}"
+                                     FlowDirection="LeftToRight"/>
+                        </StackPanel>
+                        <StackPanel Grid.Column="2">
+                            <TextBlock Text="ملاحظات" Style="{StaticResource FieldLabel}" Margin="0,0,0,5"/>
+                            <TextBox Text="{Binding Remarks, UpdateSourceTrigger=PropertyChanged}"/>
+                        </StackPanel>
+                    </Grid>
+
+                    <!-- Divider + Add button -->
+                    <Grid Margin="0,0,0,10">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Button Grid.Column="0" Content="＋ افزودن ردیف"
+                                Style="{StaticResource AccentButton}"
+                                Command="{Binding AddRowCommand}" Padding="14,7"/>
+                        <Border Grid.Column="1" Height="1"
+                                Background="{DynamicResource BorderBrush}"
+                                Margin="12,0,0,0" VerticalAlignment="Center"/>
+                    </Grid>
+
+                    <!-- Column header row -->
+                    <Border Background="#F0F4F8" CornerRadius="6" Padding="8,7" Margin="0,0,0,6">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="90"/>
+                                <ColumnDefinition Width="8"/>
+                                <ColumnDefinition Width="160"/>
+                                <ColumnDefinition Width="8"/>
+                                <ColumnDefinition Width="110"/>
+                                <ColumnDefinition Width="8"/>
+                                <ColumnDefinition Width="90"/>
+                                <ColumnDefinition Width="8"/>
+                                <ColumnDefinition Width="90"/>
+                                <ColumnDefinition Width="8"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="34"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0"  Text="شناسه سرباز" Style="{StaticResource FieldLabel}" FontSize="11"/>
+                            <TextBlock Grid.Column="2"  Text="پست نگهبانی"  Style="{StaticResource FieldLabel}" FontSize="11"/>
+                            <TextBlock Grid.Column="4"  Text="شیفت"          Style="{StaticResource FieldLabel}" FontSize="11"/>
+                            <TextBlock Grid.Column="6"  Text="شروع (مثلاً 08:00)" Style="{StaticResource FieldLabel}" FontSize="10"/>
+                            <TextBlock Grid.Column="8"  Text="پایان (مثلاً 16:00)" Style="{StaticResource FieldLabel}" FontSize="10"/>
+                            <TextBlock Grid.Column="10" Text="یادداشت"       Style="{StaticResource FieldLabel}" FontSize="11"/>
+                        </Grid>
+                    </Border>
+
+                    <!-- Assignment rows -->
+                    <ItemsControl ItemsSource="{Binding Assignments}" x:Name="RowsControl">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Grid Margin="0,0,0,7">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="90"/>
+                                        <ColumnDefinition Width="8"/>
+                                        <ColumnDefinition Width="160"/>
+                                        <ColumnDefinition Width="8"/>
+                                        <ColumnDefinition Width="110"/>
+                                        <ColumnDefinition Width="8"/>
+                                        <ColumnDefinition Width="90"/>
+                                        <ColumnDefinition Width="8"/>
+                                        <ColumnDefinition Width="90"/>
+                                        <ColumnDefinition Width="8"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="34"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <TextBox Grid.Column="0"
+                                             Text="{Binding SoldierId, UpdateSourceTrigger=PropertyChanged}"
+                                             FlowDirection="LeftToRight"/>
+
+                                    <ComboBox Grid.Column="2"
+                                              ItemsSource="{Binding DataContext.GuardPosts,
+                                                  RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                              SelectedItem="{Binding Post}"/>
+
+                                    <ComboBox Grid.Column="4"
+                                              ItemsSource="{Binding DataContext.Shifts,
+                                                  RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                              SelectedItem="{Binding Shift}"/>
+
+                                    <TextBox Grid.Column="6" FlowDirection="LeftToRight"
+                                             Text="{Binding ShiftStart, UpdateSourceTrigger=LostFocus}"/>
+
+                                    <TextBox Grid.Column="8" FlowDirection="LeftToRight"
+                                             Text="{Binding ShiftEnd, UpdateSourceTrigger=LostFocus}"/>
+
+                                    <TextBox Grid.Column="10" Margin="0,0,8,0"
+                                             Text="{Binding Note, UpdateSourceTrigger=PropertyChanged}"/>
+
+                                    <Button Grid.Column="11" Content="✕" Width="30" Height="30"
+                                            Style="{StaticResource DangerButton}" Padding="0"
+                                            CommandParameter="{Binding}"
+                                            Command="{Binding DataContext.RemoveRowCommand,
+                                                RelativeSource={RelativeSource AncestorType=ItemsControl}}"/>
+                                </Grid>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
+                    <!-- Empty placeholder -->
+                    <TextBlock Text="هیچ ردیفی ندارید — روی «افزودن ردیف» کلیک کنید."
+                               Foreground="{DynamicResource MutedBrush}" FontSize="13"
+                               HorizontalAlignment="Center" Margin="0,32,0,0">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding Assignments.Count}" Value="0">
+                                        <Setter Property="Visibility" Value="Visible"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+
+                </StackPanel>
+            </ScrollViewer>
+
+        </DockPanel>
+    </Border>
+</Window>

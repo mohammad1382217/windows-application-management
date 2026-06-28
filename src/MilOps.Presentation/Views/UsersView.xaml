@@ -1,45 +1,96 @@
 <UserControl x:Class="MilOps.Presentation.Views.UsersView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             FlowDirection="RightToLeft"
              Loaded="UsersView_Loaded">
-    <Grid Margin="16">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
-        </Grid.RowDefinitions>
+    <Border Margin="16" CornerRadius="12" ClipToBounds="True"
+            BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1">
+        <DockPanel>
 
-        <Border Grid.Row="0" Style="{StaticResource Card}" Padding="12" Margin="0,0,0,12">
-            <StackPanel Orientation="Horizontal">
-                <TextBlock Text="نام کامل:" Style="{StaticResource FieldLabel}"/>
-                <TextBox Text="{Binding NewFullName, UpdateSourceTrigger=PropertyChanged}" Width="120" Padding="4" Margin="0,0,8,0"/>
-                <TextBlock Text="نام کاربری:" Style="{StaticResource FieldLabel}"/>
-                <TextBox Text="{Binding NewUsername, UpdateSourceTrigger=PropertyChanged}" Width="120" Padding="4" Margin="0,0,8,0"/>
-                <TextBlock Text="گذرواژه:" Style="{StaticResource FieldLabel}"/>
-                <TextBox Text="{Binding NewPassword, UpdateSourceTrigger=PropertyChanged}" Width="120" Padding="4" Margin="0,0,8,0"/>
-                <TextBlock Text="نقش:" Style="{StaticResource FieldLabel}"/>
-                <ComboBox ItemsSource="{Binding Roles}" SelectedItem="{Binding NewRole}" Width="110" Padding="4" Margin="0,0,8,0"/>
-                <Button Content="افزودن" Style="{StaticResource PrimaryButton}" Command="{Binding CreateCommand}"/>
-            </StackPanel>
-        </Border>
+            <!-- Header -->
+            <Border DockPanel.Dock="Top" Padding="22,18">
+                <Border.Background>
+                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                        <GradientStop Color="#212F3D" Offset="0"/>
+                        <GradientStop Color="#2C3E50" Offset="1"/>
+                    </LinearGradientBrush>
+                </Border.Background>
+                <DockPanel>
+                    <Border DockPanel.Dock="Right" Width="52" Height="52" CornerRadius="26"
+                            Background="#22FFFFFF" VerticalAlignment="Center">
+                        <TextBlock Text="⚙" FontSize="26" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                    <StackPanel VerticalAlignment="Center" Margin="0,0,16,0">
+                        <TextBlock Text="مدیریت کاربران" Foreground="White" FontSize="20" FontWeight="Bold"/>
+                        <TextBlock Text="حساب‌های کاربری و سطوح دسترسی" Foreground="#A0B4C8" FontSize="12" Margin="0,4,0,0"/>
+                    </StackPanel>
+                </DockPanel>
+            </Border>
 
-        <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,8">
-            <Button Content="بازنشانی گذرواژه" Style="{StaticResource PrimaryButton}" Command="{Binding ChangePasswordCommand}" Margin="0,0,8,0"/>
-            <Button Content="غیرفعال‌سازی" Style="{StaticResource DangerButton}" Command="{Binding DeactivateCommand}" Margin="0,0,8,0"/>
-            <Button Content="بازخوانی" Style="{StaticResource SecondaryButton}" Command="{Binding LoadCommand}"/>
-        </StackPanel>
+            <!-- Add user form -->
+            <Border DockPanel.Dock="Top" Background="White" Padding="16,14"
+                    BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,0,1">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
 
-        <Border Grid.Row="2" Style="{StaticResource Card}">
-            <DataGrid ItemsSource="{Binding Items}" SelectedItem="{Binding Selected}" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False">
+                    <StackPanel Grid.Column="0" Margin="0,0,10,0">
+                        <TextBlock Text="نام کامل" Style="{StaticResource FieldLabel}" Margin="0,0,0,5"/>
+                        <TextBox Text="{Binding NewFullName, UpdateSourceTrigger=PropertyChanged}"/>
+                    </StackPanel>
+                    <StackPanel Grid.Column="1" Margin="0,0,10,0">
+                        <TextBlock Text="نام کاربری" Style="{StaticResource FieldLabel}" Margin="0,0,0,5"/>
+                        <TextBox Text="{Binding NewUsername, UpdateSourceTrigger=PropertyChanged}" FlowDirection="LeftToRight"/>
+                    </StackPanel>
+                    <StackPanel Grid.Column="2" Margin="0,0,10,0">
+                        <TextBlock Text="گذرواژه" Style="{StaticResource FieldLabel}" Margin="0,0,0,5"/>
+                        <TextBox Text="{Binding NewPassword, UpdateSourceTrigger=PropertyChanged}" FlowDirection="LeftToRight"/>
+                    </StackPanel>
+                    <StackPanel Grid.Column="3" Margin="0,0,10,0">
+                        <TextBlock Text="نقش" Style="{StaticResource FieldLabel}" Margin="0,0,0,5"/>
+                        <ComboBox ItemsSource="{Binding Roles}" SelectedItem="{Binding NewRole}" Width="120"/>
+                    </StackPanel>
+                    <Button Grid.Column="4" Content="＋ افزودن" Style="{StaticResource AccentButton}"
+                            Command="{Binding CreateCommand}" Padding="14,7" VerticalAlignment="Bottom"/>
+                </Grid>
+            </Border>
+
+            <!-- Action toolbar -->
+            <Border DockPanel.Dock="Top" Background="#F8FAFC" Padding="14,10"
+                    BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,0,1">
+                <StackPanel Orientation="Horizontal">
+                    <Button Content="🔐 بازنشانی گذرواژه" Style="{StaticResource PrimaryButton}"
+                            Command="{Binding ChangePasswordCommand}" Padding="14,7" Margin="0,0,8,0"/>
+                    <Button Content="✕ غیرفعال‌سازی" Style="{StaticResource DangerButton}"
+                            Command="{Binding DeactivateCommand}" Padding="14,7" Margin="0,0,8,0"/>
+                    <Button Content="بازخوانی" Style="{StaticResource SecondaryButton}"
+                            Command="{Binding LoadCommand}" Padding="14,7"/>
+                </StackPanel>
+            </Border>
+
+            <!-- Error -->
+            <TextBlock DockPanel.Dock="Bottom" Text="{Binding ErrorMessage}"
+                       Foreground="{DynamicResource DangerBrush}" Margin="14,6,14,0" TextWrapping="Wrap"
+                       Visibility="{Binding ErrorMessage, Converter={StaticResource NullToCollapsedConverter}}"/>
+
+            <!-- Data -->
+            <DataGrid FlowDirection="RightToLeft"
+                      ItemsSource="{Binding Items}" SelectedItem="{Binding Selected}"
+                      AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False">
                 <DataGrid.Columns>
-                    <DataGridTextColumn Header="شناسه" Binding="{Binding Id}" Width="50"/>
-                    <DataGridTextColumn Header="نام کاربری" Binding="{Binding Username}" Width="150"/>
-                    <DataGridTextColumn Header="نام کامل" Binding="{Binding FullName}" Width="180"/>
-                    <DataGridTextColumn Header="نقش" Binding="{Binding Role}" Width="120"/>
-                    <DataGridCheckBoxColumn Header="فعال" Binding="{Binding IsActive}" Width="70"/>
+                    <DataGridTextColumn Header="شناسه"     Binding="{Binding Id}"       Width="60"/>
+                    <DataGridTextColumn Header="نام کاربری" Binding="{Binding Username}" Width="160"/>
+                    <DataGridTextColumn Header="نام کامل"   Binding="{Binding FullName}" Width="200"/>
+                    <DataGridTextColumn Header="نقش"        Binding="{Binding Role, Converter={StaticResource EnumDescriptionConverter}}"     Width="130"/>
+                    <DataGridCheckBoxColumn Header="فعال"   Binding="{Binding IsActive}" Width="70"/>
                 </DataGrid.Columns>
             </DataGrid>
-        </Border>
-        <TextBlock Grid.Row="2" Text="{Binding ErrorMessage}" Foreground="{DynamicResource DangerBrush}" VerticalAlignment="Bottom"/>
-    </Grid>
+
+        </DockPanel>
+    </Border>
 </UserControl>
