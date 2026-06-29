@@ -8,13 +8,15 @@ using System.Windows.Media;
 using System.Windows.Xps;
 using System.Windows.Xps.Packaging;
 using Microsoft.Win32;
+using MilOps.Presentation.Common;
+using WpfApp = System.Windows.Application;
 
 namespace MilOps.Presentation.Services;
 
 /// <summary>
-/// Reporting: builds a FlowDocument report and supports both printing (WPF
-/// print dialog) and XPS export (a portable, offline-friendly format that can
-/// be converted to PDF by any viewer). All printing is local/offline.
+/// Builds A5-sized FlowDocument reports and prints or exports them to XPS.
+/// All layout is pre-calculated for A5 (148 × 210 mm) so content fits without
+/// scaling regardless of the printer's default paper size.
 /// </summary>
 public interface IPrintService
 {
@@ -26,16 +28,27 @@ public interface IPrintService
 
 public sealed class PrintService : IPrintService
 {
+    // A5 in WPF device-independent units (96 dpi; 1 mm = 96/25.4 ≈ 3.7795 units)
+    private const double A5Width   = 559.37;   // 148 mm
+    private const double A5Height  = 793.70;   // 210 mm
+    private const double PageMargin = 44.0;    // ~11.6 mm — all four sides
+
+    // Estedad embedded font (handles Persian + Latin glyphs)
+    private static readonly FontFamily AppFont =
+        new(new Uri("pack://application:,,,/"), "./Fonts/#Estedad");
+
+    // ── Public API ────────────────────────────────────────────────────────────
+
     public void Print(FlowDocument document, string description)
     {
         var dialog = new PrintDialog();
-        if (!dialog.ShowDialog() == true) return;
+        if (dialog.ShowDialog() != true) return;   // null = cancelled, false = closed
 
-        // Clone so the original isn't consumed by the paginator.
         document = Clone(document);
-        document.ColumnWidth = dialog.PrintableAreaWidth;
+        ApplyA5(document);
+
         var paginator = ((IDocumentPaginatorSource)document).DocumentPaginator;
-        paginator.PageSize = new Size(dialog.PrintableAreaWidth, dialog.PrintableAreaHeight);
+        paginator.PageSize = new Size(A5Width, A5Height);
         dialog.PrintDocument(paginator, description);
     }
 
@@ -43,115 +56,152 @@ public sealed class PrintService : IPrintService
     {
         var dlg = new SaveFileDialog
         {
-            Filter = "XPS Document (*.xps)|*.xps",
+            Filter   = "XPS Document (*.xps)|*.xps",
             FileName = suggestedFileName
         };
         if (dlg.ShowDialog() != true) return false;
 
         document = Clone(document);
-        document.ColumnWidth = 816; // ~8.5in at 96dpi
+        ApplyA5(document);
         var paginator = ((IDocumentPaginatorSource)document).DocumentPaginator;
-        paginator.PageSize = new Size(816, 1056);
+        paginator.PageSize = new Size(A5Width, A5Height);
 
         using var package = Package.Open(dlg.FileName, FileMode.Create);
-        using var xps = new XpsDocument(package, CompressionOption.Normal);
-        var writer = XpsDocument.CreateXpsDocumentWriter(xps);
-        writer.Write(paginator);
+        using var xps     = new XpsDocument(package, CompressionOption.Normal);
+        XpsDocument.CreateXpsDocumentWriter(xps).Write(paginator);
         return true;
     }
 
     /// <summary>
-    /// Builds a titled, printable table report from plain strings. This is the
-    /// shared renderer for soldier lists, schedules, registers, leaves, etc.
+    /// Builds a right-to-left A5 table report with the app font and a Jalali
+    /// date footer.  Column widths are shared equally across the usable width.
     /// </summary>
-    public FlowDocument BuildTableReport(string title, string subtitle,
-        IEnumerable<string> headers, IEnumerable<IEnumerable<string>> rows)
+    public FlowDocument BuildTableReport(
+        string title,
+        string subtitle,
+        IEnumerable<string> headers,
+        IEnumerable<IEnumerable<string>> rows)
     {
+        double usable = A5Width - PageMargin * 2;
+
         var doc = new FlowDocument
         {
-            FontFamily = new FontFamily("Segoe UI"),
-            FontSize = 11,
-            PagePadding = new Thickness(48)
+            FontFamily    = AppFont,
+            FontSize      = 10,
+            PageWidth     = A5Width,
+            PageHeight    = A5Height,
+            PagePadding   = new Thickness(PageMargin),
+            ColumnWidth   = usable,
+            FlowDirection = FlowDirection.RightToLeft,
         };
 
-        var titlePara = new Paragraph(new Run(title))
+        // Title
+        doc.Blocks.Add(new Paragraph(new Run(title))
         {
-            FontSize = 18,
-            FontWeight = FontWeights.Bold,
-            Margin = new Thickness(0, 0, 0, 4)
-        };
-        doc.Blocks.Add(titlePara);
+            FontSize      = 15,
+            FontWeight    = FontWeights.Bold,
+            TextAlignment = TextAlignment.Right,
+            Margin        = new Thickness(0, 0, 0, 2),
+        });
 
+        // Subtitle / description
         if (!string.IsNullOrWhiteSpace(subtitle))
-        {
             doc.Blocks.Add(new Paragraph(new Run(subtitle))
             {
-                FontSize = 11,
-                Foreground = Brushes.Gray,
-                Margin = new Thickness(0, 0, 0, 12)
+                FontSize      = 10,
+                Foreground    = Brushes.DimGray,
+                TextAlignment = TextAlignment.Right,
+                Margin        = new Thickness(0, 0, 0, 10),
             });
-        }
 
-        var table = new Table { CellSpacing = 0, BorderBrush = Brushes.DarkGray, BorderThickness = new Thickness(0.5) };
+        // Table
         var headerList = headers.ToList();
-        for (var i = 0; i < headerList.Count; i++)
-            table.Columns.Add(new TableColumn { Width = new GridLength(150) });
+        double colWidth = usable / Math.Max(headerList.Count, 1);
 
-        var headerRow = new TableRowGroup { Background = (Brush)System.Windows.Application.Current.FindResource("PrimaryBrush")! };
-        var hr = new TableRow();
-        foreach (var h in headerList)
+        var table = new Table
         {
-            hr.Cells.Add(new Cell(new Paragraph(new Run(h))
-            {
-                FontWeight = FontWeights.Bold,
-                Foreground = Brushes.White
-            }));
-        }
-        headerRow.Rows.Add(hr);
-        table.RowGroups.Add(headerRow);
+            CellSpacing     = 0,
+            BorderBrush     = Brushes.DarkSlateGray,
+            BorderThickness = new Thickness(0.5),
+        };
 
+        foreach (var _ in headerList)
+            table.Columns.Add(new TableColumn { Width = new GridLength(colWidth) });
+
+        // Header row (primary-colour background)
+        var headerGroup = new TableRowGroup
+        {
+            Background = (Brush)WpfApp.Current.FindResource("PrimaryBrush")!
+        };
+        var headerRow = new TableRow();
+        foreach (var h in headerList)
+            headerRow.Cells.Add(MakeCell(h, isBold: true, Brushes.White));
+        headerGroup.Rows.Add(headerRow);
+        table.RowGroups.Add(headerGroup);
+
+        // Body rows (alternating stripe)
         var bodyGroup = new TableRowGroup();
-        var alt = false;
+        var stripe    = false;
+        var stripeBg  = new SolidColorBrush(Color.FromRgb(0xF4, 0xF6, 0xFA));
         foreach (var row in rows)
         {
-            var tr = new TableRow();
-            if (alt) tr.Background = Brushes.WhiteSmoke;
+            var tr = new TableRow { Background = stripe ? stripeBg : Brushes.White };
             foreach (var cell in row)
-                tr.Cells.Add(new Cell(new Paragraph(new Run(cell ?? string.Empty))));
+                tr.Cells.Add(MakeCell(cell ?? "—"));
             bodyGroup.Rows.Add(tr);
-            alt = !alt;
+            stripe = !stripe;
         }
         table.RowGroups.Add(bodyGroup);
         doc.Blocks.Add(table);
 
-        doc.Blocks.Add(new Paragraph(new Run(
-            $"Generated {DateTime.Now:yyyy-MM-dd HH:mm} on {Environment.MachineName}"))
+        // Footer: Jalali print date + machine name
+        string jalaliNow = PersianDate.ToJalali(DateTime.Now);
+        doc.Blocks.Add(new Paragraph(
+            new Run($"تاریخ چاپ: {jalaliNow}  —  {Environment.MachineName}"))
         {
-            FontSize = 9,
-            Foreground = Brushes.Gray,
-            Margin = new Thickness(0, 12, 0, 0)
+            FontSize      = 8,
+            Foreground    = Brushes.Gray,
+            TextAlignment = TextAlignment.Right,
+            Margin        = new Thickness(0, 10, 0, 0),
         });
 
         return doc;
+    }
+
+    // ── Helpers ───────────────────────────────────────────────────────────────
+
+    private static void ApplyA5(FlowDocument doc)
+    {
+        doc.PageWidth   = A5Width;
+        doc.PageHeight  = A5Height;
+        doc.ColumnWidth = A5Width - PageMargin * 2;
+    }
+
+    private static TableCell MakeCell(string text,
+        bool   isBold    = false,
+        Brush? foreground = null)
+    {
+        var para = new Paragraph(new Run(text))
+        {
+            TextAlignment = TextAlignment.Right,
+        };
+        if (isBold)      para.FontWeight = FontWeights.Bold;
+        if (foreground != null) para.Foreground = foreground;
+
+        return new TableCell(para)
+        {
+            BorderBrush     = Brushes.DarkSlateGray,
+            BorderThickness = new Thickness(0.5),
+            Padding         = new Thickness(5, 3, 5, 3),
+        };
     }
 
     private static FlowDocument Clone(FlowDocument doc)
     {
         // Deep-clone via XAML round-trip so the same document can be re-paginated.
         var xaml = XamlWriter.Save(doc);
-        using var reader = new StringReader(xaml);
-        using var xml = new System.Xml.XmlTextReader(reader);
+        using var sr  = new StringReader(xaml);
+        using var xml = new System.Xml.XmlTextReader(sr);
         return (FlowDocument)XamlReader.Load(xml);
-    }
-
-    private sealed class Cell : TableCell
-    {
-        public Cell(Block content)
-        {
-            Blocks.Add(content);
-            BorderBrush = Brushes.DarkGray;
-            BorderThickness = new Thickness(0.5);
-            Padding = new Thickness(4, 2, 4, 2);
-        }
     }
 }

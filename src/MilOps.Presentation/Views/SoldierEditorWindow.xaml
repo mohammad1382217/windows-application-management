@@ -1,6 +1,7 @@
 <Window x:Class="MilOps.Presentation.Views.SoldierEditorWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:v="clr-namespace:MilOps.Presentation.Views"
         Title="ویرایش سرباز"
         Width="480" SizeToContent="Height" MaxHeight="780"
         WindowStartupLocation="CenterOwner"
@@ -140,26 +141,21 @@
                         </Grid.ColumnDefinitions>
                         <StackPanel Grid.Column="0">
                             <TextBlock Text="تاریخ ورود" Style="{StaticResource FieldLabel}" Margin="0,0,0,5"/>
-                            <TextBox Style="{StaticResource DateInputBox}"
-                                     Text="{Binding EntryDate, Converter={StaticResource JalaliDateConverter}, UpdateSourceTrigger=LostFocus}"
-                                     FlowDirection="LeftToRight"/>
+                            <v:JalaliDatePicker SelectedDate="{Binding EntryDate}"/>
                         </StackPanel>
                         <StackPanel Grid.Column="2">
                             <TextBlock Text="شروع خدمت *" Style="{StaticResource FieldLabel}" Margin="0,0,0,5"/>
-                            <TextBox Style="{StaticResource DateInputBox}"
-                                     Text="{Binding ServiceStartDate, Converter={StaticResource JalaliDateConverter}, UpdateSourceTrigger=LostFocus}"
-                                     FlowDirection="LeftToRight"/>
+                            <v:JalaliDatePicker SelectedDate="{Binding ServiceStartDate}"/>
                         </StackPanel>
                         <StackPanel Grid.Column="4">
                             <TextBlock Text="پایان خدمت *" Style="{StaticResource FieldLabel}" Margin="0,0,0,5"/>
-                            <TextBox Style="{StaticResource DateInputBox}"
-                                     Text="{Binding ServiceEndDate, Converter={StaticResource JalaliDateConverter}, UpdateSourceTrigger=LostFocus}"
-                                     FlowDirection="LeftToRight"/>
+                            <v:JalaliDatePicker SelectedDate="{Binding ServiceEndDate}"/>
                         </StackPanel>
                     </Grid>
 
-                    <!-- Active checkbox -->
-                    <CheckBox Content="فعال (آماده به خدمت)" IsChecked="{Binding IsActive}" Margin="0,4,0,20"/>
+                    <!-- Active checkbox (LTR so RTL doesn't mirror the tick box) -->
+                    <CheckBox Content="فعال — آماده به خدمت" IsChecked="{Binding IsActive}"
+                              Margin="0,4,0,20" FlowDirection="LeftToRight"/>
 
                 </StackPanel>
             </ScrollViewer>

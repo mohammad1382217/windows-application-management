@@ -21,17 +21,56 @@ public sealed partial class MainViewModel : ViewModelBase
     private readonly ISender _sender;
 
     private ViewModelBase? _current;
-    private string _currentTitle = "میز کار";
+    private string _currentTitle = string.Empty;
     private IServiceScope? _currentScope;
+    private string _activeNav = string.Empty;
+
+    private static readonly Dictionary<Type, string> NavKeys = new()
+    {
+        [typeof(SoldiersViewModel)]  = "soldiers",
+        [typeof(SchedulesViewModel)] = "schedules",
+        [typeof(WeaponsViewModel)]   = "weapons",
+        [typeof(LeavesViewModel)]    = "leaves",
+        [typeof(TokensViewModel)]    = "tokens",
+        [typeof(UsersViewModel)]     = "users",
+        [typeof(AuditViewModel)]     = "audit",
+    };
 
     public MainViewModel(IServiceProvider services, ICurrentUser user,
         INavigationService nav, IDialogService dialogs, ISender sender)
     {
         _services = services; _user = user; _nav = nav; _dialogs = dialogs; _sender = sender;
-        UserBanner = $"{_user.FullName} ({_user.Role})";
+        UserBanner = $"{_user.FullName} — {_user.Role}";
+        Navigate<SoldiersViewModel>("سربازان");
     }
 
     public string UserBanner { get; }
+
+    public string ActiveNav
+    {
+        get => _activeNav;
+        private set
+        {
+            if (_activeNav == value) return;
+            _activeNav = value;
+            OnPropertyChanged();
+            OnPropertyChanged(nameof(IsSoldiersActive));
+            OnPropertyChanged(nameof(IsSchedulesActive));
+            OnPropertyChanged(nameof(IsWeaponsActive));
+            OnPropertyChanged(nameof(IsLeavesActive));
+            OnPropertyChanged(nameof(IsTokensActive));
+            OnPropertyChanged(nameof(IsUsersActive));
+            OnPropertyChanged(nameof(IsAuditActive));
+        }
+    }
+
+    public bool IsSoldiersActive  => ActiveNav == "soldiers";
+    public bool IsSchedulesActive => ActiveNav == "schedules";
+    public bool IsWeaponsActive   => ActiveNav == "weapons";
+    public bool IsLeavesActive    => ActiveNav == "leaves";
+    public bool IsTokensActive    => ActiveNav == "tokens";
+    public bool IsUsersActive     => ActiveNav == "users";
+    public bool IsAuditActive     => ActiveNav == "audit";
 
     public ViewModelBase? Current
     {
@@ -64,13 +103,12 @@ public sealed partial class MainViewModel : ViewModelBase
 
     private void Navigate<T>(string title) where T : ViewModelBase
     {
-        // Dispose the previous feature scope (and its DbContext) before opening
-        // a new one, so navigating between modules does not leak contexts.
         _currentScope?.Dispose();
         _currentScope = _services.CreateScope();
         var vm = _currentScope.ServiceProvider.GetRequiredService<T>();
         Current = vm;
         CurrentTitle = title;
+        ActiveNav = NavKeys.TryGetValue(typeof(T), out var key) ? key : string.Empty;
     }
 
     [RelayCommand]
