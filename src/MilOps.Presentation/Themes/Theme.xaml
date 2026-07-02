@@ -300,7 +300,8 @@
         </Setter>
     </Style>
 
-    <!-- Main ComboBox: Col0=text (RTL→physical right), Col1=arrow (RTL→physical left) -->
+    <!-- ComboBox: ToggleButton IS the full visual chrome (standard WPF pattern).
+         ContentPresenter floats on top (IsHitTestVisible=False) so clicks reach the ToggleButton. -->
     <Style TargetType="ComboBox">
         <Setter Property="FontFamily" Value="{StaticResource AppFont}"/>
         <Setter Property="FontSize" Value="13"/>
@@ -316,107 +317,108 @@
             <Setter.Value>
                 <ControlTemplate TargetType="ComboBox">
                     <Grid>
-                        <!-- Visual chrome: border + background, clips inner content to rounded corners -->
-                        <Border x:Name="bd"
-                                Background="{TemplateBinding Background}"
-                                BorderBrush="{TemplateBinding BorderBrush}"
-                                BorderThickness="{TemplateBinding BorderThickness}"
-                                CornerRadius="8"
-                                MinHeight="{TemplateBinding MinHeight}"
-                                ClipToBounds="True">
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <!-- Col 0 (RTL = physical right): selected text display -->
-                                    <ColumnDefinition Width="*"/>
-                                    <!-- Col 1 (RTL = physical left): chevron arrow -->
-                                    <ColumnDefinition Width="36"/>
-                                </Grid.ColumnDefinitions>
-
-                                <!-- Text display (physical right in RTL) -->
-                                <ContentPresenter x:Name="contentPresenter"
-                                                  Grid.Column="0"
-                                                  Content="{TemplateBinding SelectionBoxItem}"
-                                                  ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}"
-                                                  Margin="10,0"
-                                                  HorizontalAlignment="Stretch"
-                                                  VerticalAlignment="Center"
-                                                  IsHitTestVisible="False">
-                                    <ContentPresenter.Resources>
-                                        <Style TargetType="TextBlock">
-                                            <Setter Property="FontFamily" Value="{StaticResource AppFont}"/>
-                                            <Setter Property="Foreground" Value="{Binding Foreground, RelativeSource={RelativeSource AncestorType=ComboBox}}"/>
-                                            <Setter Property="VerticalAlignment" Value="Center"/>
-                                        </Style>
-                                    </ContentPresenter.Resources>
-                                </ContentPresenter>
-
-                                <!-- Arrow column (physical left in RTL) with left border divider -->
-                                <Border Grid.Column="1"
-                                        BorderBrush="{StaticResource BorderBrush}"
-                                        BorderThickness="1,0,0,0">
-                                    <Path x:Name="arrow"
-                                          HorizontalAlignment="Center" VerticalAlignment="Center"
-                                          Width="10" Height="6" Stretch="Fill"
-                                          Fill="{StaticResource MutedBrush}"
-                                          Data="M 0 0 L 5 5 L 10 0 Z"/>
-                                </Border>
-                            </Grid>
-                        </Border>
-
-                        <!-- Transparent full-width click target (drives IsDropDownOpen) -->
-                        <!-- ToggleButton needs an explicit Template so WPF gives it a hit-test area;
-                             without one (OverridesDefaultStyle=True + no Template) it is invisible to clicks. -->
-                        <ToggleButton x:Name="toggleButton"
+                        <!-- ToggleButton IS the chrome: background, border, rounded corners, arrow.
+                             Properties are passed from ComboBox via TemplateBinding so the inner
+                             template can read them with a simple {TemplateBinding ...} — avoids
+                             the nested RelativeSource AncestorType that can fail to resolve. -->
+                        <ToggleButton x:Name="ToggleButton"
                                       OverridesDefaultStyle="True"
-                                      IsTabStop="False" Focusable="False"
-                                      ClickMode="Press" Opacity="0"
+                                      Focusable="False" IsTabStop="False"
+                                      Background="{TemplateBinding Background}"
+                                      BorderBrush="{TemplateBinding BorderBrush}"
+                                      BorderThickness="{TemplateBinding BorderThickness}"
+                                      MinHeight="{TemplateBinding MinHeight}"
                                       IsChecked="{Binding IsDropDownOpen, Mode=TwoWay,
                                                   RelativeSource={RelativeSource TemplatedParent}}"
                                       IsEnabled="{TemplateBinding IsEnabled}">
                             <ToggleButton.Template>
                                 <ControlTemplate TargetType="ToggleButton">
-                                    <Border Background="Transparent"/>
+                                    <Border x:Name="bd"
+                                            Background="{TemplateBinding Background}"
+                                            BorderBrush="{TemplateBinding BorderBrush}"
+                                            BorderThickness="{TemplateBinding BorderThickness}"
+                                            MinHeight="{TemplateBinding MinHeight}"
+                                            CornerRadius="8" ClipToBounds="True">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <!-- Col 0 RTL=physical right: space for text overlay -->
+                                                <ColumnDefinition Width="*"/>
+                                                <!-- Col 1 RTL=physical left: arrow -->
+                                                <ColumnDefinition Width="36"/>
+                                            </Grid.ColumnDefinitions>
+                                            <Border Grid.Column="1"
+                                                    BorderBrush="{StaticResource BorderBrush}"
+                                                    BorderThickness="1,0,0,0">
+                                                <Path x:Name="arrow"
+                                                      HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                      Width="10" Height="6" Stretch="Fill"
+                                                      Fill="{StaticResource MutedBrush}"
+                                                      Data="M 0 0 L 5 5 L 10 0 Z"/>
+                                            </Border>
+                                        </Grid>
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter TargetName="bd" Property="BorderBrush" Value="{StaticResource PrimaryBrush}"/>
+                                        </Trigger>
+                                        <Trigger Property="IsChecked" Value="True">
+                                            <Setter TargetName="bd" Property="BorderBrush" Value="{StaticResource PrimaryBrush}"/>
+                                            <Setter TargetName="bd" Property="BorderThickness" Value="1.5"/>
+                                            <Setter TargetName="arrow" Property="Data" Value="M 0 5 L 5 0 L 10 5 Z"/>
+                                            <Setter TargetName="arrow" Property="Fill" Value="{StaticResource PrimaryBrush}"/>
+                                        </Trigger>
+                                        <Trigger Property="IsEnabled" Value="False">
+                                            <Setter TargetName="bd" Property="Background" Value="#F2F4F7"/>
+                                            <Setter TargetName="arrow" Property="Fill" Value="#C8CDD4"/>
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
                                 </ControlTemplate>
                             </ToggleButton.Template>
                         </ToggleButton>
 
-                        <!-- Dropdown popup -->
+                        <!-- Selected item text — sits on top of the ToggleButton, never captures clicks.
+                             Right margin = 46 (RTL: physical left = arrow 36px + gap 10px). -->
+                        <ContentPresenter x:Name="contentPresenter"
+                                          Content="{TemplateBinding SelectionBoxItem}"
+                                          ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}"
+                                          Margin="10,0,46,0"
+                                          HorizontalAlignment="Stretch"
+                                          VerticalAlignment="Center"
+                                          IsHitTestVisible="False">
+                            <ContentPresenter.Resources>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="FontFamily" Value="{StaticResource AppFont}"/>
+                                    <Setter Property="Foreground" Value="{Binding Foreground, RelativeSource={RelativeSource AncestorType=ComboBox}}"/>
+                                    <Setter Property="VerticalAlignment" Value="Center"/>
+                                </Style>
+                            </ContentPresenter.Resources>
+                        </ContentPresenter>
+
+                        <!-- Dropdown popup — WPF manages open/close via the PART_Popup name -->
                         <Popup x:Name="PART_Popup"
                                AllowsTransparency="True"
-                               IsOpen="{TemplateBinding IsDropDownOpen}"
+                               IsOpen="{Binding IsDropDownOpen, Mode=TwoWay,
+                                        RelativeSource={RelativeSource TemplatedParent}}"
                                Placement="Bottom"
                                PopupAnimation="Slide"
                                Focusable="False">
                             <Border Background="White"
                                     BorderBrush="{StaticResource BorderBrush}"
                                     BorderThickness="1" CornerRadius="8"
-                                    MinWidth="{TemplateBinding ActualWidth}"
                                     MaxHeight="{TemplateBinding MaxDropDownHeight}"
                                     SnapsToDevicePixels="True">
                                 <Border.Effect>
                                     <DropShadowEffect Color="#20000000" BlurRadius="14"
                                                       ShadowDepth="3" Direction="270"/>
                                 </Border.Effect>
-                                <ScrollViewer Margin="0,4"
-                                              VerticalScrollBarVisibility="Auto">
+                                <ScrollViewer Margin="0,4" VerticalScrollBarVisibility="Auto">
                                     <ItemsPresenter KeyboardNavigation.DirectionalNavigation="Contained"/>
                                 </ScrollViewer>
                             </Border>
                         </Popup>
                     </Grid>
                     <ControlTemplate.Triggers>
-                        <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="bd" Property="BorderBrush" Value="{StaticResource PrimaryBrush}"/>
-                        </Trigger>
-                        <Trigger Property="IsDropDownOpen" Value="True">
-                            <Setter TargetName="bd" Property="BorderBrush" Value="{StaticResource PrimaryBrush}"/>
-                            <Setter TargetName="bd" Property="BorderThickness" Value="1.5"/>
-                            <Setter TargetName="arrow" Property="Data" Value="M 0 5 L 5 0 L 10 5 Z"/>
-                            <Setter TargetName="arrow" Property="Fill" Value="{StaticResource PrimaryBrush}"/>
-                        </Trigger>
                         <Trigger Property="IsEnabled" Value="False">
-                            <Setter TargetName="bd" Property="Background" Value="#F2F4F7"/>
-                            <Setter TargetName="arrow" Property="Fill" Value="#C8CDD4"/>
                             <Setter Property="Foreground" Value="#AAAAAA"/>
                         </Trigger>
                     </ControlTemplate.Triggers>
