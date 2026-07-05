@@ -39,6 +39,14 @@ public sealed class CryptoTokenGenerator : ITokenGenerator
         finally { CryptographicOperations.ZeroMemory(pepper); }
     }
 
+    /// <summary>Peppered storage hash for a supplied plaintext (for lookups).</summary>
+    public string Hash(string plaintext)
+    {
+        var pepper = _secrets.UnprotectOrCreate(SecretPurposes.TokenPepper, 32);
+        try { return Sha256Hex(Encoding.UTF8.GetBytes(plaintext), pepper); }
+        finally { CryptographicOperations.ZeroMemory(pepper); }
+    }
+
     /// <summary>Verify a supplied plaintext against a stored hash (constant-ish).</summary>
     public bool Verify(string suppliedPlaintext, string storedHash)
     {

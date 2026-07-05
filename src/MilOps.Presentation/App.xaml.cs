@@ -45,6 +45,7 @@ public partial class App : System.Windows.Application
                 services.AddSingleton<INavigationService, NavigationService>();
                 services.AddSingleton<IDialogService, DialogService>();
                 services.AddSingleton<IPrintService, PrintService>();
+                services.AddSingleton<ISessionTokenStore, SessionTokenStore>();
 
                 // Windows
                 services.AddTransient<LoginWindow>();
@@ -112,6 +113,15 @@ public partial class App : System.Windows.Application
             return;
         }
 
+        // Silent auto-login: if a valid persistent session token exists it is
+        // verified against the DB, ROTATED (single-use), and the shell opens
+        // directly. Any failure falls through to the normal login window.
+        if (await TryAutoLoginAsync())
+        {
+            base.OnStartup(e);
+            return;
+        }
+
         // StartupUri is intentionally not set in App.xaml; we resolve the login
         // window through DI so its LoginViewModel dependency is injected.
         try
@@ -136,6 +146,55 @@ public partial class App : System.Windows.Application
         }
 
         base.OnStartup(e);
+    }
+
+    /// <summary>
+    /// Attempts the persisted-session auto-login. Returns true if the main
+    /// window was shown. Fails closed: on any error the stored token is
+    /// removed and the caller falls back to the interactive login window.
+    /// </summary>
+    private async Task<bool> TryAutoLoginAsync()
+    {
+        var store = _host.Services.GetRequiredService<Services.ISessionTokenStore>();
+        var token = store.TryLoad();
+        if (token is null) return false;
+
+        try
+        {
+            // Scoped send: the handler needs a scoped DbContext; the session
+            // registry it establishes is a singleton, so it survives the scope.
+            using var scope = _host.Services.CreateScope();
+            var sender = scope.ServiceProvider.GetRequiredService<MediatR.ISender>();
+            var result = await sender.Send(
+                new MilOps.Application.Authentication.AutoLoginCommand(token));
+
+            if (result is { IsSuccess: true, Value: not null })
+            {
+                // Store the ROTATED token — the one we just used is now dead.
+                if (result.Value.PersistentToken is { } fresh)
+                    store.Save(fresh);
+                else
+                    store.Delete();
+
+                var main = _host.Services.GetRequiredService<MainWindow>();
+                MainWindow = main;
+                main.Show();
+                Log.Information("Auto-login succeeded for '{User}'.", result.Value.Username);
+                return true;
+            }
+
+            // Invalid/expired/revoked token: remove it so we never retry it.
+            store.Delete();
+            Log.Information("Auto-login rejected ({Code}); falling back to login window.",
+                result.Error);
+            return false;
+        }
+        catch (Exception ex)
+        {
+            store.Delete();
+            Log.Warning(ex, "Auto-login failed; falling back to login window.");
+            return false;
+        }
     }
 
     protected override async void OnExit(ExitEventArgs e)

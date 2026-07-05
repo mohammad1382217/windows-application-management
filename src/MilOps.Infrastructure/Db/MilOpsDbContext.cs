@@ -122,6 +122,7 @@ public class MilOpsDbContext : DbContext
 
 
     public DbSet<User> Users => Set<User>();
+    public DbSet<AuthSession> AuthSessions => Set<AuthSession>();
     public DbSet<Soldier> Soldiers => Set<Soldier>();
     public DbSet<CommanderToken> Tokens => Set<CommanderToken>();
     public DbSet<GuardSchedule> GuardSchedules => Set<GuardSchedule>();
@@ -164,6 +165,22 @@ public class MilOpsDbContext : DbContext
             {
                 n.Property(p => p.Value).HasColumnName("FullName").HasMaxLength(80).IsRequired();
             });
+        });
+
+        // AuthSession (persistent "remember me" sessions; only peppered hashes stored)
+        b.Entity<AuthSession>(e =>
+        {
+            e.ToTable("auth_sessions");
+            e.HasKey(x => x.Id);
+            e.Property(x => x.TokenHash).HasMaxLength(128).IsRequired();
+            e.HasIndex(x => x.TokenHash).IsUnique();
+            e.Property(x => x.MachineName).HasMaxLength(60);
+            e.HasIndex(x => x.UserId);
+            e.Property(x => x.CreatedBy).HasMaxLength(80);
+            e.Property(x => x.UpdatedBy).HasMaxLength(80);
+            e.Property(x => x.RowVersion).IsConcurrencyToken();
+            e.HasOne<User>().WithMany().HasForeignKey(x => x.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
 
         // Soldier

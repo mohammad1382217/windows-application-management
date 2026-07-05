@@ -16,13 +16,15 @@ public sealed partial class LoginViewModel : ViewModelBase
     private readonly ISender _sender;
     private readonly INavigationService _nav;
     private readonly IDialogService _dialogs;
+    private readonly ISessionTokenStore _tokenStore;
 
     private string _username = string.Empty;
     private string _password = string.Empty;
     private string? _hint;
 
-    public LoginViewModel(ISender sender, INavigationService nav, IDialogService dialogs)
-    { _sender = sender; _nav = nav; _dialogs = dialogs; }
+    public LoginViewModel(ISender sender, INavigationService nav, IDialogService dialogs,
+        ISessionTokenStore tokenStore)
+    { _sender = sender; _nav = nav; _dialogs = dialogs; _tokenStore = tokenStore; }
 
     public string Username
     {
@@ -53,6 +55,10 @@ public sealed partial class LoginViewModel : ViewModelBase
             var result = await _sender.Send(new LoginCommand(Username.Trim(), Password));
             if (result is { IsSuccess: true, Value: not null })
             {
+                // Persist the "remember me" token (DPAPI-protected) so the next
+                // app start signs in silently and just rotates the token.
+                if (result.Value.PersistentToken is { } token)
+                    _tokenStore.Save(token);
                 _nav.ShowMain();
             }
             else

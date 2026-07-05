@@ -12,6 +12,12 @@ public interface ITokenGenerator
 {
     /// <summary>Generate a fresh token and its SHA-256 hash.</summary>
     GeneratedToken Generate(TokenPurpose purpose);
+
+    /// <summary>
+    /// Compute the storage hash for a supplied plaintext token (same peppered
+    /// SHA-256 as <see cref="Generate"/>) so callers can look records up by hash.
+    /// </summary>
+    string Hash(string plaintext);
 }
 
 /// <param name="Plaintext">Shown once to the commander; never persisted.</param>

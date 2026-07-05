@@ -19,6 +19,7 @@ public sealed partial class MainViewModel : ViewModelBase
     private readonly INavigationService _nav;
     private readonly IDialogService _dialogs;
     private readonly ISender _sender;
+    private readonly ISessionTokenStore _tokenStore;
 
     private ViewModelBase? _current;
     private string _currentTitle = string.Empty;
@@ -37,9 +38,11 @@ public sealed partial class MainViewModel : ViewModelBase
     };
 
     public MainViewModel(IServiceProvider services, ICurrentUser user,
-        INavigationService nav, IDialogService dialogs, ISender sender)
+        INavigationService nav, IDialogService dialogs, ISender sender,
+        ISessionTokenStore tokenStore)
     {
         _services = services; _user = user; _nav = nav; _dialogs = dialogs; _sender = sender;
+        _tokenStore = tokenStore;
         UserBanner = $"{_user.FullName} — {_user.Role}";
         Navigate<SoldiersViewModel>("سربازان");
     }
@@ -115,7 +118,10 @@ public sealed partial class MainViewModel : ViewModelBase
     private async Task LogoutAsync()
     {
         if (!_dialogs.Confirm("از سامانه میل‌اپس خارج می‌شوید؟")) return;
+        // LogoutCommand revokes all persistent sessions server-side; the local
+        // DPAPI token file must go too so the next start shows the login window.
         await _sender.Send(new MilOps.Application.Authentication.LogoutCommand());
+        _tokenStore.Delete();
         _nav.ShowLogin();
         foreach (Window w in System.Windows.Application.Current.Windows)
             if (w is MainWindow) w.Close();
