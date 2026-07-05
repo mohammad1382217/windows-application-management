@@ -80,6 +80,63 @@ namespace MilOps.Infrastructure.Migrations
                     b.ToTable("audit_logs", (string)null);
                 });
 
+            modelBuilder.Entity("MilOps.Domain.Entities.AuthSession", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("CreatedBy")
+                        .HasMaxLength(80)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("ExpiresAtUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("IssuedAtUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("MachineName")
+                        .IsRequired()
+                        .HasMaxLength(60)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("RevokedAtUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .HasColumnType("BLOB");
+
+                    b.Property<string>("TokenHash")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("UpdatedAtUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasMaxLength(80)
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TokenHash")
+                        .IsUnique();
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("auth_sessions", (string)null);
+                });
+
             modelBuilder.Entity("MilOps.Domain.Entities.CommanderToken", b =>
                 {
                     b.Property<int>("Id")
@@ -617,6 +674,15 @@ namespace MilOps.Infrastructure.Migrations
                     b.HasIndex("WeaponId1");
 
                     b.ToTable("weapon_assignments", (string)null);
+                });
+
+            modelBuilder.Entity("MilOps.Domain.Entities.AuthSession", b =>
+                {
+                    b.HasOne("MilOps.Domain.Entities.User", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("MilOps.Domain.Entities.CommanderToken", b =>

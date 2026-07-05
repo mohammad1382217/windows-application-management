@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.Input;
 using MediatR;
 using MilOps.Application.Leaves;
 using MilOps.Domain.Enums;
+using MilOps.Presentation.Common;
 using MilOps.Presentation.Services;
 using MilOps.Presentation.Views;
 
@@ -94,14 +95,16 @@ public sealed partial class LeavesViewModel : ViewModelBase
     private void Print()
     {
         var doc = _print.BuildTableReport(
-            "Leave Records", $"{Items.Count} record(s)",
-            new[] { "ID", "Soldier", "Start", "End", "Status", "Reason" },
+            "سوابق مرخصی", PersianDate.ToPersianDigits($"{Items.Count} رکورد"),
+            new[] { "شناسه", "سرباز", "شروع", "پایان", "وضعیت", "علت" },
             Items.Select(l => new[]
             {
-                l.Id.ToString(), l.SoldierId.ToString(), l.StartDate.ToString("yyyy-MM-dd"),
-                l.EndDate.ToString("yyyy-MM-dd"), l.Status.ToString(), l.Reason
+                PersianDate.ToPersianDigits(l.Id.ToString()),
+                PersianDate.ToPersianDigits(l.SoldierId.ToString()),
+                PersianDate.ToJalali(l.StartDate), PersianDate.ToJalali(l.EndDate),
+                EnumText.Describe(l.Status), l.Reason
             }));
-        _print.Print(doc, "Leave Records");
+        _print.Print(doc, "سوابق مرخصی");
     }
 
     private bool CanDecide() => Selected is not null;

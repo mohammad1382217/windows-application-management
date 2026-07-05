@@ -20,6 +20,9 @@ public static class DependencyInjection
     {
         var assembly = Assembly.GetExecutingAssembly();
 
+        // Persian validation messages + field display names, app-wide.
+        ValidationLocalization.Apply();
+
         services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(assembly));
         services.AddValidatorsFromAssembly(assembly);
 

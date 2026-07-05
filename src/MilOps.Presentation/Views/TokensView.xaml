@@ -51,40 +51,50 @@
                     <StackPanel Grid.Row="0" Grid.Column="0" Margin="0,0,10,10">
                         <TextBlock Text="نام" Style="{StaticResource FieldLabel}" Margin="0,0,0,5"/>
                         <TextBox Text="{Binding FirstName}"/>
+                        <TextBlock Style="{StaticResource FieldError}" Text="{Binding FieldErrors[FirstName]}"/>
                     </StackPanel>
                     <StackPanel Grid.Row="0" Grid.Column="1" Margin="0,0,10,10">
                         <TextBlock Text="نام خانوادگی" Style="{StaticResource FieldLabel}" Margin="0,0,0,5"/>
                         <TextBox Text="{Binding LastName}"/>
+                        <TextBlock Style="{StaticResource FieldError}" Text="{Binding FieldErrors[LastName]}"/>
                     </StackPanel>
                     <StackPanel Grid.Row="0" Grid.Column="2" Margin="0,0,10,10">
                         <TextBlock Text="کد ملی" Style="{StaticResource FieldLabel}" Margin="0,0,0,5"/>
                         <TextBox Text="{Binding NationalCode}" FlowDirection="LeftToRight"/>
+                        <TextBlock Style="{StaticResource FieldError}" Text="{Binding FieldErrors[NationalCode]}"/>
                     </StackPanel>
                     <StackPanel Grid.Row="0" Grid.Column="3" Margin="0,0,0,10">
                         <TextBlock Text="کد پرسنلی" Style="{StaticResource FieldLabel}" Margin="0,0,0,5"/>
                         <TextBox Text="{Binding PersonnelCode}" FlowDirection="LeftToRight"/>
+                        <TextBlock Style="{StaticResource FieldError}" Text="{Binding FieldErrors[PersonnelCode]}"/>
                     </StackPanel>
 
                     <StackPanel Grid.Row="1" Grid.Column="0" Margin="0,0,10,10">
                         <TextBlock Text="درجه" Style="{StaticResource FieldLabel}" Margin="0,0,0,5"/>
                         <TextBox Text="{Binding Rank}"/>
+                        <TextBlock Style="{StaticResource FieldError}" Text="{Binding FieldErrors[Rank]}"/>
                     </StackPanel>
                     <StackPanel Grid.Row="1" Grid.Column="1" Margin="0,0,10,10">
                         <TextBlock Text="شروع خدمت" Style="{StaticResource FieldLabel}" Margin="0,0,0,5"/>
                         <v:JalaliDatePicker SelectedDate="{Binding ServiceStart}"/>
+                        <TextBlock Style="{StaticResource FieldError}" Text="{Binding FieldErrors[ServiceStartDate]}"/>
                     </StackPanel>
                     <StackPanel Grid.Row="1" Grid.Column="2" Margin="0,0,10,10">
                         <TextBlock Text="پایان خدمت" Style="{StaticResource FieldLabel}" Margin="0,0,0,5"/>
                         <v:JalaliDatePicker SelectedDate="{Binding ServiceEnd}"/>
+                        <TextBlock Style="{StaticResource FieldError}" Text="{Binding FieldErrors[ServiceEndDate]}"/>
                     </StackPanel>
                     <StackPanel Grid.Row="1" Grid.Column="3" Margin="0,0,0,10">
                         <TextBlock Text="هدف مجوز" Style="{StaticResource FieldLabel}" Margin="0,0,0,5"/>
                         <ComboBox ItemsSource="{Binding Purposes}" SelectedItem="{Binding Purpose}"/>
                     </StackPanel>
 
-                    <StackPanel Grid.Row="2" Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                        <TextBlock Text="اعتبار (روز):" Style="{StaticResource FieldLabel}" Margin="0,0,8,0"/>
-                        <TextBox Text="{Binding ValidDays}" Width="70" FlowDirection="LeftToRight"/>
+                    <StackPanel Grid.Row="2" Grid.Column="0" VerticalAlignment="Center">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="اعتبار (روز):" Style="{StaticResource FieldLabel}" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                            <TextBox Text="{Binding ValidDays}" Width="70" FlowDirection="LeftToRight"/>
+                        </StackPanel>
+                        <TextBlock Style="{StaticResource FieldError}" Text="{Binding FieldErrors[ValidDays]}"/>
                     </StackPanel>
                     <Button Grid.Row="2" Grid.Column="3" Content="🔑 صدور توکن"
                             Style="{StaticResource PrimaryButton}"

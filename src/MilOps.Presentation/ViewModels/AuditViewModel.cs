@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.Input;
 using MediatR;
 using MilOps.Application.Audit;
 using MilOps.Domain.Enums;
+using MilOps.Presentation.Common;
 using MilOps.Presentation.Services;
 
 namespace MilOps.Presentation.ViewModels;
@@ -56,14 +57,15 @@ public sealed partial class AuditViewModel : ViewModelBase
     private void Print()
     {
         var doc = _print.BuildTableReport(
-            "Audit Log", $"{Items.Count} entries",
-            new[] { "Seq", "When (UTC)", "Action", "User", "Entity", "Details", "Hash" },
+            "گزارش حسابرسی", PersianDate.ToPersianDigits($"{Items.Count} رویداد"),
+            new[] { "ردیف", "زمان", "عملیات", "کاربر", "موجودیت", "شرح", "هش" },
             Items.Select(e => new[]
             {
-                e.Sequence.ToString(), e.OccurredAtUtc.ToString("u"), e.Action.ToString(),
+                PersianDate.ToPersianDigits(e.Sequence.ToString()),
+                PersianDate.ToJalaliDateTime(e.OccurredAtUtc), EnumText.Describe(e.Action),
                 e.Username ?? "—", $"{e.EntityType}/{e.EntityId ?? "—"}",
                 e.Details ?? "—", e.RowHashPreview
             }));
-        _print.Print(doc, "Audit Log");
+        _print.Print(doc, "گزارش حسابرسی");
     }
 }

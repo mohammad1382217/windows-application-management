@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.Input;
 using MediatR;
 using MilOps.Application.Weapons;
 using MilOps.Domain.Enums;
+using MilOps.Presentation.Common;
 using MilOps.Presentation.Services;
 using MilOps.Presentation.Views;
 
@@ -94,17 +95,18 @@ public sealed partial class WeaponsViewModel : ViewModelBase
         {
             var rows = await _sender.Send(new GetWeaponHistoryQuery(Selected.Id));
             var doc = _print.BuildTableReport(
-                $"Weapon {Selected.WeaponNumber} — Assignment History",
-                $"{Selected.Type} · {Selected.Status}",
-                new[] { "Soldier ID", "Issued By", "Issued (UTC)", "Returned (UTC)", "Ammo Returned" },
+                $"سابقه تخصیص سلاح {Selected.WeaponNumber}",
+                $"{EnumText.Describe(Selected.Type)} · {EnumText.Describe(Selected.Status)}",
+                new[] { "شناسه سرباز", "تحویل‌دهنده", "تاریخ تحویل", "تاریخ بازگشت", "مهمات بازگشتی" },
                 rows.Select(r => new[]
                 {
-                    r.SoldierId.ToString(), r.IssuedByUserId.ToString(),
-                    r.IssuedAtUtc.ToString("u"),
-                    r.ReturnedAtUtc?.ToString("u") ?? "—",
-                    r.ReturnedAmmunition?.ToString() ?? "—"
+                    PersianDate.ToPersianDigits(r.SoldierId.ToString()),
+                    PersianDate.ToPersianDigits(r.IssuedByUserId.ToString()),
+                    PersianDate.ToJalaliDateTime(r.IssuedAtUtc),
+                    r.ReturnedAtUtc is { } ret ? PersianDate.ToJalaliDateTime(ret) : "—",
+                    r.ReturnedAmmunition is { } ammo ? PersianDate.ToPersianDigits(ammo.ToString()) : "—"
                 }));
-            _print.Print(doc, "Weapon History");
+            _print.Print(doc, "سابقه سلاح");
         });
     }
 
@@ -112,14 +114,16 @@ public sealed partial class WeaponsViewModel : ViewModelBase
     private void PrintAll()
     {
         var doc = _print.BuildTableReport(
-            "Weapon Assignments", $"Armory inventory — {Items.Count} weapon(s)",
-            new[] { "Number", "Type", "Status", "Model", "Assigned To" },
+            "فهرست تسلیحات یگان",
+            PersianDate.ToPersianDigits($"موجودی اسلحه‌خانه — {Items.Count} قبضه"),
+            new[] { "شماره سلاح", "نوع", "وضعیت", "مدل", "تخصیص به" },
             Items.Select(w => new[]
             {
-                w.WeaponNumber, w.Type.ToString(), w.Status.ToString(),
-                w.Model ?? "—", w.CurrentlyAssignedSoldierId?.ToString() ?? "—"
+                w.WeaponNumber, EnumText.Describe(w.Type), EnumText.Describe(w.Status),
+                w.Model ?? "—",
+                w.CurrentlyAssignedSoldierId is { } sid ? PersianDate.ToPersianDigits(sid.ToString()) : "—"
             }));
-        _print.Print(doc, "Weapon Assignments");
+        _print.Print(doc, "فهرست تسلیحات");
     }
 
     private bool CanAct() => Selected is not null;

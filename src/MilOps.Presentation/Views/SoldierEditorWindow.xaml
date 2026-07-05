@@ -67,10 +67,12 @@
                         <StackPanel Grid.Column="0">
                             <TextBlock Text="نام *" Style="{StaticResource FieldLabel}" Margin="0,0,0,5"/>
                             <TextBox Text="{Binding FirstName, UpdateSourceTrigger=PropertyChanged}"/>
+                            <TextBlock Style="{StaticResource FieldError}" Text="{Binding FieldErrors[FirstName]}"/>
                         </StackPanel>
                         <StackPanel Grid.Column="2">
                             <TextBlock Text="نام خانوادگی *" Style="{StaticResource FieldLabel}" Margin="0,0,0,5"/>
                             <TextBox Text="{Binding LastName, UpdateSourceTrigger=PropertyChanged}"/>
+                            <TextBlock Style="{StaticResource FieldError}" Text="{Binding FieldErrors[LastName]}"/>
                         </StackPanel>
                     </Grid>
 
@@ -84,10 +86,12 @@
                         <StackPanel Grid.Column="0">
                             <TextBlock Text="نام پدر" Style="{StaticResource FieldLabel}" Margin="0,0,0,5"/>
                             <TextBox Text="{Binding FatherName, UpdateSourceTrigger=PropertyChanged}"/>
+                            <TextBlock Style="{StaticResource FieldError}" Text="{Binding FieldErrors[FatherName]}"/>
                         </StackPanel>
                         <StackPanel Grid.Column="2">
                             <TextBlock Text="درجه *" Style="{StaticResource FieldLabel}" Margin="0,0,0,5"/>
                             <TextBox Text="{Binding Rank, UpdateSourceTrigger=PropertyChanged}"/>
+                            <TextBlock Style="{StaticResource FieldError}" Text="{Binding FieldErrors[Rank]}"/>
                         </StackPanel>
                     </Grid>
 
@@ -102,11 +106,13 @@
                             <TextBlock Text="کد ملی *" Style="{StaticResource FieldLabel}" Margin="0,0,0,5"/>
                             <TextBox Text="{Binding NationalCode, UpdateSourceTrigger=PropertyChanged}"
                                      FlowDirection="LeftToRight"/>
+                            <TextBlock Style="{StaticResource FieldError}" Text="{Binding FieldErrors[NationalCode]}"/>
                         </StackPanel>
                         <StackPanel Grid.Column="2">
                             <TextBlock Text="کد پرسنلی *" Style="{StaticResource FieldLabel}" Margin="0,0,0,5"/>
                             <TextBox Text="{Binding PersonnelCode, UpdateSourceTrigger=PropertyChanged}"
                                      FlowDirection="LeftToRight"/>
+                            <TextBlock Style="{StaticResource FieldError}" Text="{Binding FieldErrors[PersonnelCode]}"/>
                         </StackPanel>
                     </Grid>
 
@@ -142,14 +148,17 @@
                         <StackPanel Grid.Column="0">
                             <TextBlock Text="تاریخ ورود" Style="{StaticResource FieldLabel}" Margin="0,0,0,5"/>
                             <v:JalaliDatePicker SelectedDate="{Binding EntryDate}"/>
+                            <TextBlock Style="{StaticResource FieldError}" Text="{Binding FieldErrors[EntryDate]}"/>
                         </StackPanel>
                         <StackPanel Grid.Column="2">
                             <TextBlock Text="شروع خدمت *" Style="{StaticResource FieldLabel}" Margin="0,0,0,5"/>
                             <v:JalaliDatePicker SelectedDate="{Binding ServiceStartDate}"/>
+                            <TextBlock Style="{StaticResource FieldError}" Text="{Binding FieldErrors[ServiceStartDate]}"/>
                         </StackPanel>
                         <StackPanel Grid.Column="4">
                             <TextBlock Text="پایان خدمت *" Style="{StaticResource FieldLabel}" Margin="0,0,0,5"/>
                             <v:JalaliDatePicker SelectedDate="{Binding ServiceEndDate}"/>
+                            <TextBlock Style="{StaticResource FieldError}" Text="{Binding FieldErrors[ServiceEndDate]}"/>
                         </StackPanel>
                     </Grid>
 

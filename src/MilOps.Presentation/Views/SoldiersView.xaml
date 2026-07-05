@@ -79,7 +79,8 @@
                     <DataGridTextColumn Header="کد ملی"      Binding="{Binding NationalCode}"    Width="120"/>
                     <DataGridTextColumn Header="یگان/بخش"    Binding="{Binding DepartmentName}"  Width="120"/>
                     <DataGridTextColumn Header="سلامت"       Binding="{Binding HealthType, Converter={StaticResource EnumDescriptionConverter}}"      Width="100"/>
-                    <DataGridCheckBoxColumn Header="فعال"    Binding="{Binding IsActive}"        Width="60"/>
+                    <DataGridCheckBoxColumn Header="فعال"    Binding="{Binding IsActive}"        Width="60"
+                                            ElementStyle="{StaticResource GridCheckBox}"/>
                 </DataGrid.Columns>
             </DataGrid>
 

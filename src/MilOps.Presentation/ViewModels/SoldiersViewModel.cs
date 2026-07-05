@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.Input;
 using MediatR;
 using MilOps.Application.Soldiers;
 using MilOps.Domain.Enums;
+using MilOps.Presentation.Common;
 using MilOps.Presentation.Services;
 
 namespace MilOps.Presentation.ViewModels;
@@ -95,14 +96,15 @@ public sealed partial class SoldiersViewModel : ViewModelBase
     private void Print()
     {
         var doc = _print.BuildTableReport(
-            "Soldiers List",
-            $"Unit personnel — {Items.Count} record(s)",
-            new[] { "Code", "First Name", "Last Name", "Rank", "National Code", "Dept", "Health", "Active" },
+            "لیست سربازان",
+            PersianDate.ToPersianDigits($"پرسنل یگان — {Items.Count} نفر"),
+            new[] { "کد پرسنلی", "نام", "نام خانوادگی", "درجه", "کد ملی", "یگان/بخش", "سلامت", "فعال" },
             Items.Select(s => new[]
             {
-                s.PersonnelCode, s.FirstName, s.LastName, s.Rank,
-                s.NationalCode, s.DepartmentName, s.HealthType.ToString(), s.IsActive ? "Yes" : "No"
+                PersianDate.ToPersianDigits(s.PersonnelCode), s.FirstName, s.LastName, s.Rank,
+                PersianDate.ToPersianDigits(s.NationalCode), s.DepartmentName,
+                EnumText.Describe(s.HealthType), s.IsActive ? "بله" : "خیر"
             }));
-        _print.Print(doc, "Soldiers List");
+        _print.Print(doc, "لیست سربازان");
     }
 }

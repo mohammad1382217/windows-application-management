@@ -37,7 +37,10 @@
                     <TextBlock Text="نوع:" Style="{StaticResource FieldLabel}" Margin="0,0,6,0"/>
                     <ComboBox ItemsSource="{Binding WeaponTypes}" SelectedItem="{Binding NewWeaponType}" Width="120" Margin="0,0,12,0"/>
                     <TextBlock Text="شماره سلاح:" Style="{StaticResource FieldLabel}" Margin="0,0,6,0"/>
-                    <TextBox Text="{Binding NewWeaponNumber, UpdateSourceTrigger=PropertyChanged}" Width="130"/>
+                    <StackPanel>
+                        <TextBox Text="{Binding NewWeaponNumber, UpdateSourceTrigger=PropertyChanged}" Width="130"/>
+                        <TextBlock Style="{StaticResource FieldError}" Text="{Binding FieldErrors[WeaponNumber]}" MaxWidth="130"/>
+                    </StackPanel>
                 </StackPanel>
             </StackPanel>
         </Border>

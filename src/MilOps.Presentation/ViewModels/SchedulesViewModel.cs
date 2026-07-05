@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.Input;
 using MediatR;
 using MilOps.Application.Schedules;
+using MilOps.Presentation.Common;
 using MilOps.Presentation.Services;
 using MilOps.Presentation.Views;
 
@@ -72,18 +73,20 @@ public sealed partial class SchedulesViewModel : ViewModelBase
     [RelayCommand]
     private void Print()
     {
-        if (Current is null) { _dialogs.Warning("No schedule loaded for this date."); return; }
+        if (Current is null) { _dialogs.Warning("برای این تاریخ برنامه‌ای بارگذاری نشده است."); return; }
         var doc = _print.BuildTableReport(
-            "Daily Guard Schedule (Lohe Posti)",
-            $"Date: {Current.Date:yyyy-MM-dd} · Status: {Current.Status}",
-            new[] { "Soldier ID", "Post", "Shift", "Hours", "Note" },
+            "لوح پستی — برنامه نگهبانی روزانه",
+            $"تاریخ: {PersianDate.ToJalali(Current.Date)} · وضعیت: {EnumText.Describe(Current.Status)}",
+            new[] { "شناسه سرباز", "پست", "شیفت", "ساعت", "توضیح" },
             Assignments.Select(a => new[]
             {
-                a.SoldierId.ToString(), a.Post.ToString(), a.Shift.ToString(),
-                a.ShiftStart is { } s && a.ShiftEnd is { } e ? $"{s:HH:mm}-{e:HH:mm}" : "—",
+                PersianDate.ToPersianDigits(a.SoldierId.ToString()),
+                EnumText.Describe(a.Post), EnumText.Describe(a.Shift),
+                a.ShiftStart is { } s && a.ShiftEnd is { } e
+                    ? PersianDate.ToPersianDigits($"{s:HH:mm}–{e:HH:mm}") : "—",
                 a.Note ?? "—"
             }));
-        _print.Print(doc, "Daily Guard Schedule");
+        _print.Print(doc, "لوح پستی");
     }
 
     private bool CanApprove() => Current is not null;

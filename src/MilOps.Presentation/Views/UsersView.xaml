@@ -42,21 +42,24 @@
                     <StackPanel Grid.Column="0" Margin="0,0,10,0">
                         <TextBlock Text="نام کامل" Style="{StaticResource FieldLabel}" Margin="0,0,0,5"/>
                         <TextBox Text="{Binding NewFullName, UpdateSourceTrigger=PropertyChanged}"/>
+                        <TextBlock Style="{StaticResource FieldError}" Text="{Binding FieldErrors[FullName]}"/>
                     </StackPanel>
                     <StackPanel Grid.Column="1" Margin="0,0,10,0">
                         <TextBlock Text="نام کاربری" Style="{StaticResource FieldLabel}" Margin="0,0,0,5"/>
                         <TextBox Text="{Binding NewUsername, UpdateSourceTrigger=PropertyChanged}" FlowDirection="LeftToRight"/>
+                        <TextBlock Style="{StaticResource FieldError}" Text="{Binding FieldErrors[Username]}"/>
                     </StackPanel>
                     <StackPanel Grid.Column="2" Margin="0,0,10,0">
                         <TextBlock Text="گذرواژه" Style="{StaticResource FieldLabel}" Margin="0,0,0,5"/>
                         <TextBox Text="{Binding NewPassword, UpdateSourceTrigger=PropertyChanged}" FlowDirection="LeftToRight"/>
+                        <TextBlock Style="{StaticResource FieldError}" Text="{Binding FieldErrors[Password]}"/>
                     </StackPanel>
                     <StackPanel Grid.Column="3" Margin="0,0,10,0">
                         <TextBlock Text="نقش" Style="{StaticResource FieldLabel}" Margin="0,0,0,5"/>
                         <ComboBox ItemsSource="{Binding Roles}" SelectedItem="{Binding NewRole}" Width="120"/>
                     </StackPanel>
                     <Button Grid.Column="4" Content="＋ افزودن" Style="{StaticResource AccentButton}"
-                            Command="{Binding CreateCommand}" Padding="14,7" VerticalAlignment="Bottom"/>
+                            Command="{Binding CreateCommand}" Padding="14,7" VerticalAlignment="Top" Margin="0,21,0,0"/>
                 </Grid>
             </Border>
 
@@ -87,7 +90,8 @@
                     <DataGridTextColumn Header="نام کاربری" Binding="{Binding Username}" Width="160"/>
                     <DataGridTextColumn Header="نام کامل"   Binding="{Binding FullName}" Width="200"/>
                     <DataGridTextColumn Header="نقش"        Binding="{Binding Role, Converter={StaticResource EnumDescriptionConverter}}"     Width="130"/>
-                    <DataGridCheckBoxColumn Header="فعال"   Binding="{Binding IsActive}" Width="70"/>
+                    <DataGridCheckBoxColumn Header="فعال"   Binding="{Binding IsActive}" Width="70"
+                                            ElementStyle="{StaticResource GridCheckBox}"/>
                 </DataGrid.Columns>
             </DataGrid>
 

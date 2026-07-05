@@ -58,8 +58,9 @@
                 <TextBox x:Name="UsernameBox"
                          Text="{Binding Username, UpdateSourceTrigger=PropertyChanged}"
                          FontSize="14" Padding="10,9"
-                         FlowDirection="LeftToRight"
-                         Margin="0,0,0,18"/>
+                         FlowDirection="LeftToRight"/>
+                <TextBlock Style="{StaticResource FieldError}" Text="{Binding FieldErrors[Username]}"/>
+                <Border Height="18"/>
 
                 <!-- Password -->
                 <TextBlock Text="گذرواژه" Style="{StaticResource FieldLabel}"
@@ -67,8 +68,9 @@
                 <PasswordBox x:Name="PasswordBox"
                              PasswordChanged="PasswordBox_PasswordChanged"
                              FontSize="14" Padding="10,9"
-                             FlowDirection="LeftToRight"
-                             Margin="0,0,0,28"/>
+                             FlowDirection="LeftToRight"/>
+                <TextBlock Style="{StaticResource FieldError}" Text="{Binding FieldErrors[Password]}"/>
+                <Border Height="28"/>
 
                 <!-- Login button -->
                 <Button Content="ورود به سامانه"

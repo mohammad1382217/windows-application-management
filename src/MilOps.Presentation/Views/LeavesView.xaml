@@ -44,21 +44,25 @@
                     <StackPanel Grid.Column="0" Margin="0,0,12,0">
                         <TextBlock Text="شناسه سرباز" Style="{StaticResource FieldLabel}" Margin="0,0,0,4"/>
                         <TextBox Text="{Binding NewSoldierId, UpdateSourceTrigger=PropertyChanged}" Width="90"/>
+                        <TextBlock Style="{StaticResource FieldError}" Text="{Binding FieldErrors[SoldierId]}" MaxWidth="90"/>
                     </StackPanel>
                     <StackPanel Grid.Column="1" Margin="0,0,12,0">
                         <TextBlock Text="شروع مرخصی" Style="{StaticResource FieldLabel}" Margin="0,0,0,4"/>
                         <v:JalaliDatePicker SelectedDate="{Binding NewStart}" Width="140"/>
+                        <TextBlock Style="{StaticResource FieldError}" Text="{Binding FieldErrors[StartDate]}" MaxWidth="140"/>
                     </StackPanel>
                     <StackPanel Grid.Column="2" Margin="0,0,12,0">
                         <TextBlock Text="پایان مرخصی" Style="{StaticResource FieldLabel}" Margin="0,0,0,4"/>
                         <v:JalaliDatePicker SelectedDate="{Binding NewEnd}" Width="140"/>
+                        <TextBlock Style="{StaticResource FieldError}" Text="{Binding FieldErrors[EndDate]}" MaxWidth="140"/>
                     </StackPanel>
                     <StackPanel Grid.Column="3" Margin="0,0,12,0">
                         <TextBlock Text="علت" Style="{StaticResource FieldLabel}" Margin="0,0,0,4"/>
                         <TextBox Text="{Binding NewReason, UpdateSourceTrigger=PropertyChanged}" Width="180"/>
+                        <TextBlock Style="{StaticResource FieldError}" Text="{Binding FieldErrors[Reason]}" MaxWidth="180"/>
                     </StackPanel>
                     <Button Grid.Column="5" Content="＋ درخواست مرخصی" Style="{StaticResource AccentButton}"
-                            Command="{Binding RequestCommand}" Padding="14,7" VerticalAlignment="Bottom"/>
+                            Command="{Binding RequestCommand}" Padding="14,7" VerticalAlignment="Top" Margin="0,20,0,0"/>
                 </Grid>
             </Border>
 
