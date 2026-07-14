@@ -48,19 +48,23 @@ public static class RolePermissions
 {
     public static readonly IReadOnlyDictionary<Role, Permission> Map = new Dictionary<Role, Permission>
     {
+        // فرمانده: full control, including user/token management.
         [Role.Commander] = Enum.GetValues<Permission>().Aggregate((a, b) => a | b),
 
-        [Role.Operator] =
+        // جانشین: runs day-to-day operations (including approvals and the audit
+        // trail) but cannot manage accounts or issue tokens — those stay with
+        // the commander.
+        [Role.Deputy] =
             Permission.SoldierRead | Permission.SoldierWrite |
-            Permission.ScheduleRead | Permission.ScheduleWrite |
+            Permission.ScheduleRead | Permission.ScheduleWrite | Permission.ScheduleApprove |
             Permission.RegisterRead | Permission.RegisterWrite |
             Permission.WeaponRead | Permission.WeaponWrite |
-            Permission.LeaveRead | Permission.LeaveWrite |
-            Permission.ReportPrint,
+            Permission.LeaveRead | Permission.LeaveWrite | Permission.LeaveApprove |
+            Permission.ReportPrint | Permission.AuditRead,
 
-        [Role.ReadOnly] =
-            Permission.SoldierRead | Permission.ScheduleRead | Permission.RegisterRead |
-            Permission.WeaponRead | Permission.LeaveRead | Permission.ReportPrint
+        // سرباز: sees the guard schedule and can view/request leaves.
+        [Role.Soldier] =
+            Permission.ScheduleRead | Permission.LeaveRead | Permission.LeaveWrite
     };
 
     public static Permission For(Role role) => Map.TryGetValue(role, out var p) ? p : Permission.None;

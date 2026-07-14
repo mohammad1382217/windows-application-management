@@ -5,8 +5,8 @@ namespace MilOps.Domain.Enums;
 public enum Role
 {
     [Description("فرمانده")] Commander = 1,
-    [Description("اپراتور")] Operator = 2,
-    [Description("فقط‌خواندنی")] ReadOnly = 3
+    [Description("جانشین")] Deputy = 2,
+    [Description("سرباز")] Soldier = 3
 }
 
 public enum TokenStatus

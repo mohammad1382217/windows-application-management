@@ -20,13 +20,22 @@ public sealed partial class UsersViewModel : ViewModelBase
     public string NewFullName { get; set; } = string.Empty;
     public string NewUsername { get; set; } = string.Empty;
     public string NewPassword { get; set; } = string.Empty;
-    public Role NewRole { get; set; } = Role.Operator;
+    public Role NewRole { get; set; } = Role.Soldier;
+
+    /// <summary>Target role for the "change role" action on the selected user.</summary>
+    public Role RoleForChange { get; set; } = Role.Soldier;
 
     private UserDto? _selected;
     public UserDto? Selected
     {
         get => _selected;
-        set { _selected = value; OnPropertyChanged(); ChangePasswordCommand.NotifyCanExecuteChanged(); DeactivateCommand.NotifyCanExecuteChanged(); }
+        set
+        {
+            _selected = value; OnPropertyChanged();
+            ChangePasswordCommand.NotifyCanExecuteChanged();
+            DeactivateCommand.NotifyCanExecuteChanged();
+            ChangeRoleCommand.NotifyCanExecuteChanged();
+        }
     }
 
     public UsersViewModel(ISender sender, IDialogService dialogs) { _sender = sender; _dialogs = dialogs; }
@@ -49,9 +58,17 @@ public sealed partial class UsersViewModel : ViewModelBase
         {
             var r = await _sender.Send(new CreateUserCommand(NewFullName, NewUsername, NewRole, NewPassword));
             if (!r.IsSuccess) { ErrorMessage = r.Error; return; }
+            var createdUsername = NewUsername;
             NewFullName = NewUsername = NewPassword = string.Empty;
             OnPropertyChanged(nameof(NewFullName)); OnPropertyChanged(nameof(NewUsername)); OnPropertyChanged(nameof(NewPassword));
             await LoadAsync();
+            _dialogs.Info(
+                $"کاربر «{createdUsername}» ساخته شد.\n\n" +
+                "این حساب تا فعال‌سازی با توکن قابل استفاده نیست:\n" +
+                "۱. از بخش «توکن‌های فرمانده» یک توکن فعال‌سازی صادر کنید.\n" +
+                "۲. نام کاربری، گذرواژه و توکن را به دارنده حساب تحویل دهید.\n" +
+                "۳. او در اولین ورود، توکن را وارد می‌کند و حساب فعال می‌شود.",
+                "کاربر ساخته شد");
         });
     }
 
@@ -77,6 +94,25 @@ public sealed partial class UsersViewModel : ViewModelBase
         await RunAsync(async () =>
         {
             var r = await _sender.Send(new DeactivateUserCommand(Selected.Id));
+            if (!r.IsSuccess) _dialogs.Error(r.Error); else await LoadAsync();
+        });
+    }
+
+    [RelayCommand(CanExecute = nameof(CanAct))]
+    private async Task ChangeRoleAsync()
+    {
+        if (Selected is null) return;
+        if (Selected.Role == RoleForChange)
+        {
+            _dialogs.Info("کاربر هم‌اکنون همین نقش را دارد.");
+            return;
+        }
+        if (!_dialogs.Confirm(
+            $"نقش کاربر «{Selected.Username}» از «{Common.EnumText.Describe(Selected.Role)}» " +
+            $"به «{Common.EnumText.Describe(RoleForChange)}» تغییر کند؟")) return;
+        await RunAsync(async () =>
+        {
+            var r = await _sender.Send(new ChangeRoleCommand(Selected.Id, RoleForChange));
             if (!r.IsSuccess) _dialogs.Error(r.Error); else await LoadAsync();
         });
     }

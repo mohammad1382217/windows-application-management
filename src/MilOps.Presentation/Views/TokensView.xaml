@@ -29,7 +29,7 @@
                         </Border>
                         <StackPanel VerticalAlignment="Center" Margin="0,0,14,0">
                             <TextBlock Text="توکن‌های فرمانده" Foreground="White" FontSize="18" FontWeight="Bold"/>
-                            <TextBlock Text="صدور مجوز خروج موقت از پایگاه" Foreground="#CCA8F0" FontSize="12" Margin="0,3,0,0"/>
+                            <TextBlock Text="صدور توکن یک‌بارمصرف برای فعال‌سازی حساب زیرمجموعه" Foreground="#CCA8F0" FontSize="12" Margin="0,3,0,0"/>
                         </StackPanel>
                     </DockPanel>
                 </Border>

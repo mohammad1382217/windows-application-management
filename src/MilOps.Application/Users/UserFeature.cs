@@ -13,7 +13,8 @@ using MilOps.Domain.ValueObjects;
 
 namespace MilOps.Application.Users;
 
-public record UserDto(int Id, string Username, string FullName, Role Role, bool IsActive);
+public record UserDto(int Id, string Username, string FullName, Role Role, bool IsActive,
+    bool IsActivated);
 
 public record ListUsersQuery : IRequest<IReadOnlyList<UserDto>>, IAuthorizedRequest
 {
@@ -37,6 +38,11 @@ public record DeactivateUserCommand(int UserId) : IRequest<Result>, IAuthorizedR
     public Permission RequiredPermission => Permission.UserManage;
 }
 
+public record ChangeRoleCommand(int UserId, Role NewRole) : IRequest<Result>, IAuthorizedRequest
+{
+    public Permission RequiredPermission => Permission.UserManage;
+}
+
 public class CreateUserValidator : AbstractValidator<CreateUserCommand>
 {
     public CreateUserValidator(AuthenticationOptions opts)
@@ -51,7 +57,8 @@ public class UserHandlers :
     IRequestHandler<ListUsersQuery, IReadOnlyList<UserDto>>,
     IRequestHandler<CreateUserCommand, Result<int>>,
     IRequestHandler<ChangePasswordCommand, Result>,
-    IRequestHandler<DeactivateUserCommand, Result>
+    IRequestHandler<DeactivateUserCommand, Result>,
+    IRequestHandler<ChangeRoleCommand, Result>
 {
     private readonly IRepository<User> _users;
     private readonly IUnitOfWork _uow;
@@ -78,9 +85,12 @@ public class UserHandlers :
             if (existing is not null)
                 return Result.Failure<int>("USER_EXISTS", "این نام کاربری قبلاً ثبت شده است.");
 
+            // New accounts stay unusable until the holder redeems a
+            // commander-issued activation token at first login.
             var user = User.Create(
                 PersonName.Create(c.FullName, "Full name"),
-                c.Username, c.Role, _hasher.Hash(c.Password));
+                c.Username, c.Role, _hasher.Hash(c.Password),
+                requiresActivation: true);
             user.CreatedBy = _user.Username;
             _users.Add(user);
             await _uow.SaveChangesAsync(ct);
@@ -130,5 +140,29 @@ public class UserHandlers :
         catch (DomainException ex) { return Result.Failure(ex.Code, ex.Message); }
     }
 
-    private static UserDto Map(User u) => new(u.Id, u.Username, u.FullName.ToString(), u.Role, u.IsActive);
+    public async Task<Result> Handle(ChangeRoleCommand c, CancellationToken ct)
+    {
+        var user = await _users.GetByIdAsync(c.UserId, ct);
+        if (user is null) return Result.Failure("NOT_FOUND", "کاربر یافت نشد.");
+        if (user.Id == _user.UserId)
+            return Result.Failure("USER_SELF", "امکان تغییر نقش حساب خود وجود ندارد.");
+        if (user.Role == c.NewRole) return Result.Success();
+        try
+        {
+            var oldRole = user.Role;
+            user.ChangeRole(c.NewRole);
+            user.Touch(_user.Username);
+            await _uow.SaveChangesAsync(ct);
+
+            await _audit.AppendAsync(AuditAction.UserUpdated, _user.UserId, _user.Username,
+                nameof(User), user.Id.ToString(),
+                $"Role of {user.Username} changed {oldRole} -> {c.NewRole}", ct);
+
+            return Result.Success();
+        }
+        catch (DomainException ex) { return Result.Failure(ex.Code, ex.Message); }
+    }
+
+    private static UserDto Map(User u) =>
+        new(u.Id, u.Username, u.FullName.ToString(), u.Role, u.IsActive, u.IsActivated);
 }

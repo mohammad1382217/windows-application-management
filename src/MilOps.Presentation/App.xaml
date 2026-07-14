@@ -15,6 +15,7 @@
             <conv:NullToCollapsedConverter   x:Key="NullToCollapsedConverter" />
             <conv:NullToVisibilityConverter  x:Key="NullToVisibilityConverter" />
             <conv:BoolToVisibilityConverter  x:Key="BoolToVisConverter" />
+            <conv:InverseBoolToVisibilityConverter x:Key="InverseBoolToVisConverter" />
             <conv:InverseBoolConverter       x:Key="InverseBoolConverter" />
             <conv:JalaliDateConverter        x:Key="JalaliDateConverter" />
             <conv:JalaliDateTimeConverter    x:Key="JalaliDateTimeConverter" />

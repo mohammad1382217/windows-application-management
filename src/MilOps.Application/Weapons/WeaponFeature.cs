@@ -102,7 +102,8 @@ public class WeaponHandlers :
 
     public async Task<Result> Handle(IssueWeaponCommand c, CancellationToken ct)
     {
-        var w = await _weapons.GetByIdAsync(c.WeaponId, ct);
+        // History MUST be loaded: IssueTo's double-issue guard reads it.
+        var w = await _weapons.FirstOrDefaultAsync(new WeaponWithHistorySpec(c.WeaponId), ct);
         if (w is null) return Result.Failure("NOT_FOUND", "سلاح یافت نشد.");
         try
         {
@@ -118,7 +119,9 @@ public class WeaponHandlers :
 
     public async Task<Result> Handle(ReturnWeaponCommand c, CancellationToken ct)
     {
-        var w = await _weapons.GetByIdAsync(c.WeaponId, ct);
+        // History MUST be loaded: Return closes the open history row; with an
+        // unloaded collection it always failed with WEAPON_NOT_ISSUED.
+        var w = await _weapons.FirstOrDefaultAsync(new WeaponWithHistorySpec(c.WeaponId), ct);
         if (w is null) return Result.Failure("NOT_FOUND", "سلاح یافت نشد.");
         try
         {

@@ -74,7 +74,14 @@
                     <Button Content="✕ غیرفعال‌سازی" Style="{StaticResource DangerButton}"
                             Command="{Binding DeactivateCommand}" Padding="14,7" Margin="0,0,8,0"/>
                     <Button Content="بازخوانی" Style="{StaticResource SecondaryButton}"
-                            Command="{Binding LoadCommand}" Padding="14,7"/>
+                            Command="{Binding LoadCommand}" Padding="14,7" Margin="0,0,16,0"/>
+                    <TextBlock Text="تغییر نقش به:" Style="{StaticResource FieldLabel}"
+                               VerticalAlignment="Center" Margin="0,0,8,0"/>
+                    <ComboBox ItemsSource="{Binding Roles}" SelectedItem="{Binding RoleForChange}"
+                              Width="120" Margin="0,0,4,0"/>
+                    <Button Content="🎖 اعمال نقش" Style="{StaticResource SecondaryButton}"
+                            Command="{Binding ChangeRoleCommand}"
+                            ToolTip="تغییر نقش کاربر انتخاب‌شده" Padding="14,7"/>
                 </StackPanel>
             </Border>
 
@@ -93,6 +100,8 @@
                     <DataGridTextColumn Header="نام کامل"   Binding="{Binding FullName}" Width="200"/>
                     <DataGridTextColumn Header="نقش"        Binding="{Binding Role, Converter={StaticResource EnumDescriptionConverter}}"     Width="130"/>
                     <DataGridCheckBoxColumn Header="فعال"   Binding="{Binding IsActive}" Width="70"
+                                            ElementStyle="{StaticResource GridCheckBox}"/>
+                    <DataGridCheckBoxColumn Header="فعال‌سازی با توکن" Binding="{Binding IsActivated}" Width="130"
                                             ElementStyle="{StaticResource GridCheckBox}"/>
                 </DataGrid.Columns>
             </DataGrid>

@@ -72,13 +72,30 @@
                 <TextBlock Style="{StaticResource FieldError}" Text="{Binding FieldErrors[Password]}"/>
                 <Border Height="28"/>
 
+                <!-- Activation token (revealed on first login of a new account) -->
+                <StackPanel Visibility="{Binding IsActivationRequired, Converter={StaticResource BoolToVisConverter}}">
+                    <TextBlock Text="توکن فعال‌سازی (دریافتی از فرمانده)"
+                               Style="{StaticResource FieldLabel}"
+                               FontSize="13" Margin="0,0,0,6"/>
+                    <TextBox Text="{Binding ActivationToken, UpdateSourceTrigger=PropertyChanged}"
+                             FontSize="13" Padding="10,9"
+                             FlowDirection="LeftToRight"/>
+                    <Border Height="14"/>
+                    <Button Content="فعال‌سازی حساب و ورود"
+                            Style="{StaticResource AccentButton}"
+                            Command="{Binding ActivateCommand}"
+                            Padding="0,13" FontSize="14"/>
+                    <Border Height="18"/>
+                </StackPanel>
+
                 <!-- Login button -->
                 <Button Content="ورود به سامانه"
                         Style="{StaticResource PrimaryButton}"
                         Command="{Binding LoginCommand}"
                         IsDefault="True"
                         IsEnabled="{Binding IsNotBusy}"
-                        Padding="0,13" FontSize="14"/>
+                        Padding="0,13" FontSize="14"
+                        Visibility="{Binding IsActivationRequired, Converter={StaticResource InverseBoolToVisConverter}, FallbackValue=Visible}"/>
 
                 <!-- Error message -->
                 <TextBlock Text="{Binding Hint}"

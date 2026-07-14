@@ -77,7 +77,12 @@ public sealed class HmacAuditHasher : IAuditHasher
     {
         var sb = new StringBuilder(256);
         sb.Append(sequence).Append('|');
-        sb.Append(occurredAtUtc.ToString("O")).Append('|');
+        // Normalize Kind before formatting: values written fresh carry Kind=Utc
+        // ("...Z" suffix under "O"), but the same instant read back from SQLite
+        // comes out Kind=Unspecified (no "Z"), which silently broke every chain
+        // verification. Forcing Utc makes write-time and verify-time canonical
+        // bytes identical without changing the on-disk hash contract.
+        sb.Append(DateTime.SpecifyKind(occurredAtUtc, DateTimeKind.Utc).ToString("O")).Append('|');
         sb.Append((int)action).Append('|');
         sb.Append(userId?.ToString() ?? string.Empty).Append('|');
         sb.Append(username ?? string.Empty).Append('|');

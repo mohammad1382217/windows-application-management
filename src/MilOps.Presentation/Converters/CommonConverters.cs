@@ -102,6 +102,16 @@ public sealed class BoolToVisibilityConverter : IValueConverter
         => value is Visibility v && v == Visibility.Visible;
 }
 
+/// <summary>Visible when the bound bool is FALSE; collapsed when true.</summary>
+public sealed class InverseBoolToVisibilityConverter : IValueConverter
+{
+    public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+        => (value is bool b && b) ? Visibility.Collapsed : Visibility.Visible;
+
+    public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+        => value is Visibility v && v != Visibility.Visible;
+}
+
 /// <summary>
 /// Converts an enum value to its Persian [Description] attribute.
 /// Falls back to the raw enum name if no attribute is set.

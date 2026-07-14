@@ -27,6 +27,10 @@ public static class DependencyInjection
         services.AddValidatorsFromAssembly(assembly);
 
         services.Configure<AuthenticationOptions>(config.GetSection("Authentication"));
+        // Some validators (e.g. CreateUserValidator) take the options object
+        // directly; expose the bound instance alongside IOptions<T>.
+        services.AddSingleton(sp =>
+            sp.GetRequiredService<Microsoft.Extensions.Options.IOptions<AuthenticationOptions>>().Value);
 
         // Pipeline behavior order: auth first (fail fast), then validation, then logging wrapper.
         services.AddScoped(typeof(IPipelineBehavior<,>), typeof(AuthorizationBehavior<,>));

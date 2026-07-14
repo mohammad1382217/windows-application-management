@@ -24,9 +24,16 @@ public class User : AuditableEntity
     public int FailedLoginAttempts { get; private set; }
     public bool IsActive { get; private set; }
 
+    /// <summary>
+    /// False until the holder redeems a commander-issued activation token at
+    /// first login. Accounts created without token flow (seed) start activated.
+    /// </summary>
+    public bool IsActivated { get; private set; }
+
     private User() { } // EF Core
 
-    public static User Create(PersonName fullName, string username, Role role, string passwordHash)
+    public static User Create(PersonName fullName, string username, Role role, string passwordHash,
+        bool requiresActivation = false)
     {
         ValidateUsername(username);
         var user = new User
@@ -36,10 +43,14 @@ public class User : AuditableEntity
             Role = role,
             PasswordHash = passwordHash,
             PasswordChangedAtUtc = DateTime.UtcNow,
-            IsActive = true
+            IsActive = true,
+            IsActivated = !requiresActivation
         };
         return user;
     }
+
+    /// <summary>Called when a commander-issued activation token is redeemed.</summary>
+    public void CompleteActivation() => IsActivated = true;
 
     public void ChangePassword(string newPasswordHash)
     {

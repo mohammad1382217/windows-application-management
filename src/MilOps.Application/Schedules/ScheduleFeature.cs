@@ -71,7 +71,7 @@ public class ScheduleHandlers :
 
     public async Task<GuardScheduleDto?> Handle(GetScheduleByIdQuery q, CancellationToken ct)
     {
-        var s = await _schedules.GetByIdAsync(q.Id, ct);
+        var s = await _schedules.FirstOrDefaultAsync(new ScheduleByIdSpec(q.Id), ct);
         return s is null ? null : Map(s);
     }
 
@@ -101,7 +101,8 @@ public class ScheduleHandlers :
 
     public async Task<Result> Handle(ApproveScheduleCommand c, CancellationToken ct)
     {
-        var s = await _schedules.GetByIdAsync(c.Id, ct);
+        // Approve() checks the assignments, so they must be loaded.
+        var s = await _schedules.FirstOrDefaultAsync(new ScheduleByIdSpec(c.Id), ct);
         if (s is null) return Result.Failure("NOT_FOUND", "برنامه یافت نشد.");
         try
         {
@@ -122,7 +123,23 @@ public class ScheduleHandlers :
             a.SoldierId, a.Post, a.Shift, a.ShiftStart, a.ShiftEnd, a.Note)).ToList());
 }
 
+// Assignments MUST be eager-loaded: the DTO maps them and Approve() validates
+// against them; with a lazy (never-loaded) collection the schedule always looked
+// empty outside the scope that created it.
 internal sealed class ScheduleByDateSpec : Specification<GuardSchedule>
 {
-    public ScheduleByDateSpec(DateOnly date) => Criteria = s => s.Date == date;
+    public ScheduleByDateSpec(DateOnly date)
+    {
+        Criteria = s => s.Date == date;
+        AddInclude(s => s.Assignments);
+    }
+}
+
+internal sealed class ScheduleByIdSpec : Specification<GuardSchedule>
+{
+    public ScheduleByIdSpec(int id)
+    {
+        Criteria = s => s.Id == id;
+        AddInclude(s => s.Assignments);
+    }
 }

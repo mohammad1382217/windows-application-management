@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using MilOps.Infrastructure.Db;
 
@@ -10,9 +11,11 @@ using MilOps.Infrastructure.Db;
 namespace MilOps.Infrastructure.Migrations
 {
     [DbContext(typeof(MilOpsDbContext))]
-    partial class MilOpsDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260714133936_AddUserActivation")]
+    partial class AddUserActivation
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "9.0.0");
@@ -230,6 +233,9 @@ namespace MilOps.Infrastructure.Migrations
                     b.Property<int>("GuardScheduleId")
                         .HasColumnType("INTEGER");
 
+                    b.Property<int?>("GuardScheduleId1")
+                        .HasColumnType("INTEGER");
+
                     b.Property<string>("Note")
                         .HasMaxLength(200)
                         .HasColumnType("TEXT");
@@ -254,6 +260,8 @@ namespace MilOps.Infrastructure.Migrations
                         .HasColumnType("INTEGER");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("GuardScheduleId1");
 
                     b.HasIndex("GuardScheduleId", "Post", "Shift")
                         .IsUnique();
@@ -777,10 +785,14 @@ namespace MilOps.Infrastructure.Migrations
             modelBuilder.Entity("MilOps.Domain.Entities.GuardAssignment", b =>
                 {
                     b.HasOne("MilOps.Domain.Entities.GuardSchedule", null)
-                        .WithMany("Assignments")
+                        .WithMany()
                         .HasForeignKey("GuardScheduleId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.HasOne("MilOps.Domain.Entities.GuardSchedule", null)
+                        .WithMany("Assignments")
+                        .HasForeignKey("GuardScheduleId1");
                 });
 
             modelBuilder.Entity("MilOps.Domain.Entities.Soldier", b =>

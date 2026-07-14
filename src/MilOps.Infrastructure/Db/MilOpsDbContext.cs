@@ -248,7 +248,12 @@ public class MilOpsDbContext : DbContext
         {
             e.ToTable("guard_assignments");
             e.HasKey(x => x.Id);
-            e.HasOne<GuardSchedule>().WithMany().HasForeignKey(x => x.GuardScheduleId).OnDelete(DeleteBehavior.Cascade);
+            // NOTE: the schedule<->assignment relationship is configured ONCE, on
+            // GuardSchedule (HasMany(Assignments)...HasForeignKey(GuardScheduleId)).
+            // A second HasOne<GuardSchedule>().WithMany() here used to create a
+            // DUPLICATE relationship with a shadow FK column (GuardScheduleId1),
+            // which left the real GuardScheduleId at 0 on insert and made every
+            // schedule save fail with a foreign-key violation.
             e.Property(x => x.Post).HasConversion<string>().HasMaxLength(30).IsRequired();
             e.Property(x => x.Shift).HasConversion<string>().HasMaxLength(20).IsRequired();
             e.Property(x => x.ShiftStart).HasConversion<string>();
