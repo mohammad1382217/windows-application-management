@@ -44,7 +44,19 @@ public sealed partial class MainViewModel : ViewModelBase
         _services = services; _user = user; _nav = nav; _dialogs = dialogs; _sender = sender;
         _tokenStore = tokenStore;
         UserBanner = $"{_user.FullName} — {_user.Role}";
-        Navigate<SoldiersViewModel>("سربازان");
+        NavigateHome();
+    }
+
+    /// <summary>First view the user actually has permission to see.</summary>
+    private void NavigateHome()
+    {
+        if (CanManageSoldiers) Navigate<SoldiersViewModel>("سربازان");
+        else if (CanManageSchedules) Navigate<SchedulesViewModel>("برنامه نگهبانی روزانه");
+        else if (CanManageWeapons) Navigate<WeaponsViewModel>("تسلیحات و مهمات");
+        else if (CanManageLeaves) Navigate<LeavesViewModel>("مدیریت مرخصی");
+        else if (CanManageTokens) Navigate<TokensViewModel>("توکن‌های فرمانده");
+        else if (CanManageUsers) Navigate<UsersViewModel>("مدیریت کاربران");
+        else if (CanViewAudit) Navigate<AuditViewModel>("گزارش حسابرسی");
     }
 
     public string UserBanner { get; }
@@ -117,10 +129,13 @@ public sealed partial class MainViewModel : ViewModelBase
     [RelayCommand]
     private async Task LogoutAsync()
     {
-        if (!_dialogs.Confirm("از سامانه میل‌اپس خارج می‌شوید؟")) return;
+        if (!_dialogs.Confirm("از سامانه سنگر خارج می‌شوید؟")) return;
         // LogoutCommand revokes all persistent sessions server-side; the local
         // DPAPI token file must go too so the next start shows the login window.
-        await _sender.Send(new MilOps.Application.Authentication.LogoutCommand());
+        // Local sign-out proceeds even if the server-side revoke fails, so the
+        // user is never trapped in a session they asked to leave.
+        try { await _sender.Send(new MilOps.Application.Authentication.LogoutCommand()); }
+        catch (Exception ex) { Serilog.Log.Error(ex, "Server-side logout failed; continuing local sign-out."); }
         _tokenStore.Delete();
         _nav.ShowLogin();
         foreach (Window w in System.Windows.Application.Current.Windows)

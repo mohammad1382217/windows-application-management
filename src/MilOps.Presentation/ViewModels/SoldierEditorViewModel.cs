@@ -16,6 +16,10 @@ public sealed partial class SoldierEditorViewModel : ViewModelBase
 
     public Array HealthTypes => Enum.GetValues(typeof(HealthType));
 
+    public bool IsEditMode => _id is not null;
+    public string WindowTitle => IsEditMode ? "ویرایش سرباز" : "افزودن سرباز جدید";
+    public string? CodeFieldToolTip => IsEditMode ? "کد ملی و کد پرسنلی در حالت ویرایش قابل تغییر نیستند." : null;
+
     public string FirstName { get; set; } = string.Empty;
     public string LastName { get; set; } = string.Empty;
     public string? FatherName { get; set; }
@@ -42,9 +46,8 @@ public sealed partial class SoldierEditorViewModel : ViewModelBase
         ServiceStartDate = dto.ServiceStartDate.ToDateTime(TimeOnly.MinValue);
         ServiceEndDate = dto.ServiceEndDate.ToDateTime(TimeOnly.MinValue);
         IsActive = dto.IsActive;
-        foreach (var p in new[] { nameof(FirstName), nameof(LastName), nameof(Rank),
-                                  nameof(NationalCode), nameof(PersonnelCode), nameof(HealthType) })
-            OnPropertyChanged(p);
+        // Refresh every binding (empty string = "all properties changed").
+        OnPropertyChanged(string.Empty);
     }
 
     [RelayCommand]

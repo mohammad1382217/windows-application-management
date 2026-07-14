@@ -20,6 +20,7 @@ public partial class InputDialog : Window
         var owner = System.Windows.Application.Current.Windows.OfType<Window>().FirstOrDefault(w => w.IsActive);
         var dlg = new InputDialog(prompt, title, defaultValue);
         if (owner is not null && owner.IsVisible) dlg.Owner = owner;
+        else dlg.WindowStartupLocation = WindowStartupLocation.CenterScreen;
         return dlg.ShowDialog() == true ? dlg.ValueBox.Text : null;
     }
 

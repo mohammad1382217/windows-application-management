@@ -1,9 +1,11 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Globalization;
 using CommunityToolkit.Mvvm.Input;
 using MediatR;
 using MilOps.Application.Schedules;
 using MilOps.Domain.Enums;
+using MilOps.Presentation.Common;
 
 namespace MilOps.Presentation.ViewModels;
 
@@ -61,7 +63,8 @@ public sealed partial class ScheduleBuilderViewModel : ViewModelBase
         var rows = new List<GuardAssignmentDto>();
         foreach (var row in Assignments)
         {
-            if (!int.TryParse(row.SoldierId, out var sid) || sid <= 0)
+            // The UI hints show Persian digits (۰۸:۰۰), so accept them here too.
+            if (!int.TryParse(PersianDate.ToLatinDigits(row.SoldierId), out var sid) || sid <= 0)
             {
                 ErrorMessage = "شناسه سرباز باید عدد صحیح مثبت باشد.";
                 return;
@@ -69,12 +72,12 @@ public sealed partial class ScheduleBuilderViewModel : ViewModelBase
             TimeOnly? start = null, end = null;
             if (!string.IsNullOrWhiteSpace(row.ShiftStart))
             {
-                if (!TimeOnly.TryParse(row.ShiftStart, out var t)) { ErrorMessage = $"فرمت ساعت شروع اشتباه است: {row.ShiftStart}  (مثال: ۰۸:۰۰)"; return; }
+                if (!TryParseTime(row.ShiftStart, out var t)) { ErrorMessage = $"فرمت ساعت شروع اشتباه است: {row.ShiftStart}  (مثال: ۰۸:۰۰)"; return; }
                 start = t;
             }
             if (!string.IsNullOrWhiteSpace(row.ShiftEnd))
             {
-                if (!TimeOnly.TryParse(row.ShiftEnd, out var t)) { ErrorMessage = $"فرمت ساعت پایان اشتباه است: {row.ShiftEnd}  (مثال: ۱۶:۰۰)"; return; }
+                if (!TryParseTime(row.ShiftEnd, out var t)) { ErrorMessage = $"فرمت ساعت پایان اشتباه است: {row.ShiftEnd}  (مثال: ۱۶:۰۰)"; return; }
                 end = t;
             }
             rows.Add(new GuardAssignmentDto(sid, row.Post, row.Shift, start, end,
@@ -90,7 +93,16 @@ public sealed partial class ScheduleBuilderViewModel : ViewModelBase
             if (!r.IsSuccess) { ErrorMessage = r.Error; return; }
             Saved?.Invoke();
         });
+
+        // This window has no per-field error placements; fold any pipeline
+        // validation failures into the single visible error line.
+        if (ErrorMessage is null && FieldErrors.Count > 0)
+            ErrorMessage = string.Join("\n", FieldErrors.Values.Distinct());
     }
+
+    private static bool TryParseTime(string text, out TimeOnly time) =>
+        TimeOnly.TryParse(PersianDate.ToLatinDigits(text.Trim()),
+            CultureInfo.InvariantCulture, DateTimeStyles.None, out time);
 
     [RelayCommand]
     private void Cancel() => Cancelled?.Invoke();

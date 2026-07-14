@@ -28,8 +28,9 @@ public sealed partial class TokensViewModel : ViewModelBase
     public string NationalCode { get; set; } = string.Empty;
     public string PersonnelCode { get; set; } = string.Empty;
     public string Rank { get; set; } = string.Empty;
-    public DateTime ServiceStart { get; set; } = DateTime.Today;
-    public DateTime ServiceEnd { get; set; } = DateTime.Today.AddYears(1);
+    // Nullable: the date pickers can be cleared by the user; Generate validates.
+    public DateTime? ServiceStart { get; set; } = DateTime.Today;
+    public DateTime? ServiceEnd { get; set; } = DateTime.Today.AddYears(1);
     public TokenPurpose Purpose { get; set; } = TokenPurpose.AccountActivation;
     public int ValidDays { get; set; } = 7;
 
@@ -37,7 +38,12 @@ public sealed partial class TokensViewModel : ViewModelBase
     public TokenStatus? StatusFilter
     {
         get => _statusFilter;
-        set { _statusFilter = value; OnPropertyChanged(); }
+        set
+        {
+            if (_statusFilter == value) return;
+            _statusFilter = value; OnPropertyChanged();
+            _ = LoadAsync(); // filter changes apply immediately
+        }
     }
 
     private TokenListItemDto? _selected;
@@ -66,21 +72,37 @@ public sealed partial class TokensViewModel : ViewModelBase
     {
         await RunAsync(async () =>
         {
+            if (ServiceStart is null || ServiceEnd is null)
+            {
+                ErrorMessage = "تاریخ شروع و پایان خدمت را وارد کنید.";
+                return;
+            }
+
             var cmd = new GenerateTokenCommand(
                 FirstName, LastName, NationalCode, PersonnelCode, Rank,
-                DateOnly.FromDateTime(ServiceStart), DateOnly.FromDateTime(ServiceEnd),
+                DateOnly.FromDateTime(ServiceStart.Value), DateOnly.FromDateTime(ServiceEnd.Value),
                 Purpose, ValidDays);
             var r = await _sender.Send(cmd);
             if (!r.IsSuccess || r.Value is null) { ErrorMessage = r.Error; return; }
 
-            // Show the plaintext EXACTLY ONCE. It cannot be retrieved again.
-            Clipboard.SetText(r.Value.PlaintextToken);
+            // Show the plaintext EXACTLY ONCE. It cannot be retrieved again, so
+            // the reveal dialog must never be skipped — a locked clipboard is
+            // reported inside the dialog instead of aborting before it.
+            bool copied;
+            try { Clipboard.SetText(r.Value.PlaintextToken); copied = true; }
+            catch (Exception ex)
+            {
+                copied = false;
+                Serilog.Log.Warning(ex, "Clipboard unavailable while revealing token.");
+            }
             _dialogs.Info(
                 "توکن ایجاد شد — آن را در جای امنی ذخیره کنید.\n\n" +
                 $"دارنده: {r.Value.FirstName} {r.Value.LastName}\n" +
-                $"هدف: {r.Value.Purpose}\n" +
-                $"انقضا (UTC): {r.Value.ExpiresAtUtc:u}\n\n" +
-                $"توکن (در کلیپ‌بورد کپی شد):\n{r.Value.PlaintextToken}\n\n" +
+                $"هدف: {Common.EnumText.Describe(r.Value.Purpose)}\n" +
+                $"انقضا: {Common.PersianDate.ToJalaliDateTime(r.Value.ExpiresAtUtc)}\n\n" +
+                (copied
+                    ? $"توکن (در کلیپ‌بورد کپی شد):\n{r.Value.PlaintextToken}\n\n"
+                    : $"توکن (کپی خودکار ناموفق بود — همین حالا آن را یادداشت کنید):\n{r.Value.PlaintextToken}\n\n") +
                 "این توکن دیگر نمایش داده نخواهد شد. فقط نسخه هش‌شده ذخیره می‌شود.",
                 "توکن ایجاد شد");
             await LoadAsync();

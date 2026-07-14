@@ -54,6 +54,11 @@ public partial class JalaliDatePicker : UserControl
 
     private void CalBtn_Click(object sender, RoutedEventArgs e)
     {
+        // With StaysOpen=False the outside-click that lands on this button has
+        // already closed the popup just before Click fires; without this guard
+        // the button could only ever open the calendar, never toggle it shut.
+        if ((DateTime.UtcNow - _popupLastClosedUtc).TotalMilliseconds < 250) return;
+
         // Align view to current SelectedDate if set
         if (SelectedDate.HasValue)
         {
@@ -63,6 +68,10 @@ public partial class JalaliDatePicker : UserControl
         BuildDays();
         CalendarPopup.IsOpen = true;
     }
+
+    private DateTime _popupLastClosedUtc = DateTime.MinValue;
+    private void CalendarPopup_Closed(object sender, EventArgs e) =>
+        _popupLastClosedUtc = DateTime.UtcNow;
 
     private void PrevMonth_Click(object sender, RoutedEventArgs e)
     {

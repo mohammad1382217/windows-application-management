@@ -26,7 +26,20 @@ public sealed partial class AuditViewModel : ViewModelBase
     private DateTime? _to;
     public DateTime? To { get => _to; set { _to = value; OnPropertyChanged(); } }
     private AuditAction? _actionFilter;
-    public AuditAction? ActionFilter { get => _actionFilter; set { _actionFilter = value; OnPropertyChanged(); } }
+    public AuditAction? ActionFilter
+    {
+        get => _actionFilter;
+        set
+        {
+            if (_actionFilter == value) return;
+            _actionFilter = value; OnPropertyChanged();
+            ClearActionFilterCommand.NotifyCanExecuteChanged();
+        }
+    }
+
+    [RelayCommand(CanExecute = nameof(CanClearActionFilter))]
+    private void ClearActionFilter() { ActionFilter = null; _ = LoadAsync(); }
+    private bool CanClearActionFilter() => ActionFilter is not null;
 
     public AuditViewModel(ISender sender, IDialogService dialogs, IPrintService print)
     { _sender = sender; _dialogs = dialogs; _print = print; }
@@ -39,6 +52,7 @@ public sealed partial class AuditViewModel : ViewModelBase
             var items = await _sender.Send(new QueryAuditQuery(From, To, ActionFilter));
             Items.Clear();
             foreach (var e in items) Items.Add(e);
+            PrintCommand.NotifyCanExecuteChanged();
         });
     }
 
@@ -53,8 +67,23 @@ public sealed partial class AuditViewModel : ViewModelBase
         });
     }
 
-    [RelayCommand]
+    [RelayCommand(CanExecute = nameof(CanPrint))]
     private void Print()
+    {
+        try
+        {
+            PrintCore();
+        }
+        catch (Exception ex)
+        {
+            Serilog.Log.Error(ex, "Print failed in AuditViewModel.");
+            _dialogs.Error("چاپ انجام نشد. از اتصال و روشن بودن چاپگر اطمینان حاصل کنید.");
+        }
+    }
+
+    private bool CanPrint() => Items.Count > 0;
+
+    private void PrintCore()
     {
         var doc = _print.BuildTableReport(
             "گزارش حسابرسی", PersianDate.ToPersianDigits($"{Items.Count} رویداد"),

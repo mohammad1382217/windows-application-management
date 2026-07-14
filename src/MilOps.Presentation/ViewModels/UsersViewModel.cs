@@ -59,13 +59,13 @@ public sealed partial class UsersViewModel : ViewModelBase
     private async Task ChangePasswordAsync()
     {
         if (Selected is null) return;
-        var pw = InputDialog.Prompt($"New password for '{Selected.Username}':", "Change Password", "");
+        var pw = InputDialog.Prompt($"گذرواژه جدید برای «{Selected.Username}»:", "بازنشانی گذرواژه", "");
         if (string.IsNullOrWhiteSpace(pw)) return;
         await RunAsync(async () =>
         {
             var r = await _sender.Send(new ChangePasswordCommand(Selected.Id, pw));
             if (!r.IsSuccess) _dialogs.Error(r.Error);
-            else _dialogs.Info("Password updated and recorded in the audit log.");
+            else _dialogs.Info("گذرواژه به‌روزرسانی شد و در گزارش حسابرسی ثبت گردید.");
         });
     }
 
@@ -73,7 +73,7 @@ public sealed partial class UsersViewModel : ViewModelBase
     private async Task DeactivateAsync()
     {
         if (Selected is null) return;
-        if (!_dialogs.Confirm($"Deactivate user '{Selected.Username}'? They will not be able to log in.")) return;
+        if (!_dialogs.Confirm($"کاربر «{Selected.Username}» غیرفعال شود؟ پس از آن امکان ورود به سامانه را نخواهد داشت.")) return;
         await RunAsync(async () =>
         {
             var r = await _sender.Send(new DeactivateUserCommand(Selected.Id));

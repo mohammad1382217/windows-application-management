@@ -62,7 +62,7 @@
                     Visibility="{Binding Current, Converter={StaticResource NullToVisibilityConverter}}">
                 <StackPanel Orientation="Horizontal">
                     <TextBlock Style="{StaticResource FieldLabel}" Text="وضعیت:"/>
-                    <TextBlock Text="{Binding Current.Status}" FontWeight="Bold" Foreground="{DynamicResource PrimaryBrush}" Margin="6,0,20,0"/>
+                    <TextBlock Text="{Binding Current.Status, Converter={StaticResource EnumDescriptionConverter}}" FontWeight="Bold" Foreground="{DynamicResource PrimaryBrush}" Margin="6,0,20,0"/>
                     <TextBlock Style="{StaticResource FieldLabel}" Text="تاریخ:"/>
                     <TextBlock Text="{Binding Current.Date, Converter={StaticResource JalaliDateConverter}}" Margin="6,0,0,0"/>
                 </StackPanel>
@@ -81,7 +81,8 @@
                     <DataGridTextColumn Header="شناسه سرباز" Binding="{Binding SoldierId}"  Width="110"/>
                     <DataGridTextColumn Header="پست"          Binding="{Binding Post,  Converter={StaticResource EnumDescriptionConverter}}"   Width="180"/>
                     <DataGridTextColumn Header="شیفت"         Binding="{Binding Shift, Converter={StaticResource EnumDescriptionConverter}}"   Width="100"/>
-                    <DataGridTextColumn Header="ساعت شروع"   Binding="{Binding ShiftStart}"  Width="130"/>
+                    <DataGridTextColumn Header="ساعت شروع"   Binding="{Binding ShiftStart, StringFormat='{}{0:HH\\:mm}'}"  Width="110"/>
+                    <DataGridTextColumn Header="ساعت پایان"  Binding="{Binding ShiftEnd,   StringFormat='{}{0:HH\\:mm}'}"  Width="110"/>
                     <DataGridTextColumn Header="ملاحظات"      Binding="{Binding Note}"       Width="*"/>
                 </DataGrid.Columns>
             </DataGrid>

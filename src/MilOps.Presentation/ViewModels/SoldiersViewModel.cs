@@ -40,8 +40,18 @@ public sealed partial class SoldiersViewModel : ViewModelBase
     public HealthType? HealthFilter
     {
         get => _healthFilter;
-        set { _healthFilter = value; OnPropertyChanged(); }
+        set
+        {
+            if (_healthFilter == value) return;
+            _healthFilter = value; OnPropertyChanged();
+            ClearHealthFilterCommand.NotifyCanExecuteChanged();
+            _ = LoadAsync(); // filter changes apply immediately
+        }
     }
+
+    [RelayCommand(CanExecute = nameof(CanClearHealthFilter))]
+    private void ClearHealthFilter() => HealthFilter = null;
+    private bool CanClearHealthFilter() => HealthFilter is not null;
 
     public SoldiersViewModel(ISender sender, IDialogService dialogs, IPrintService print)
     { _sender = sender; _dialogs = dialogs; _print = print; }
@@ -55,6 +65,7 @@ public sealed partial class SoldiersViewModel : ViewModelBase
             var result = await _sender.Send(new SearchSoldiersQuery(filter));
             Items.Clear();
             foreach (var s in result.Items) Items.Add(s);
+            PrintCommand.NotifyCanExecuteChanged();
         });
     }
 
@@ -83,7 +94,7 @@ public sealed partial class SoldiersViewModel : ViewModelBase
     private async Task DeleteAsync()
     {
         if (Selected is null) return;
-        if (!_dialogs.Confirm($"Delete soldier '{Selected.FirstName} {Selected.LastName}'? This is recorded in the audit log.")) return;
+        if (!_dialogs.Confirm($"سرباز «{Selected.FirstName} {Selected.LastName}» حذف شود؟ این عملیات در گزارش حسابرسی ثبت می‌شود.")) return;
         await RunAsync(async () =>
         {
             var r = await _sender.Send(new DeleteSoldierCommand(Selected.Id));
@@ -92,8 +103,23 @@ public sealed partial class SoldiersViewModel : ViewModelBase
         });
     }
 
-    [RelayCommand]
+    [RelayCommand(CanExecute = nameof(CanPrint))]
     private void Print()
+    {
+        try
+        {
+            PrintCore();
+        }
+        catch (Exception ex)
+        {
+            Serilog.Log.Error(ex, "Print failed in SoldiersViewModel.");
+            _dialogs.Error("چاپ انجام نشد. از اتصال و روشن بودن چاپگر اطمینان حاصل کنید.");
+        }
+    }
+
+    private bool CanPrint() => Items.Count > 0;
+
+    private void PrintCore()
     {
         var doc = _print.BuildTableReport(
             "لیست سربازان",

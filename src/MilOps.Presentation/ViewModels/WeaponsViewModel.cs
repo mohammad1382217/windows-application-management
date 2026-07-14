@@ -41,6 +41,7 @@ public sealed partial class WeaponsViewModel : ViewModelBase
             var items = await _sender.Send(new ListWeaponsQuery());
             Items.Clear();
             foreach (var w in items) Items.Add(w);
+            PrintAllCommand.NotifyCanExecuteChanged();
         });
     }
 
@@ -63,7 +64,9 @@ public sealed partial class WeaponsViewModel : ViewModelBase
     {
         if (Selected is null) return;
         var soldierIdText = InputDialog.Prompt("شناسه سرباز برای تحویل سلاح:", "تحویل سلاح", "");
-        if (!int.TryParse(soldierIdText, out var soldierId)) { _dialogs.Warning("شناسه سرباز نامعتبر است."); return; }
+        if (soldierIdText is null) return; // user cancelled
+        if (!int.TryParse(PersianDate.ToLatinDigits(soldierIdText), out var soldierId) || soldierId <= 0)
+        { _dialogs.Warning("شناسه سرباز نامعتبر است."); return; }
         var note = InputDialog.Prompt("یادداشت (اختیاری):", "تحویل سلاح", "") ?? string.Empty;
         await RunAsync(async () =>
         {
@@ -77,8 +80,10 @@ public sealed partial class WeaponsViewModel : ViewModelBase
     private async Task ReturnAsync()
     {
         if (Selected is null) return;
+        if (!_dialogs.Confirm($"سلاح «{Selected.WeaponNumber}» بازگردانده شود؟")) return;
         var ammoText = InputDialog.Prompt("تعداد مهمات بازگشتی (اختیاری):", "بازگرداندن سلاح", "0");
-        int.TryParse(ammoText, out var ammo);
+        if (ammoText is null) return; // user cancelled
+        int.TryParse(PersianDate.ToLatinDigits(ammoText), out var ammo);
         await RunAsync(async () =>
         {
             var r = await _sender.Send(new ReturnWeaponCommand(Selected.Id, ammo, null));
@@ -110,8 +115,23 @@ public sealed partial class WeaponsViewModel : ViewModelBase
         });
     }
 
-    [RelayCommand]
+    [RelayCommand(CanExecute = nameof(CanPrintAll))]
     private void PrintAll()
+    {
+        try
+        {
+            PrintAllCore();
+        }
+        catch (Exception ex)
+        {
+            Serilog.Log.Error(ex, "Print failed in WeaponsViewModel.");
+            _dialogs.Error("چاپ انجام نشد. از اتصال و روشن بودن چاپگر اطمینان حاصل کنید.");
+        }
+    }
+
+    private bool CanPrintAll() => Items.Count > 0;
+
+    private void PrintAllCore()
     {
         var doc = _print.BuildTableReport(
             "فهرست تسلیحات یگان",

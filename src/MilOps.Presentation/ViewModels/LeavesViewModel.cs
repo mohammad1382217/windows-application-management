@@ -19,17 +19,28 @@ public sealed partial class LeavesViewModel : ViewModelBase
     public ObservableCollection<LeaveDto> Items { get; } = new();
 
     public int NewSoldierId { get; set; }
-    public DateTime NewStart { get; set; } = DateTime.Today;
-    public DateTime NewEnd { get; set; } = DateTime.Today.AddDays(3);
+    // Nullable: the date pickers can be cleared by the user; Request validates.
+    public DateTime? NewStart { get; set; } = DateTime.Today;
+    public DateTime? NewEnd { get; set; } = DateTime.Today.AddDays(3);
     public string NewReason { get; set; } = string.Empty;
 
     private LeaveStatus? _statusFilter;
     public LeaveStatus? StatusFilter
     {
         get => _statusFilter;
-        set { _statusFilter = value; OnPropertyChanged(); }
+        set
+        {
+            if (_statusFilter == value) return;
+            _statusFilter = value; OnPropertyChanged();
+            ClearStatusFilterCommand.NotifyCanExecuteChanged();
+            _ = LoadAsync(); // filter changes apply immediately
+        }
     }
     public Array Statuses => Enum.GetValues(typeof(LeaveStatus));
+
+    [RelayCommand(CanExecute = nameof(CanClearStatusFilter))]
+    private void ClearStatusFilter() => StatusFilter = null;
+    private bool CanClearStatusFilter() => StatusFilter is not null;
 
     private LeaveDto? _selected;
     public LeaveDto? Selected
@@ -49,6 +60,7 @@ public sealed partial class LeavesViewModel : ViewModelBase
             var items = await _sender.Send(new ListLeavesQuery(StatusFilter));
             Items.Clear();
             foreach (var l in items) Items.Add(l);
+            PrintCommand.NotifyCanExecuteChanged();
         });
     }
 
@@ -56,10 +68,11 @@ public sealed partial class LeavesViewModel : ViewModelBase
     private async Task RequestAsync()
     {
         if (NewSoldierId <= 0) { ErrorMessage = "شناسه سرباز الزامی است."; return; }
+        if (NewStart is null || NewEnd is null) { ErrorMessage = "تاریخ شروع و پایان مرخصی را وارد کنید."; return; }
         await RunAsync(async () =>
         {
             var r = await _sender.Send(new CreateLeaveCommand(NewSoldierId,
-                DateOnly.FromDateTime(NewStart), DateOnly.FromDateTime(NewEnd), NewReason));
+                DateOnly.FromDateTime(NewStart.Value), DateOnly.FromDateTime(NewEnd.Value), NewReason));
             if (!r.IsSuccess) { ErrorMessage = r.Error; return; }
             NewReason = string.Empty; NewSoldierId = 0;
             OnPropertyChanged(nameof(NewReason)); OnPropertyChanged(nameof(NewSoldierId));
@@ -91,8 +104,23 @@ public sealed partial class LeavesViewModel : ViewModelBase
         });
     }
 
-    [RelayCommand]
+    [RelayCommand(CanExecute = nameof(CanPrint))]
     private void Print()
+    {
+        try
+        {
+            PrintCore();
+        }
+        catch (Exception ex)
+        {
+            Serilog.Log.Error(ex, "Print failed in LeavesViewModel.");
+            _dialogs.Error("چاپ انجام نشد. از اتصال و روشن بودن چاپگر اطمینان حاصل کنید.");
+        }
+    }
+
+    private bool CanPrint() => Items.Count > 0;
+
+    private void PrintCore()
     {
         var doc = _print.BuildTableReport(
             "سوابق مرخصی", PersianDate.ToPersianDigits($"{Items.Count} رکورد"),
@@ -107,5 +135,7 @@ public sealed partial class LeavesViewModel : ViewModelBase
         _print.Print(doc, "سوابق مرخصی");
     }
 
-    private bool CanDecide() => Selected is not null;
+    // Only pending requests can be approved/rejected; the domain enforces this
+    // too, but the buttons should not invite an action that will always fail.
+    private bool CanDecide() => Selected is { Status: LeaveStatus.Requested };
 }

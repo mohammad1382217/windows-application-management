@@ -80,6 +80,9 @@
                             Command="{Binding LoadCommand}" Padding="14,7" Margin="0,0,16,0"/>
                     <TextBlock Text="فیلتر وضعیت:" Style="{StaticResource FieldLabel}" VerticalAlignment="Center" Margin="0,0,8,0"/>
                     <ComboBox ItemsSource="{Binding Statuses}" SelectedItem="{Binding StatusFilter}" Width="130"/>
+                    <Button Content="✕" Style="{StaticResource SecondaryButton}"
+                            Command="{Binding ClearStatusFilterCommand}"
+                            ToolTip="حذف فیلتر وضعیت" Padding="8,7" Margin="4,0,0,0"/>
                 </StackPanel>
             </Border>
 

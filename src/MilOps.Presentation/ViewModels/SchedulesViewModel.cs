@@ -62,7 +62,7 @@ public sealed partial class SchedulesViewModel : ViewModelBase
     private async Task ApproveAsync()
     {
         if (Current is null) return;
-        if (!_dialogs.Confirm("Approve this schedule for printing? This is recorded in the audit log.")) return;
+        if (!_dialogs.Confirm("این برنامه برای چاپ تأیید شود؟ این عملیات در گزارش حسابرسی ثبت می‌شود.")) return;
         await RunAsync(async () =>
         {
             var r = await _sender.Send(new ApproveScheduleCommand(Current.Id));
@@ -74,6 +74,19 @@ public sealed partial class SchedulesViewModel : ViewModelBase
     private void Print()
     {
         if (Current is null) { _dialogs.Warning("برای این تاریخ برنامه‌ای بارگذاری نشده است."); return; }
+        try
+        {
+            PrintCore();
+        }
+        catch (Exception ex)
+        {
+            Serilog.Log.Error(ex, "Print failed in SchedulesViewModel.");
+            _dialogs.Error("چاپ انجام نشد. از اتصال و روشن بودن چاپگر اطمینان حاصل کنید.");
+        }
+    }
+
+    private void PrintCore()
+    {
         var doc = _print.BuildTableReport(
             "لوح پستی — برنامه نگهبانی روزانه",
             $"تاریخ: {PersianDate.ToJalali(Current.Date)} · وضعیت: {EnumText.Describe(Current.Status)}",
@@ -89,5 +102,6 @@ public sealed partial class SchedulesViewModel : ViewModelBase
         _print.Print(doc, "لوح پستی");
     }
 
-    private bool CanApprove() => Current is not null;
+    private bool CanApprove() =>
+        Current is { Status: not Domain.Enums.ScheduleStatus.Approved };
 }

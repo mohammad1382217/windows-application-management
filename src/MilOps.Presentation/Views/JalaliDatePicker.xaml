@@ -185,6 +185,7 @@
                AllowsTransparency="True"
                IsOpen="False"
                StaysOpen="False"
+               Closed="CalendarPopup_Closed"
                PlacementTarget="{Binding ElementName=OuterBorder}"
                Placement="Bottom"
                VerticalOffset="6"

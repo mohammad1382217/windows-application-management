@@ -52,9 +52,17 @@
                     <!-- Search + filter (visual left) -->
                     <StackPanel Grid.Column="2" Orientation="Horizontal">
                         <ComboBox ItemsSource="{Binding HealthTypes}" SelectedItem="{Binding HealthFilter}"
-                                  Width="130" Margin="0,0,8,0"/>
+                                  ToolTip="فیلتر وضعیت سلامت" Width="130" Margin="0,0,4,0"/>
+                        <Button Content="✕" Style="{StaticResource SecondaryButton}"
+                                Command="{Binding ClearHealthFilterCommand}"
+                                ToolTip="حذف فیلتر سلامت" Padding="8,7" Margin="0,0,8,0"/>
                         <TextBox Text="{Binding Search, UpdateSourceTrigger=PropertyChanged}"
-                                 Width="200" Padding="10,7" FlowDirection="RightToLeft"/>
+                                 Width="200" Padding="10,7" FlowDirection="RightToLeft"
+                                 ToolTip="جست‌وجو در نام، کد ملی و کد پرسنلی">
+                            <TextBox.InputBindings>
+                                <KeyBinding Key="Return" Command="{Binding LoadCommand}"/>
+                            </TextBox.InputBindings>
+                        </TextBox>
                         <Button Content="🔍" Style="{StaticResource SecondaryButton}"
                                 Command="{Binding LoadCommand}" Padding="12,7" Margin="8,0,0,0"/>
                     </StackPanel>

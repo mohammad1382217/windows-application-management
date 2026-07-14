@@ -50,6 +50,7 @@ public sealed partial class LoginViewModel : ViewModelBase
     [RelayCommand(CanExecute = nameof(CanLogin))]
     private async Task LoginAsync()
     {
+        Hint = null; // stale error from the previous attempt must not linger
         await RunAsync(async () =>
         {
             var result = await _sender.Send(new LoginCommand(Username.Trim(), Password));
@@ -65,9 +66,14 @@ public sealed partial class LoginViewModel : ViewModelBase
             {
                 Hint = result.Error;
                 // Clear the password from memory-binding on failure.
+                // LoginWindow watches this and clears the PasswordBox too,
+                // keeping the visual state and CanLogin in sync.
                 Password = string.Empty;
             }
         });
+        // Non-validation failures (DB down, crypto, ...) land in ErrorMessage;
+        // surface them in the same hint area the user is already looking at.
+        if (ErrorMessage is { Length: > 0 } err) Hint = err;
     }
 
     // Keep CanLogin in sync as busy changes.
