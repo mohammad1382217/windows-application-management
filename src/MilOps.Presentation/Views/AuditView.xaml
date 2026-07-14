@@ -51,7 +51,13 @@
                     <StackPanel Grid.Column="2" Margin="0,0,12,0">
                         <TextBlock Text="نوع عملیات" Style="{StaticResource FieldLabel}" Margin="0,0,0,5"/>
                         <StackPanel Orientation="Horizontal">
-                            <ComboBox ItemsSource="{Binding Actions}" SelectedItem="{Binding ActionFilter}" Width="160"/>
+                            <Grid>
+                                <ComboBox ItemsSource="{Binding Actions}" SelectedItem="{Binding ActionFilter}" Width="160"/>
+                                <TextBlock Text="همه عملیات‌ها" IsHitTestVisible="False"
+                                           Foreground="{DynamicResource MutedBrush}" FontSize="12"
+                                           VerticalAlignment="Center" Margin="12,0,12,0"
+                                           Visibility="{Binding ActionFilter, Converter={StaticResource NullToVisibilityConverter}, ConverterParameter=inverse}"/>
+                            </Grid>
                             <Button Content="✕" Style="{StaticResource SecondaryButton}"
                                     Command="{Binding ClearActionFilterCommand}"
                                     ToolTip="حذف فیلتر عملیات" Padding="8,5" Margin="4,0,0,0"/>

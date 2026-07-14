@@ -37,6 +37,10 @@
          (shared UpgradeCode). Downgrades are blocked. -->
     <MajorUpgrade DowngradeErrorMessage="A newer version of MilOps is already installed." />
 
+    <!-- Embed the cab INSIDE the MSI so the release is one self-contained file;
+         without this the payload lands in a loose cab1.cab beside the MSI. -->
+    <MediaTemplate EmbedCab="yes" />
+
     <!-- Per-machine install scope is declared on Package (Scope="perMachine"),
          which sets ALLUSERS=1 automatically. -->
 

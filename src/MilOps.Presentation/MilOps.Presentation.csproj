@@ -8,6 +8,9 @@
     <AssemblyName>MilOps</AssemblyName>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <ApplicationIcon Condition="Exists('app.ico')">app.ico</ApplicationIcon>
+    <!-- Keep the win-x64 target in every restore so the release script's
+         self-contained publish (-r win-x64) never hits NETSDK1047. -->
+    <RuntimeIdentifiers>win-x64</RuntimeIdentifiers>
   </PropertyGroup>
 
   <ItemGroup>

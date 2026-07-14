@@ -79,8 +79,10 @@ if ($LASTEXITCODE -ne 0) { throw "Asset generation failed." }
 # ---------------------------------------------------------------------------
 Write-Host "`n[4/5] Building WiX MSI..." -ForegroundColor Yellow
 New-Item -ItemType Directory -Force -Path $artifacts | Out-Null
-$msbuild = & "${env:ProgramFiles}\Microsoft Visual Studio\Installer\vswhere.exe" `
-    -latest -prerelease -property installationPath 2>$null
+$vswhere = "${env:ProgramFiles}\Microsoft Visual Studio\Installer\vswhere.exe"
+$msbuild = if (Test-Path $vswhere) {
+    & $vswhere -latest -prerelease -property installationPath 2>$null
+} else { $null }
 $msbuildExe = if ($msbuild) { Join-Path $msbuild "MSBuild\Current\Bin\MSBuild.exe" } else { $null }
 
 if ($msbuildExe -and (Test-Path $msbuildExe)) {
@@ -130,5 +132,5 @@ if (-not $SkipSign -and $env:MOPS_SIGN_PFX -and (Test-Path $env:MOPS_SIGN_PFX)) 
 }
 
 Write-Host "`n==> Release artifact: $versionedMsi" -ForegroundColor Cyan
-Write-Host "    (unsigned — configure signing per README to sign future releases)" -ForegroundColor DarkGray
+Write-Host "    (unsigned - configure signing per README to sign future releases)" -ForegroundColor DarkGray
 return $versionedMsi

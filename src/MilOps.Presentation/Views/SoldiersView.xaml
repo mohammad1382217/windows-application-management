@@ -51,20 +51,35 @@
 
                     <!-- Search + filter (visual left) -->
                     <StackPanel Grid.Column="2" Orientation="Horizontal">
-                        <ComboBox ItemsSource="{Binding HealthTypes}" SelectedItem="{Binding HealthFilter}"
-                                  ToolTip="فیلتر وضعیت سلامت" Width="130" Margin="0,0,4,0"/>
+                        <Grid Margin="0,0,4,0">
+                            <ComboBox ItemsSource="{Binding HealthTypes}" SelectedItem="{Binding HealthFilter}"
+                                      ToolTip="فیلتر وضعیت سلامت" Width="130"/>
+                            <!-- Placeholder shown while no filter is selected -->
+                            <TextBlock Text="وضعیت سلامت" IsHitTestVisible="False"
+                                       Foreground="{DynamicResource MutedBrush}" FontSize="12"
+                                       VerticalAlignment="Center" Margin="12,0,12,0"
+                                       Visibility="{Binding HealthFilter, Converter={StaticResource NullToVisibilityConverter}, ConverterParameter=inverse}"/>
+                        </Grid>
                         <Button Content="✕" Style="{StaticResource SecondaryButton}"
                                 Command="{Binding ClearHealthFilterCommand}"
                                 ToolTip="حذف فیلتر سلامت" Padding="8,7" Margin="0,0,8,0"/>
-                        <TextBox Text="{Binding Search, UpdateSourceTrigger=PropertyChanged}"
-                                 Width="200" Padding="10,7" FlowDirection="RightToLeft"
-                                 ToolTip="جست‌وجو در نام، کد ملی و کد پرسنلی">
-                            <TextBox.InputBindings>
-                                <KeyBinding Key="Return" Command="{Binding LoadCommand}"/>
-                            </TextBox.InputBindings>
-                        </TextBox>
+                        <Grid>
+                            <TextBox Text="{Binding Search, UpdateSourceTrigger=PropertyChanged}"
+                                     Width="200" Padding="10,7" FlowDirection="RightToLeft"
+                                     ToolTip="جست‌وجو در نام، کد ملی و کد پرسنلی">
+                                <TextBox.InputBindings>
+                                    <KeyBinding Key="Return" Command="{Binding LoadCommand}"/>
+                                </TextBox.InputBindings>
+                            </TextBox>
+                            <!-- Placeholder shown while the box is empty -->
+                            <TextBlock Text="🔍 جست‌وجوی نام، کد ملی، کد پرسنلی…" IsHitTestVisible="False"
+                                       Foreground="{DynamicResource MutedBrush}" FontSize="12"
+                                       VerticalAlignment="Center" Margin="12,0,12,0"
+                                       Visibility="{Binding Search, Converter={StaticResource NullToVisibilityConverter}, ConverterParameter=inverse}"/>
+                        </Grid>
                         <Button Content="🔍" Style="{StaticResource SecondaryButton}"
-                                Command="{Binding LoadCommand}" Padding="12,7" Margin="8,0,0,0"/>
+                                Command="{Binding LoadCommand}" ToolTip="اجرای جست‌وجو"
+                                Padding="12,7" Margin="8,0,0,0"/>
                     </StackPanel>
                 </Grid>
             </Border>
