@@ -42,6 +42,7 @@ public sealed partial class WeaponsViewModel : ViewModelBase
             Items.Clear();
             foreach (var w in items) Items.Add(w);
             PrintAllCommand.NotifyCanExecuteChanged();
+            ExportPdfCommand.NotifyCanExecuteChanged();
         });
     }
 
@@ -120,7 +121,7 @@ public sealed partial class WeaponsViewModel : ViewModelBase
     {
         try
         {
-            PrintAllCore();
+            _print.Print(BuildReport(), "فهرست تسلیحات");
         }
         catch (Exception ex)
         {
@@ -129,11 +130,25 @@ public sealed partial class WeaponsViewModel : ViewModelBase
         }
     }
 
+    [RelayCommand(CanExecute = nameof(CanPrintAll))]
+    private void ExportPdf()
+    {
+        try
+        {
+            _print.ExportToPdf(BuildReport(), "فهرست تسلیحات.pdf");
+        }
+        catch (Exception ex)
+        {
+            Serilog.Log.Error(ex, "PDF export failed in WeaponsViewModel.");
+            _dialogs.Error("ساخت فایل PDF انجام نشد.");
+        }
+    }
+
     private bool CanPrintAll() => Items.Count > 0;
 
-    private void PrintAllCore()
+    private System.Windows.Documents.FlowDocument BuildReport()
     {
-        var doc = _print.BuildTableReport(
+        return _print.BuildTableReport(
             "فهرست تسلیحات یگان",
             PersianDate.ToPersianDigits($"موجودی اسلحه‌خانه — {Items.Count} قبضه"),
             new[] { "شماره سلاح", "نوع", "وضعیت", "مدل", "تخصیص به" },
@@ -143,7 +158,6 @@ public sealed partial class WeaponsViewModel : ViewModelBase
                 w.Model ?? "—",
                 w.CurrentlyAssignedSoldierId is { } sid ? PersianDate.ToPersianDigits(sid.ToString()) : "—"
             }));
-        _print.Print(doc, "فهرست تسلیحات");
     }
 
     private bool CanAct() => Selected is not null;

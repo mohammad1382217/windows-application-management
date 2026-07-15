@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:v="clr-namespace:MilOps.Presentation.Views"
         Title="{Binding WindowTitle, FallbackValue='ویرایش سرباز'}"
-        Width="480" SizeToContent="Height" MaxHeight="780"
+        Width="480" SizeToContent="Height" MaxHeight="860"
         WindowStartupLocation="CenterOwner"
         ResizeMode="NoResize"
         Background="{DynamicResource SurfaceBrush}">
@@ -145,31 +145,23 @@
                     <!-- Divider -->
                     <Border Height="1" Background="{DynamicResource BorderBrush}" Margin="0,4,0,16"/>
 
-                    <!-- Dates row -->
-                    <Grid Margin="0,0,0,14">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="12"/>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="12"/>
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
-                        <StackPanel Grid.Column="0">
-                            <TextBlock Text="تاریخ ورود" Style="{StaticResource FieldLabel}" Margin="0,0,0,5"/>
-                            <v:JalaliDatePicker SelectedDate="{Binding EntryDate}"/>
-                            <TextBlock Style="{StaticResource FieldError}" Text="{Binding FieldErrors[EntryDate]}"/>
-                        </StackPanel>
-                        <StackPanel Grid.Column="2">
-                            <TextBlock Text="شروع خدمت *" Style="{StaticResource FieldLabel}" Margin="0,0,0,5"/>
-                            <v:JalaliDatePicker SelectedDate="{Binding ServiceStartDate}"/>
-                            <TextBlock Style="{StaticResource FieldError}" Text="{Binding FieldErrors[ServiceStartDate]}"/>
-                        </StackPanel>
-                        <StackPanel Grid.Column="4">
-                            <TextBlock Text="پایان خدمت *" Style="{StaticResource FieldLabel}" Margin="0,0,0,5"/>
-                            <v:JalaliDatePicker SelectedDate="{Binding ServiceEndDate}"/>
-                            <TextBlock Style="{StaticResource FieldError}" Text="{Binding FieldErrors[ServiceEndDate]}"/>
-                        </StackPanel>
-                    </Grid>
+                    <!-- Dates: stacked full-width so each Jalali value is fully
+                         readable — three side-by-side pickers were too cramped. -->
+                    <StackPanel Margin="0,0,0,6">
+                        <TextBlock Text="تاریخ ورود" Style="{StaticResource FieldLabel}" Margin="0,0,0,5"/>
+                        <v:JalaliDatePicker SelectedDate="{Binding EntryDate}"/>
+                        <TextBlock Style="{StaticResource FieldError}" Text="{Binding FieldErrors[EntryDate]}"/>
+                    </StackPanel>
+                    <StackPanel Margin="0,8,0,6">
+                        <TextBlock Text="شروع خدمت *" Style="{StaticResource FieldLabel}" Margin="0,0,0,5"/>
+                        <v:JalaliDatePicker SelectedDate="{Binding ServiceStartDate}"/>
+                        <TextBlock Style="{StaticResource FieldError}" Text="{Binding FieldErrors[ServiceStartDate]}"/>
+                    </StackPanel>
+                    <StackPanel Margin="0,8,0,14">
+                        <TextBlock Text="پایان خدمت *" Style="{StaticResource FieldLabel}" Margin="0,0,0,5"/>
+                        <v:JalaliDatePicker SelectedDate="{Binding ServiceEndDate}"/>
+                        <TextBlock Style="{StaticResource FieldError}" Text="{Binding FieldErrors[ServiceEndDate]}"/>
+                    </StackPanel>
 
                     <!-- Active checkbox (LTR so RTL doesn't mirror the tick box) -->
                     <CheckBox Content="فعال — آماده به خدمت" IsChecked="{Binding IsActive}"

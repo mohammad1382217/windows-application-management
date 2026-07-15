@@ -61,6 +61,7 @@ public sealed partial class LeavesViewModel : ViewModelBase
             Items.Clear();
             foreach (var l in items) Items.Add(l);
             PrintCommand.NotifyCanExecuteChanged();
+            ExportPdfCommand.NotifyCanExecuteChanged();
         });
     }
 
@@ -109,7 +110,7 @@ public sealed partial class LeavesViewModel : ViewModelBase
     {
         try
         {
-            PrintCore();
+            _print.Print(BuildReport(), "سوابق مرخصی");
         }
         catch (Exception ex)
         {
@@ -118,11 +119,25 @@ public sealed partial class LeavesViewModel : ViewModelBase
         }
     }
 
+    [RelayCommand(CanExecute = nameof(CanPrint))]
+    private void ExportPdf()
+    {
+        try
+        {
+            _print.ExportToPdf(BuildReport(), "سوابق مرخصی.pdf");
+        }
+        catch (Exception ex)
+        {
+            Serilog.Log.Error(ex, "PDF export failed in LeavesViewModel.");
+            _dialogs.Error("ساخت فایل PDF انجام نشد.");
+        }
+    }
+
     private bool CanPrint() => Items.Count > 0;
 
-    private void PrintCore()
+    private System.Windows.Documents.FlowDocument BuildReport()
     {
-        var doc = _print.BuildTableReport(
+        return _print.BuildTableReport(
             "سوابق مرخصی", PersianDate.ToPersianDigits($"{Items.Count} رکورد"),
             new[] { "شناسه", "سرباز", "شروع", "پایان", "وضعیت", "علت" },
             Items.Select(l => new[]
@@ -132,7 +147,6 @@ public sealed partial class LeavesViewModel : ViewModelBase
                 PersianDate.ToJalali(l.StartDate), PersianDate.ToJalali(l.EndDate),
                 EnumText.Describe(l.Status), l.Reason
             }));
-        _print.Print(doc, "سوابق مرخصی");
     }
 
     // Only pending requests can be approved/rejected; the domain enforces this

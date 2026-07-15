@@ -43,8 +43,12 @@
                                 Command="{Binding CreateCommand}" Padding="14,7" Margin="0,0,8,0"/>
                         <Button Content="✓ تأیید برنامه" Style="{StaticResource AccentButton}"
                                 Command="{Binding ApproveCommand}" Padding="14,7" Margin="0,0,8,0"/>
+                        <Button Content="⬇ PDF" Style="{StaticResource SecondaryButton}"
+                                Command="{Binding ExportPdfCommand}" Padding="14,7" Margin="0,0,8,0"
+                                ToolTip="ذخیره لوح پستی به‌صورت فایل PDF — بدون نیاز به چاپگر"/>
                         <Button Content="🖨 چاپ برنامه" Style="{StaticResource SecondaryButton}"
-                                Command="{Binding PrintCommand}" Padding="14,7"/>
+                                Command="{Binding PrintCommand}" Padding="14,7"
+                                ToolTip="چاپ مستقیم با چاپگر متصل"/>
                     </StackPanel>
 
                     <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
@@ -56,36 +60,87 @@
                 </Grid>
             </Border>
 
-            <!-- Status bar -->
-            <Border DockPanel.Dock="Top" Background="#F0F4F8" Padding="16,10"
-                    BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,0,1"
-                    Visibility="{Binding Current, Converter={StaticResource NullToVisibilityConverter}}">
-                <StackPanel Orientation="Horizontal">
-                    <TextBlock Style="{StaticResource FieldLabel}" Text="وضعیت:"/>
-                    <TextBlock Text="{Binding Current.Status, Converter={StaticResource EnumDescriptionConverter}}" FontWeight="Bold" Foreground="{DynamicResource PrimaryBrush}" Margin="6,0,20,0"/>
-                    <TextBlock Style="{StaticResource FieldLabel}" Text="تاریخ:"/>
-                    <TextBlock Text="{Binding Current.Date, Converter={StaticResource JalaliDateConverter}}" Margin="6,0,0,0"/>
-                </StackPanel>
-            </Border>
-
             <!-- Error -->
             <TextBlock DockPanel.Dock="Bottom" Text="{Binding ErrorMessage}"
                        Foreground="{DynamicResource DangerBrush}" Margin="14,6,14,0" TextWrapping="Wrap"
                        Visibility="{Binding ErrorMessage, Converter={StaticResource NullToCollapsedConverter}}"/>
 
-            <!-- Data -->
-            <DataGrid FlowDirection="RightToLeft"
-                      ItemsSource="{Binding Assignments}" AutoGenerateColumns="False"
-                      IsReadOnly="True" CanUserAddRows="False">
-                <DataGrid.Columns>
-                    <DataGridTextColumn Header="شناسه سرباز" Binding="{Binding SoldierId}"  Width="110"/>
-                    <DataGridTextColumn Header="پست"          Binding="{Binding Post,  Converter={StaticResource EnumDescriptionConverter}}"   Width="180"/>
-                    <DataGridTextColumn Header="شیفت"         Binding="{Binding Shift, Converter={StaticResource EnumDescriptionConverter}}"   Width="100"/>
-                    <DataGridTextColumn Header="ساعت شروع"   Binding="{Binding ShiftStart, StringFormat='{}{0:HH\\:mm}'}"  Width="110"/>
-                    <DataGridTextColumn Header="ساعت پایان"  Binding="{Binding ShiftEnd,   StringFormat='{}{0:HH\\:mm}'}"  Width="110"/>
-                    <DataGridTextColumn Header="ملاحظات"      Binding="{Binding Note}"       Width="*"/>
-                </DataGrid.Columns>
-            </DataGrid>
+            <!-- Master (recent schedules) / Detail (board of the clicked schedule) -->
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="260"/>
+                    <ColumnDefinition Width="1"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Recent schedules list -->
+                <DockPanel Grid.Column="0">
+                    <Border DockPanel.Dock="Top" Background="#F8FAFC" Padding="12,8"
+                            BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,0,1">
+                        <TextBlock Text="برنامه‌های اخیر — برای مشاهده لوح کلیک کنید"
+                                   Style="{StaticResource FieldLabel}" TextWrapping="Wrap"/>
+                    </Border>
+                    <DataGrid FlowDirection="RightToLeft"
+                              ItemsSource="{Binding Schedules}" SelectedItem="{Binding SelectedSchedule}"
+                              AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False"
+                              HeadersVisibility="Column" GridLinesVisibility="Horizontal">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="تاریخ" Width="110"
+                                Binding="{Binding Date, Converter={StaticResource JalaliDateConverter}}"/>
+                            <DataGridTextColumn Header="وضعیت" Width="90"
+                                Binding="{Binding Status, Converter={StaticResource EnumDescriptionConverter}}"/>
+                            <DataGridTextColumn Header="نفرات" Width="55"
+                                Binding="{Binding AssignmentCount, Converter={StaticResource PersianDigitsConverter}}"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </DockPanel>
+
+                <Border Grid.Column="1" Background="{DynamicResource BorderBrush}"/>
+
+                <!-- Board (لوح) of the selected/loaded schedule -->
+                <DockPanel Grid.Column="2">
+                    <Border DockPanel.Dock="Top" Background="#F0F4F8" Padding="16,10"
+                            BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,0,1"
+                            Visibility="{Binding Current, Converter={StaticResource NullToVisibilityConverter}}">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Style="{StaticResource FieldLabel}" Text="وضعیت:"/>
+                            <TextBlock Text="{Binding Current.Status, Converter={StaticResource EnumDescriptionConverter}}" FontWeight="Bold" Foreground="{DynamicResource PrimaryBrush}" Margin="6,0,20,0"/>
+                            <TextBlock Style="{StaticResource FieldLabel}" Text="تاریخ:"/>
+                            <TextBlock Text="{Binding Current.Date, Converter={StaticResource JalaliDateConverter}}" Margin="6,0,0,0"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Empty placeholder when nothing is opened yet -->
+                    <TextBlock DockPanel.Dock="Top"
+                               Text="از فهرست سمت راست یک برنامه انتخاب کنید، یا یک تاریخ را از بالا بارگذاری نمایید."
+                               Foreground="{DynamicResource MutedBrush}" FontSize="13"
+                               HorizontalAlignment="Center" Margin="0,40,0,0">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding Current}" Value="{x:Null}">
+                                        <Setter Property="Visibility" Value="Visible"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+
+                    <DataGrid FlowDirection="RightToLeft"
+                              ItemsSource="{Binding Assignments}" AutoGenerateColumns="False"
+                              IsReadOnly="True" CanUserAddRows="False">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="سرباز" Binding="{Binding SoldierDisplay}" Width="180"/>
+                            <DataGridTextColumn Header="پست"          Binding="{Binding Post,  Converter={StaticResource EnumDescriptionConverter}}"   Width="180"/>
+                            <DataGridTextColumn Header="شیفت"         Binding="{Binding Shift, Converter={StaticResource EnumDescriptionConverter}}"   Width="100"/>
+                            <DataGridTextColumn Header="ساعت شروع"   Binding="{Binding ShiftStart, StringFormat='{}{0:HH\\:mm}'}"  Width="110"/>
+                            <DataGridTextColumn Header="ساعت پایان"  Binding="{Binding ShiftEnd,   StringFormat='{}{0:HH\\:mm}'}"  Width="110"/>
+                            <DataGridTextColumn Header="ملاحظات"      Binding="{Binding Note}"       Width="*"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </DockPanel>
+            </Grid>
 
         </DockPanel>
     </Border>

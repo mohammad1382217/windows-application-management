@@ -66,6 +66,7 @@ public sealed partial class SoldiersViewModel : ViewModelBase
             Items.Clear();
             foreach (var s in result.Items) Items.Add(s);
             PrintCommand.NotifyCanExecuteChanged();
+            ExportPdfCommand.NotifyCanExecuteChanged();
         });
     }
 
@@ -108,7 +109,7 @@ public sealed partial class SoldiersViewModel : ViewModelBase
     {
         try
         {
-            PrintCore();
+            _print.Print(BuildReport(), "لیست سربازان");
         }
         catch (Exception ex)
         {
@@ -117,11 +118,25 @@ public sealed partial class SoldiersViewModel : ViewModelBase
         }
     }
 
+    [RelayCommand(CanExecute = nameof(CanPrint))]
+    private void ExportPdf()
+    {
+        try
+        {
+            _print.ExportToPdf(BuildReport(), "لیست سربازان.pdf");
+        }
+        catch (Exception ex)
+        {
+            Serilog.Log.Error(ex, "PDF export failed in SoldiersViewModel.");
+            _dialogs.Error("ساخت فایل PDF انجام نشد.");
+        }
+    }
+
     private bool CanPrint() => Items.Count > 0;
 
-    private void PrintCore()
+    private System.Windows.Documents.FlowDocument BuildReport()
     {
-        var doc = _print.BuildTableReport(
+        return _print.BuildTableReport(
             "لیست سربازان",
             PersianDate.ToPersianDigits($"پرسنل یگان — {Items.Count} نفر"),
             new[] { "کد پرسنلی", "نام", "نام خانوادگی", "درجه", "کد ملی", "یگان/بخش", "سلامت", "فعال" },
@@ -131,6 +146,5 @@ public sealed partial class SoldiersViewModel : ViewModelBase
                 PersianDate.ToPersianDigits(s.NationalCode), s.DepartmentName,
                 EnumText.Describe(s.HealthType), s.IsActive ? "بله" : "خیر"
             }));
-        _print.Print(doc, "لیست سربازان");
     }
 }

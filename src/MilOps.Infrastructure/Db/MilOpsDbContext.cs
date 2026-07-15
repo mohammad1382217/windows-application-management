@@ -297,7 +297,11 @@ public class MilOpsDbContext : DbContext
         {
             e.ToTable("weapon_assignments");
             e.HasKey(x => x.Id);
-            e.HasOne<Weapon>().WithMany().HasForeignKey(x => x.WeaponId).OnDelete(DeleteBehavior.Cascade);
+            // NOTE: the weapon<->assignment relationship is configured ONCE, on
+            // Weapon (HasMany(History)...HasForeignKey(WeaponId)). A second
+            // HasOne<Weapon>().WithMany() here used to create a DUPLICATE
+            // relationship with a shadow FK column (WeaponId1) — same defect
+            // that broke guard_assignments.
             e.Property(x => x.Note).HasMaxLength(200);
         });
 

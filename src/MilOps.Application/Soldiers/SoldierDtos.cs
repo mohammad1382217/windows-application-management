@@ -18,7 +18,11 @@ public record SoldierDto(
     string DepartmentName,
     bool IsActive,
     bool CanGuard,
-    DateTime CreatedAtUtc);
+    DateTime CreatedAtUtc)
+{
+    /// <summary>Human-readable label for pickers (guard schedule builder, etc.).</summary>
+    public string DisplayName => $"{LastName} {FirstName} — {Rank} ({PersonnelCode})";
+}
 
 /// <summary>Filter/sort parameters for soldier queries.</summary>
 public record SoldierSearchRequest(

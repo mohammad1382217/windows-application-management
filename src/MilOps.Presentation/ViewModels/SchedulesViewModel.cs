@@ -21,6 +21,9 @@ public sealed partial class SchedulesViewModel : ViewModelBase
 
     public ObservableCollection<GuardAssignmentDto> Assignments { get; } = new();
 
+    /// <summary>Recent schedules — click one to open its board (لوح) below.</summary>
+    public ObservableCollection<GuardScheduleSummaryDto> Schedules { get; } = new();
+
     private DateTime _date = DateTime.Today;
     public DateTime Date
     {
@@ -33,6 +36,23 @@ public sealed partial class SchedulesViewModel : ViewModelBase
     {
         get => _current;
         private set { _current = value; OnPropertyChanged(); ApproveCommand.NotifyCanExecuteChanged(); }
+    }
+
+    private GuardScheduleSummaryDto? _selectedSchedule;
+    public GuardScheduleSummaryDto? SelectedSchedule
+    {
+        get => _selectedSchedule;
+        set
+        {
+            if (_selectedSchedule == value) return;
+            _selectedSchedule = value;
+            OnPropertyChanged();
+            if (value is not null)
+            {
+                Date = value.Date.ToDateTime(TimeOnly.MinValue);
+                _ = LoadAsync(); // open the clicked schedule's board immediately
+            }
+        }
     }
 
     public SchedulesViewModel(ISender sender, IDialogService dialogs, IPrintService print)
@@ -48,6 +68,19 @@ public sealed partial class SchedulesViewModel : ViewModelBase
             Assignments.Clear();
             if (dto is not null)
                 foreach (var a in dto.Assignments) Assignments.Add(a);
+            PrintCommand.NotifyCanExecuteChanged();
+            ExportPdfCommand.NotifyCanExecuteChanged();
+        });
+    }
+
+    [RelayCommand]
+    private async Task LoadSchedulesAsync()
+    {
+        await RunAsync(async () =>
+        {
+            var items = await _sender.Send(new ListSchedulesQuery());
+            Schedules.Clear();
+            foreach (var s in items) Schedules.Add(s);
         });
     }
 
@@ -55,7 +88,7 @@ public sealed partial class SchedulesViewModel : ViewModelBase
     private void Create()
     {
         var builder = new ScheduleBuilderWindow(Date) { Owner = System.Windows.Application.Current.MainWindow };
-        if (builder.ShowDialog() == true) _ = LoadAsync();
+        if (builder.ShowDialog() == true) { _ = LoadAsync(); _ = LoadSchedulesAsync(); }
     }
 
     [RelayCommand(CanExecute = nameof(CanApprove))]
@@ -66,7 +99,9 @@ public sealed partial class SchedulesViewModel : ViewModelBase
         await RunAsync(async () =>
         {
             var r = await _sender.Send(new ApproveScheduleCommand(Current.Id));
-            if (!r.IsSuccess) _dialogs.Error(r.Error); else await LoadAsync();
+            if (!r.IsSuccess) { _dialogs.Error(r.Error); return; }
+            await LoadAsync();
+            await LoadSchedulesAsync();
         });
     }
 
@@ -76,7 +111,7 @@ public sealed partial class SchedulesViewModel : ViewModelBase
         if (Current is null) { _dialogs.Warning("برای این تاریخ برنامه‌ای بارگذاری نشده است."); return; }
         try
         {
-            PrintCore();
+            _print.Print(BuildReport(), "لوح پستی");
         }
         catch (Exception ex)
         {
@@ -85,21 +120,35 @@ public sealed partial class SchedulesViewModel : ViewModelBase
         }
     }
 
-    private void PrintCore()
+    [RelayCommand]
+    private void ExportPdf()
     {
-        var doc = _print.BuildTableReport(
+        if (Current is null) { _dialogs.Warning("برای این تاریخ برنامه‌ای بارگذاری نشده است."); return; }
+        try
+        {
+            _print.ExportToPdf(BuildReport(), "لوح پستی.pdf");
+        }
+        catch (Exception ex)
+        {
+            Serilog.Log.Error(ex, "PDF export failed in SchedulesViewModel.");
+            _dialogs.Error("ساخت فایل PDF انجام نشد.");
+        }
+    }
+
+    private System.Windows.Documents.FlowDocument BuildReport()
+    {
+        return _print.BuildTableReport(
             "لوح پستی — برنامه نگهبانی روزانه",
-            $"تاریخ: {PersianDate.ToJalali(Current.Date)} · وضعیت: {EnumText.Describe(Current.Status)}",
-            new[] { "شناسه سرباز", "پست", "شیفت", "ساعت", "توضیح" },
+            $"تاریخ: {PersianDate.ToJalali(Current!.Date)} · وضعیت: {EnumText.Describe(Current.Status)}",
+            new[] { "سرباز", "پست", "شیفت", "ساعت", "توضیح" },
             Assignments.Select(a => new[]
             {
-                PersianDate.ToPersianDigits(a.SoldierId.ToString()),
+                a.SoldierName ?? PersianDate.ToPersianDigits(a.SoldierId.ToString()),
                 EnumText.Describe(a.Post), EnumText.Describe(a.Shift),
                 a.ShiftStart is { } s && a.ShiftEnd is { } e
                     ? PersianDate.ToPersianDigits($"{s:HH:mm}–{e:HH:mm}") : "—",
                 a.Note ?? "—"
             }));
-        _print.Print(doc, "لوح پستی");
     }
 
     private bool CanApprove() =>

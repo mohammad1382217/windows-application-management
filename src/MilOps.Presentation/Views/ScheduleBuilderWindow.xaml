@@ -8,7 +8,8 @@
         WindowStartupLocation="CenterOwner"
         ResizeMode="CanResize"
         Background="{DynamicResource SurfaceBrush}"
-        FlowDirection="RightToLeft">
+        FlowDirection="RightToLeft"
+        Loaded="ScheduleBuilderWindow_Loaded">
 
     <Border ClipToBounds="True">
         <DockPanel>
@@ -95,20 +96,20 @@
                     <Border Background="#F0F4F8" CornerRadius="6" Padding="8,7" Margin="0,0,0,6">
                         <Grid>
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="90"/>
+                                <ColumnDefinition Width="220"/>
                                 <ColumnDefinition Width="8"/>
-                                <ColumnDefinition Width="160"/>
-                                <ColumnDefinition Width="8"/>
-                                <ColumnDefinition Width="110"/>
+                                <ColumnDefinition Width="150"/>
                                 <ColumnDefinition Width="8"/>
                                 <ColumnDefinition Width="90"/>
                                 <ColumnDefinition Width="8"/>
-                                <ColumnDefinition Width="90"/>
+                                <ColumnDefinition Width="80"/>
+                                <ColumnDefinition Width="8"/>
+                                <ColumnDefinition Width="80"/>
                                 <ColumnDefinition Width="8"/>
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="34"/>
                             </Grid.ColumnDefinitions>
-                            <TextBlock Grid.Column="0"  Text="شناسه سرباز" Style="{StaticResource FieldLabel}" FontSize="11"/>
+                            <TextBlock Grid.Column="0"  Text="سرباز"          Style="{StaticResource FieldLabel}" FontSize="11"/>
                             <TextBlock Grid.Column="2"  Text="پست نگهبانی"  Style="{StaticResource FieldLabel}" FontSize="11"/>
                             <TextBlock Grid.Column="4"  Text="شیفت"          Style="{StaticResource FieldLabel}" FontSize="11"/>
                             <TextBlock Grid.Column="6"  Text="شروع (مثلاً 08:00)" Style="{StaticResource FieldLabel}" FontSize="10"/>
@@ -117,29 +118,50 @@
                         </Grid>
                     </Border>
 
+                    <!-- No guard-eligible soldiers loaded: nudge instead of a dead-end picker -->
+                    <TextBlock Text="⚠ هیچ سرباز آماده‌به‌خدمتی یافت نشد — ابتدا از بخش «سربازان» پرسنل ثبت کنید."
+                               Foreground="{DynamicResource DangerBrush}" FontSize="12"
+                               Margin="0,0,0,8">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding Soldiers.Count}" Value="0">
+                                        <Setter Property="Visibility" Value="Visible"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+
                     <!-- Assignment rows -->
                     <ItemsControl ItemsSource="{Binding Assignments}" x:Name="RowsControl">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
                                 <Grid Margin="0,0,0,7">
                                     <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="90"/>
+                                        <ColumnDefinition Width="220"/>
                                         <ColumnDefinition Width="8"/>
-                                        <ColumnDefinition Width="160"/>
-                                        <ColumnDefinition Width="8"/>
-                                        <ColumnDefinition Width="110"/>
+                                        <ColumnDefinition Width="150"/>
                                         <ColumnDefinition Width="8"/>
                                         <ColumnDefinition Width="90"/>
                                         <ColumnDefinition Width="8"/>
-                                        <ColumnDefinition Width="90"/>
+                                        <ColumnDefinition Width="80"/>
+                                        <ColumnDefinition Width="8"/>
+                                        <ColumnDefinition Width="80"/>
                                         <ColumnDefinition Width="8"/>
                                         <ColumnDefinition Width="*"/>
                                         <ColumnDefinition Width="34"/>
                                     </Grid.ColumnDefinitions>
 
-                                    <TextBox Grid.Column="0"
-                                             Text="{Binding SoldierId, UpdateSourceTrigger=PropertyChanged}"
-                                             FlowDirection="LeftToRight"/>
+                                    <!-- Picked from the loaded soldier list — no more free-typed IDs. -->
+                                    <ComboBox Grid.Column="0"
+                                              ItemsSource="{Binding DataContext.Soldiers,
+                                                  RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                              SelectedItem="{Binding SelectedSoldier}"
+                                              DisplayMemberPath="DisplayName"
+                                              TextSearch.TextPath="DisplayName"
+                                              ToolTip="جست‌وجو با تایپ نام خانوادگی امکان‌پذیر است"/>
 
                                     <ComboBox Grid.Column="2"
                                               ItemsSource="{Binding DataContext.GuardPosts,

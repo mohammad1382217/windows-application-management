@@ -4,6 +4,7 @@ using System.Globalization;
 using CommunityToolkit.Mvvm.Input;
 using MediatR;
 using MilOps.Application.Schedules;
+using MilOps.Application.Soldiers;
 using MilOps.Domain.Enums;
 using MilOps.Presentation.Common;
 
@@ -14,8 +15,9 @@ public sealed class AssignmentRowVm : INotifyPropertyChanged
     public event PropertyChangedEventHandler? PropertyChanged;
     private void Notify(string n) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(n));
 
-    private string _soldierId = string.Empty;
-    public string SoldierId { get => _soldierId; set { _soldierId = value; Notify(nameof(SoldierId)); } }
+    // Picked from the soldier list — no more free-typed IDs.
+    private SoldierDto? _selectedSoldier;
+    public SoldierDto? SelectedSoldier { get => _selectedSoldier; set { _selectedSoldier = value; Notify(nameof(SelectedSoldier)); } }
 
     private GuardPost _post = GuardPost.Guard;
     public GuardPost Post { get => _post; set { _post = value; Notify(nameof(Post)); } }
@@ -37,6 +39,9 @@ public sealed partial class ScheduleBuilderViewModel : ViewModelBase
 
     public ObservableCollection<AssignmentRowVm> Assignments { get; } = new();
 
+    /// <summary>Active, guard-eligible soldiers offered by the row picker.</summary>
+    public ObservableCollection<SoldierDto> Soldiers { get; } = new();
+
     public Array GuardPosts => Enum.GetValues(typeof(GuardPost));
     public Array Shifts => Enum.GetValues(typeof(ShiftNumber));
 
@@ -47,6 +52,22 @@ public sealed partial class ScheduleBuilderViewModel : ViewModelBase
     public string Remarks { get => _remarks; set { _remarks = value; OnPropertyChanged(); } }
 
     public ScheduleBuilderViewModel(ISender sender) => _sender = sender;
+
+    [RelayCommand]
+    private async Task LoadSoldiersAsync()
+    {
+        await RunAsync(async () =>
+        {
+            var filter = new SoldierSearchRequest(null, null, true, null, 1, 500);
+            var result = await _sender.Send(new SearchSoldiersQuery(filter));
+            Soldiers.Clear();
+            // Only guard-eligible soldiers (active + not health-restricted) are
+            // offered; assigning a restricted soldier is a decision the domain
+            // doesn't forbid, but the picker shouldn't nudge toward it.
+            foreach (var s in result.Items.Where(s => s.CanGuard).OrderBy(s => s.LastName))
+                Soldiers.Add(s);
+        });
+    }
 
     [RelayCommand]
     private void AddRow() => Assignments.Add(new AssignmentRowVm());
@@ -63,12 +84,12 @@ public sealed partial class ScheduleBuilderViewModel : ViewModelBase
         var rows = new List<GuardAssignmentDto>();
         foreach (var row in Assignments)
         {
-            // The UI hints show Persian digits (۰۸:۰۰), so accept them here too.
-            if (!int.TryParse(PersianDate.ToLatinDigits(row.SoldierId), out var sid) || sid <= 0)
+            if (row.SelectedSoldier is not { } soldier)
             {
-                ErrorMessage = "شناسه سرباز باید عدد صحیح مثبت باشد.";
+                ErrorMessage = "برای هر ردیف یک سرباز از فهرست انتخاب کنید.";
                 return;
             }
+            var sid = soldier.Id;
             TimeOnly? start = null, end = null;
             if (!string.IsNullOrWhiteSpace(row.ShiftStart))
             {

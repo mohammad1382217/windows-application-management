@@ -46,7 +46,11 @@ public class AuditQueryHandlers :
     {
         var brokenAt = await _hasher.VerifyChainAsync(ct);
         return brokenAt is { } seq
-            ? Result.Failure<string>("CHAIN_BROKEN", $"Audit chain integrity check FAILED at sequence {seq}.")
-            : Result.Success("Audit chain integrity verified: no tampering detected.");
+            ? Result.Failure<string>("CHAIN_BROKEN",
+                $"هشدار: زنجیره سلامت گزارش در ردیف {seq} شکسته است.\n" +
+                "این یعنی سوابق از این ردیف به بعد دستکاری یا حذف شده‌اند و دیگر قابل استناد نیستند.")
+            : Result.Success(
+                "سلامت گزارش تأیید شد ✔\n" +
+                "تمام سوابق حسابرسی دست‌نخورده‌اند؛ هیچ ردیفی ویرایش یا حذف نشده است.");
     }
 }

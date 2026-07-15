@@ -53,6 +53,7 @@ public sealed partial class AuditViewModel : ViewModelBase
             Items.Clear();
             foreach (var e in items) Items.Add(e);
             PrintCommand.NotifyCanExecuteChanged();
+            ExportPdfCommand.NotifyCanExecuteChanged();
         });
     }
 
@@ -62,8 +63,10 @@ public sealed partial class AuditViewModel : ViewModelBase
         await RunAsync(async () =>
         {
             var r = await _sender.Send(new VerifyAuditChainQuery());
-            if (r.IsSuccess) _dialogs.Info(r.Value ?? "OK");
-            else _dialogs.Error(r.Error);
+            if (r.IsSuccess)
+                _dialogs.Info(r.Value ?? "سلامت زنجیره تأیید شد.", "بررسی سلامت گزارش");
+            else
+                _dialogs.Error(r.Error, "بررسی سلامت گزارش");
         });
     }
 
@@ -72,7 +75,7 @@ public sealed partial class AuditViewModel : ViewModelBase
     {
         try
         {
-            PrintCore();
+            _print.Print(BuildReport(), "گزارش حسابرسی");
         }
         catch (Exception ex)
         {
@@ -81,11 +84,25 @@ public sealed partial class AuditViewModel : ViewModelBase
         }
     }
 
+    [RelayCommand(CanExecute = nameof(CanPrint))]
+    private void ExportPdf()
+    {
+        try
+        {
+            _print.ExportToPdf(BuildReport(), "گزارش حسابرسی.pdf");
+        }
+        catch (Exception ex)
+        {
+            Serilog.Log.Error(ex, "PDF export failed in AuditViewModel.");
+            _dialogs.Error("ساخت فایل PDF انجام نشد.");
+        }
+    }
+
     private bool CanPrint() => Items.Count > 0;
 
-    private void PrintCore()
+    private System.Windows.Documents.FlowDocument BuildReport()
     {
-        var doc = _print.BuildTableReport(
+        return _print.BuildTableReport(
             "گزارش حسابرسی", PersianDate.ToPersianDigits($"{Items.Count} رویداد"),
             new[] { "ردیف", "زمان", "عملیات", "کاربر", "موجودیت", "شرح", "هش" },
             Items.Select(e => new[]
@@ -95,6 +112,5 @@ public sealed partial class AuditViewModel : ViewModelBase
                 e.Username ?? "—", $"{e.EntityType}/{e.EntityId ?? "—"}",
                 e.Details ?? "—", e.RowHashPreview
             }));
-        _print.Print(doc, "گزارش حسابرسی");
     }
 }

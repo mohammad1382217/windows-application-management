@@ -74,8 +74,12 @@
                             Command="{Binding ApproveCommand}" Padding="14,7" Margin="0,0,8,0"/>
                     <Button Content="✕ رد" Style="{StaticResource DangerButton}"
                             Command="{Binding RejectCommand}" Padding="14,7" Margin="0,0,8,0"/>
+                    <Button Content="⬇ PDF" Style="{StaticResource SecondaryButton}"
+                            Command="{Binding ExportPdfCommand}" Padding="14,7" Margin="0,0,8,0"
+                            ToolTip="ذخیره سوابق به‌صورت فایل PDF — بدون نیاز به چاپگر"/>
                     <Button Content="🖨 چاپ" Style="{StaticResource SecondaryButton}"
-                            Command="{Binding PrintCommand}" Padding="14,7" Margin="0,0,8,0"/>
+                            Command="{Binding PrintCommand}" Padding="14,7" Margin="0,0,8,0"
+                            ToolTip="چاپ مستقیم با چاپگر متصل"/>
                     <Button Content="بازخوانی" Style="{StaticResource SecondaryButton}"
                             Command="{Binding LoadCommand}" Padding="14,7" Margin="0,0,16,0"/>
                     <TextBlock Text="فیلتر وضعیت:" Style="{StaticResource FieldLabel}" VerticalAlignment="Center" Margin="0,0,8,0"/>

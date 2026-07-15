@@ -22,6 +22,12 @@ public partial class ScheduleBuilderWindow : Window
         Closed += OnClosed;
     }
 
+    private void ScheduleBuilderWindow_Loaded(object sender, RoutedEventArgs e)
+    {
+        if (_vm.LoadSoldiersCommand.CanExecute(null))
+            _vm.LoadSoldiersCommand.Execute(null);
+    }
+
     private void OnSaved() { DialogResult = true; Close(); }
     private void OnCancelled() { DialogResult = false; Close(); }
 

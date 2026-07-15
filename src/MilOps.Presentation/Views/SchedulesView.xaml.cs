@@ -8,7 +8,8 @@ public partial class SchedulesView : UserControl
     public SchedulesView() => InitializeComponent();
     private void SchedulesView_Loaded(object sender, System.Windows.RoutedEventArgs e)
     {
-        if (DataContext is SchedulesViewModel vm && vm.LoadCommand.CanExecute(null))
-            vm.LoadCommand.Execute(null);
+        if (DataContext is not SchedulesViewModel vm) return;
+        if (vm.LoadCommand.CanExecute(null)) vm.LoadCommand.Execute(null);
+        if (vm.LoadSchedulesCommand.CanExecute(null)) vm.LoadSchedulesCommand.Execute(null);
     }
 }

@@ -22,6 +22,14 @@ public interface IPrintService
 {
     void Print(FlowDocument document, string description);
     bool ExportToXps(FlowDocument document, string suggestedFileName);
+
+    /// <summary>
+    /// Saves the report as a real PDF (A5 pages rendered at 300 DPI) with no
+    /// dependency on any installed printer, then opens it in the default
+    /// viewer. Returns false if the user cancelled the save dialog.
+    /// </summary>
+    bool ExportToPdf(FlowDocument document, string suggestedFileName);
+
     FlowDocument BuildTableReport(string title, string subtitle,
         IEnumerable<string> headers, IEnumerable<IEnumerable<string>> rows);
 }
@@ -50,6 +58,69 @@ public sealed class PrintService : IPrintService
         var paginator = ((IDocumentPaginatorSource)document).DocumentPaginator;
         paginator.PageSize = new Size(A5Width, A5Height);
         dialog.PrintDocument(paginator, description);
+    }
+
+    public bool ExportToPdf(FlowDocument document, string suggestedFileName)
+    {
+        var dlg = new SaveFileDialog
+        {
+            Filter   = "PDF (*.pdf)|*.pdf",
+            FileName = suggestedFileName
+        };
+        if (dlg.ShowDialog() != true) return false;
+
+        ExportToPdfFile(document, dlg.FileName);
+
+        // Open the result so the user immediately sees the output exists.
+        try
+        {
+            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(dlg.FileName)
+            { UseShellExecute = true });
+        }
+        catch
+        {
+            // No PDF viewer registered — the file is still saved; not an error.
+        }
+        return true;
+    }
+
+    /// <summary>Dialog-free core of the PDF export (also used by tests).</summary>
+    public void ExportToPdfFile(FlowDocument document, string path)
+    {
+        document = Clone(document);
+        ApplyA5(document);
+        var paginator = ((IDocumentPaginatorSource)document).DocumentPaginator;
+        paginator.PageSize = new Size(A5Width, A5Height);
+        paginator.ComputePageCount();
+
+        // Render every page at 300 DPI; on paper this is indistinguishable
+        // from vector output and Persian shaping is exactly what WPF shows.
+        const double dpi = 300.0;
+        var pxW = (int)Math.Round(A5Width  * dpi / 96.0);
+        var pxH = (int)Math.Round(A5Height * dpi / 96.0);
+        var pages = new List<(byte[] Jpeg, int PixelWidth, int PixelHeight)>();
+
+        for (var i = 0; i < paginator.PageCount; i++)
+        {
+            using var page = paginator.GetPage(i);
+            var rtb = new System.Windows.Media.Imaging.RenderTargetBitmap(
+                pxW, pxH, dpi, dpi, PixelFormats.Pbgra32);
+
+            var bg = new DrawingVisual();
+            using (var dc = bg.RenderOpen())
+                dc.DrawRectangle(Brushes.White, null, new Rect(0, 0, A5Width, A5Height));
+            rtb.Render(bg);
+            rtb.Render(page.Visual);
+
+            var encoder = new System.Windows.Media.Imaging.JpegBitmapEncoder { QualityLevel = 92 };
+            encoder.Frames.Add(System.Windows.Media.Imaging.BitmapFrame.Create(rtb));
+            using var ms = new MemoryStream();
+            encoder.Save(ms);
+            pages.Add((ms.ToArray(), pxW, pxH));
+        }
+
+        // A5 in PDF points (1 pt = 1/72"): 148 mm × 210 mm.
+        SimplePdfWriter.Write(path, 419.53, 595.28, pages);
     }
 
     public bool ExportToXps(FlowDocument document, string suggestedFileName)
