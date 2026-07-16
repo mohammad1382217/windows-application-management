@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using CommunityToolkit.Mvvm.Input;
+using MilOps.Application.Security;
 using Serilog;
 
 namespace MilOps.Presentation.ViewModels;
@@ -65,12 +66,17 @@ public abstract class ViewModelBase : INotifyPropertyChanged
                 ErrorMessage = vex.Errors.FirstOrDefault()?.ErrorMessage
                                ?? "اطلاعات واردشده معتبر نیست.";
         }
+        catch (AuthorizationException)
+        {
+            ErrorMessage = "شما مجوز انجام این عملیات را ندارید.";
+        }
         catch (Exception ex)
         {
-            // Surface a friendly message to the UI, but still log the full
-            // exception so failures are traceable rather than silently lost.
+            // Never leak a raw exception message (often English/technical —
+            // SQL errors, network faults) to a non-technical Persian-speaking
+            // user. Log the full exception so failures stay traceable.
             Log.Error(ex, "Unhandled error in view-model operation.");
-            ErrorMessage = ex.Message;
+            ErrorMessage = "خطا در برقراری ارتباط با سامانه. لطفاً دوباره تلاش کنید.";
         }
         finally { IsBusy = false; }
     }

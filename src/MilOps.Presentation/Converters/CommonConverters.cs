@@ -61,6 +61,16 @@ public sealed class PersianDigitsConverter : IValueConverter
         => value is string s ? PersianDate.ToLatinDigits(s) : value!;
 }
 
+/// <summary>0-based index (e.g. ItemsControl.AlternationIndex) -> 1-based Persian-digit row number.</summary>
+public sealed class OneBasedPersianIndexConverter : IValueConverter
+{
+    public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+        => value is int i ? PersianDate.ToPersianDigits((i + 1).ToString()) : string.Empty;
+
+    public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+        => throw new NotSupportedException();
+}
+
 /// <summary>Null or empty string -> Visibility.Collapsed; otherwise Visible.</summary>
 public sealed class NullToCollapsedConverter : IValueConverter
 {

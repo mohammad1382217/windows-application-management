@@ -4,6 +4,7 @@
         xmlns:vm="clr-namespace:MilOps.Presentation.ViewModels"
         xmlns:v="clr-namespace:MilOps.Presentation.Views"
         Title="سنگر" Height="740" Width="1200"
+        MinWidth="960" MinHeight="600"
         WindowStartupLocation="CenterScreen"
         Background="{DynamicResource SurfaceBrush}">
     <Window.Resources>
@@ -46,6 +47,7 @@
                 <!-- Physical LEFT: logout + user banner -->
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                     <Button Content="خروج" Command="{Binding LogoutCommand}"
+                            IsEnabled="{Binding IsNotBusy}"
                             Style="{StaticResource DangerButton}" Padding="16,6" Margin="0,0,12,0"/>
                     <TextBlock Text="{Binding UserBanner}"
                                Foreground="{DynamicResource MutedBrush}" FontSize="12"
@@ -99,7 +101,7 @@
                                    FontWeight="Bold" Margin="16,0,0,10"/>
 
                         <Button HorizontalAlignment="Stretch" HorizontalContentAlignment="Right"
-                                Content="👥  سربازان"
+                                Content="👥  سربازان" ToolTip="سربازان"
                                 Command="{Binding ShowSoldiersCommand}"
                                 Visibility="{Binding CanManageSoldiers, Converter={StaticResource BoolToVisConverter}}">
                             <Button.Style>
@@ -114,7 +116,7 @@
                         </Button>
 
                         <Button HorizontalAlignment="Stretch" HorizontalContentAlignment="Right"
-                                Content="📅  برنامه نگهبانی"
+                                Content="📅  برنامه نگهبانی" ToolTip="برنامه نگهبانی"
                                 Command="{Binding ShowSchedulesCommand}"
                                 Visibility="{Binding CanManageSchedules, Converter={StaticResource BoolToVisConverter}}">
                             <Button.Style>
@@ -129,7 +131,7 @@
                         </Button>
 
                         <Button HorizontalAlignment="Stretch" HorizontalContentAlignment="Right"
-                                Content="🔫  تسلیحات"
+                                Content="🔫  تسلیحات" ToolTip="تسلیحات"
                                 Command="{Binding ShowWeaponsCommand}"
                                 Visibility="{Binding CanManageWeapons, Converter={StaticResource BoolToVisConverter}}">
                             <Button.Style>
@@ -144,7 +146,7 @@
                         </Button>
 
                         <Button HorizontalAlignment="Stretch" HorizontalContentAlignment="Right"
-                                Content="🏖  مرخصی‌ها"
+                                Content="🏖  مرخصی‌ها" ToolTip="مرخصی‌ها"
                                 Command="{Binding ShowLeavesCommand}"
                                 Visibility="{Binding CanManageLeaves, Converter={StaticResource BoolToVisConverter}}">
                             <Button.Style>
@@ -159,7 +161,7 @@
                         </Button>
 
                         <Button HorizontalAlignment="Stretch" HorizontalContentAlignment="Right"
-                                Content="🔑  توکن‌ها"
+                                Content="🔑  توکن‌ها" ToolTip="توکن‌های فرمانده"
                                 Command="{Binding ShowTokensCommand}"
                                 Visibility="{Binding CanManageTokens, Converter={StaticResource BoolToVisConverter}}">
                             <Button.Style>
@@ -174,7 +176,7 @@
                         </Button>
 
                         <Button HorizontalAlignment="Stretch" HorizontalContentAlignment="Right"
-                                Content="⚙  کاربران"
+                                Content="⚙  کاربران" ToolTip="مدیریت کاربران"
                                 Command="{Binding ShowUsersCommand}"
                                 Visibility="{Binding CanManageUsers, Converter={StaticResource BoolToVisConverter}}">
                             <Button.Style>
@@ -189,7 +191,7 @@
                         </Button>
 
                         <Button HorizontalAlignment="Stretch" HorizontalContentAlignment="Right"
-                                Content="📜  گزارش حسابرسی"
+                                Content="📜  گزارش حسابرسی" ToolTip="گزارش حسابرسی"
                                 Command="{Binding ShowAuditCommand}"
                                 Visibility="{Binding CanViewAudit, Converter={StaticResource BoolToVisConverter}}">
                             <Button.Style>
@@ -209,6 +211,19 @@
         </Border>
 
         <!-- Content host — directly shows the current feature view -->
-        <ContentControl Content="{Binding Current}"/>
+        <Grid>
+            <ContentControl Content="{Binding Current}"/>
+
+            <!-- Busy overlay: without this, switching sections while the newly
+                 opened view is still loading its data looked frozen (no feedback). -->
+            <Border Background="#66FFFFFF"
+                    Visibility="{Binding Current.IsBusy, Converter={StaticResource BoolToVisConverter}, FallbackValue=Collapsed}">
+                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <ProgressBar IsIndeterminate="True" Width="160" Height="4"/>
+                    <TextBlock Text="در حال بارگذاری…" Foreground="{DynamicResource MutedBrush}"
+                               FontSize="12" HorizontalAlignment="Center" Margin="0,8,0,0"/>
+                </StackPanel>
+            </Border>
+        </Grid>
     </DockPanel>
 </Window>

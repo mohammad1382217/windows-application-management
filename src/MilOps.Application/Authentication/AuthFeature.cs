@@ -114,7 +114,7 @@ public class LoginHandler : IRequestHandler<LoginCommand, Result<LoginResult>>,
                     var locked = user.RecordFailedLogin(MaxFailedAttempts);
                     await _uow.SaveChangesAsync(ct);
                     await _audit.AppendAsync(AuditAction.LoginFailed, user.Id, user.Username,
-                        nameof(User), null, "Failed login", ct);
+                        nameof(User), null, "ورود ناموفق", ct);
                 }
                 catch (DomainEx)
                 {
@@ -133,7 +133,7 @@ public class LoginHandler : IRequestHandler<LoginCommand, Result<LoginResult>>,
             return Result.Failure<LoginResult>("ACTIVATION_REQUIRED",
                 "حساب شما هنوز فعال نشده است. توکن فعال‌سازی دریافتی از فرمانده را وارد کنید.");
 
-        return await EstablishInteractiveSessionAsync(user, "Login successful", ct);
+        return await EstablishInteractiveSessionAsync(user, "ورود موفق", ct);
     }
 
     /// <summary>
@@ -209,7 +209,7 @@ public class LoginHandler : IRequestHandler<LoginCommand, Result<LoginResult>>,
         if (user.IsLockedOut)
             return Result.Failure<LoginResult>("AUTH_LOCKED", "حساب به دلیل تلاش‌های مکرر قفل شده است.");
         if (user.IsActivated)
-            return await EstablishInteractiveSessionAsync(user, "Login successful", ct);
+            return await EstablishInteractiveSessionAsync(user, "ورود موفق", ct);
 
         // Look the token up by its peppered hash — same scheme as generation.
         var hash = _tokens.Hash(cmd.Token.Trim());
@@ -251,7 +251,7 @@ public class LoginHandler : IRequestHandler<LoginCommand, Result<LoginResult>>,
         {
             await _audit.AppendAsync(AuditAction.TokenUsed, user.Id, user.Username,
                 nameof(CommanderToken), token.Id.ToString(),
-                $"Account '{user.Username}' activated with commander token", ct);
+                $"فعال‌سازی حساب «{user.Username}» با توکن فرمانده", ct);
         }
         catch (Exception ex) when (ex is not OutOfMemoryException and not System.Threading.ThreadAbortException)
         {
@@ -259,7 +259,7 @@ public class LoginHandler : IRequestHandler<LoginCommand, Result<LoginResult>>,
         }
 
         return await EstablishInteractiveSessionAsync(user,
-            "Login successful (account activated with token)", ct);
+            "ورود موفق (حساب با توکن فعال شد)", ct);
     }
 
     /// <summary>
@@ -312,7 +312,7 @@ public class LoginHandler : IRequestHandler<LoginCommand, Result<LoginResult>>,
         try
         {
             await _audit.AppendAsync(AuditAction.Login, user.Id, user.Username,
-                nameof(User), user.Id.ToString(), "Auto login (persistent session refresh)", ct);
+                nameof(User), user.Id.ToString(), "ورود خودکار (تمدید نشست)", ct);
         }
         catch (Exception ex) when (ex is not OutOfMemoryException and not System.Threading.ThreadAbortException)
         {
@@ -364,7 +364,7 @@ public class LoginHandler : IRequestHandler<LoginCommand, Result<LoginResult>>,
         }
 
         await _audit.AppendAsync(AuditAction.Logout, s.UserId, s.Username,
-            nameof(User), s.UserId.ToString(), "Logout", ct);
+            nameof(User), s.UserId.ToString(), "خروج از سامانه", ct);
     }
 }
 

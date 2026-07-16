@@ -42,9 +42,12 @@
                     </Grid.ColumnDefinitions>
 
                     <StackPanel Grid.Column="0" Margin="0,0,12,0">
-                        <TextBlock Text="شناسه سرباز" Style="{StaticResource FieldLabel}" Margin="0,0,0,4"/>
-                        <TextBox Text="{Binding NewSoldierId, UpdateSourceTrigger=PropertyChanged}" Width="90"/>
-                        <TextBlock Style="{StaticResource FieldError}" Text="{Binding FieldErrors[SoldierId]}" MaxWidth="90"/>
+                        <TextBlock Text="سرباز" Style="{StaticResource FieldLabel}" Margin="0,0,0,4"/>
+                        <ComboBox ItemsSource="{Binding Soldiers}" SelectedItem="{Binding NewSoldier}"
+                                  DisplayMemberPath="DisplayName" TextSearch.TextPath="DisplayName"
+                                  Width="190"
+                                  ToolTip="جست‌وجو با تایپ نام خانوادگی امکان‌پذیر است"/>
+                        <TextBlock Style="{StaticResource FieldError}" Text="{Binding FieldErrors[SoldierId]}" MaxWidth="190"/>
                     </StackPanel>
                     <StackPanel Grid.Column="1" Margin="0,0,12,0">
                         <TextBlock Text="شروع مرخصی" Style="{StaticResource FieldLabel}" Margin="0,0,0,4"/>
@@ -62,7 +65,8 @@
                         <TextBlock Style="{StaticResource FieldError}" Text="{Binding FieldErrors[Reason]}" MaxWidth="180"/>
                     </StackPanel>
                     <Button Grid.Column="5" Content="＋ درخواست مرخصی" Style="{StaticResource AccentButton}"
-                            Command="{Binding RequestCommand}" Padding="14,7" VerticalAlignment="Top" Margin="0,20,0,0"/>
+                            Command="{Binding RequestCommand}" IsDefault="True"
+                            Padding="14,7" VerticalAlignment="Top" Margin="0,20,0,0"/>
                 </Grid>
             </Border>
 
@@ -71,9 +75,11 @@
                     BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,0,1">
                 <StackPanel Orientation="Horizontal">
                     <Button Content="✓ تأیید" Style="{StaticResource AccentButton}"
-                            Command="{Binding ApproveCommand}" Padding="14,7" Margin="0,0,8,0"/>
+                            Command="{Binding ApproveCommand}" Padding="14,7" Margin="0,0,8,0"
+                            ToolTip="فقط برای درخواست‌های «در انتظار» در دسترس است"/>
                     <Button Content="✕ رد" Style="{StaticResource DangerButton}"
-                            Command="{Binding RejectCommand}" Padding="14,7" Margin="0,0,8,0"/>
+                            Command="{Binding RejectCommand}" Padding="14,7" Margin="0,0,8,0"
+                            ToolTip="فقط برای درخواست‌های «در انتظار» در دسترس است"/>
                     <Button Content="⬇ PDF" Style="{StaticResource SecondaryButton}"
                             Command="{Binding ExportPdfCommand}" Padding="14,7" Margin="0,0,8,0"
                             ToolTip="ذخیره سوابق به‌صورت فایل PDF — بدون نیاز به چاپگر"/>
@@ -107,7 +113,7 @@
                       AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False">
                 <DataGrid.Columns>
                     <DataGridTextColumn Header="شناسه"    Binding="{Binding Id}"                                              Width="60"/>
-                    <DataGridTextColumn Header="سرباز"    Binding="{Binding SoldierId}"                                       Width="80"/>
+                    <DataGridTextColumn Header="سرباز"    Binding="{Binding SoldierName, TargetNullValue=—}"                Width="160"/>
                     <DataGridTextColumn Header="شروع"     Binding="{Binding StartDate, Converter={StaticResource JalaliDateConverter}}" Width="120"/>
                     <DataGridTextColumn Header="پایان"    Binding="{Binding EndDate,   Converter={StaticResource JalaliDateConverter}}" Width="120"/>
                     <DataGridTextColumn Header="وضعیت"    Binding="{Binding Status, Converter={StaticResource EnumDescriptionConverter}}"   Width="100"/>

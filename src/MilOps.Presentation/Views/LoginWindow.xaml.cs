@@ -31,11 +31,19 @@ public partial class LoginWindow : Window
     // the dots on screen never disagree with what will actually be submitted.
     private void OnVmPropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
-        if (e.PropertyName is not (nameof(LoginViewModel.Password)) || sender is not LoginViewModel vm) return;
-        if (vm.Password.Length == 0 && PasswordBox.Password.Length > 0)
+        if (sender is not LoginViewModel vm) return;
+
+        if (e.PropertyName is nameof(LoginViewModel.Password)
+            && vm.Password.Length == 0 && PasswordBox.Password.Length > 0)
         {
             PasswordBox.Clear();
             PasswordBox.Focus();
         }
+
+        // The activation-token field appears dynamically after a failed login
+        // on an unactivated account; move focus into it so the user notices
+        // the new required field instead of it silently appearing below.
+        if (e.PropertyName is nameof(LoginViewModel.IsActivationRequired) && vm.IsActivationRequired)
+            Dispatcher.BeginInvoke(() => ActivationTokenBox.Focus());
     }
 }

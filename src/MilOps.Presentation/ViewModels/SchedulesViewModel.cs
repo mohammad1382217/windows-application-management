@@ -70,6 +70,7 @@ public sealed partial class SchedulesViewModel : ViewModelBase
                 foreach (var a in dto.Assignments) Assignments.Add(a);
             PrintCommand.NotifyCanExecuteChanged();
             ExportPdfCommand.NotifyCanExecuteChanged();
+            SyncSelectionToCurrent();
         });
     }
 
@@ -81,14 +82,32 @@ public sealed partial class SchedulesViewModel : ViewModelBase
             var items = await _sender.Send(new ListSchedulesQuery());
             Schedules.Clear();
             foreach (var s in items) Schedules.Add(s);
+            SyncSelectionToCurrent();
         });
     }
 
+    // Keeps the "برنامه‌های اخیر" list highlight pointed at whatever board is
+    // actually on screen. The date+بارگذاری path and Create/Approve all bypass
+    // the SelectedSchedule setter, so without this the highlight goes stale —
+    // set the backing field directly to avoid re-triggering that setter's
+    // own LoadAsync (which would recurse).
+    private void SyncSelectionToCurrent()
+    {
+        var match = Current is null ? null : Schedules.FirstOrDefault(s => s.Id == Current.Id);
+        if (!Equals(_selectedSchedule, match))
+        {
+            _selectedSchedule = match;
+            OnPropertyChanged(nameof(SelectedSchedule));
+        }
+    }
+
     [RelayCommand]
-    private void Create()
+    private async Task CreateAsync()
     {
         var builder = new ScheduleBuilderWindow(Date) { Owner = System.Windows.Application.Current.MainWindow };
-        if (builder.ShowDialog() == true) { _ = LoadAsync(); _ = LoadSchedulesAsync(); }
+        if (builder.ShowDialog() != true) return;
+        await LoadAsync();
+        await LoadSchedulesAsync();
     }
 
     [RelayCommand(CanExecute = nameof(CanApprove))]

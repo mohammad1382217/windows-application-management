@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.Windows.Threading;
 using CommunityToolkit.Mvvm.Input;
 using MediatR;
 using MilOps.Application.Soldiers;
@@ -22,10 +23,20 @@ public sealed partial class SoldiersViewModel : ViewModelBase
     public ObservableCollection<SoldierDto> Items { get; } = new();
 
     private string _search = string.Empty;
+    private readonly DispatcherTimer _searchDebounce;
     public string Search
     {
         get => _search;
-        set { _search = value; OnPropertyChanged(); }
+        set
+        {
+            if (_search == value) return;
+            _search = value; OnPropertyChanged();
+            // Debounce instead of querying per keystroke — feels instant to the
+            // user but doesn't hammer the DB, and matches HealthFilter's
+            // "changes apply immediately" behavior instead of requiring Enter/click.
+            _searchDebounce.Stop();
+            _searchDebounce.Start();
+        }
     }
 
     private SoldierDto? _selected;
@@ -54,7 +65,23 @@ public sealed partial class SoldiersViewModel : ViewModelBase
     private bool CanClearHealthFilter() => HealthFilter is not null;
 
     public SoldiersViewModel(ISender sender, IDialogService dialogs, IPrintService print)
-    { _sender = sender; _dialogs = dialogs; _print = print; }
+    {
+        _sender = sender; _dialogs = dialogs; _print = print;
+        _searchDebounce = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(350) };
+        _searchDebounce.Tick += (_, _) => { _searchDebounce.Stop(); _ = LoadAsync(); };
+    }
+
+    [RelayCommand]
+    private void ClearSearch() => Search = string.Empty;
+
+    private string? _resultCountCaption;
+    /// <summary>Shown only when the 200-row cap actually truncated the results,
+    /// so the user never mistakes a partial list for "everyone".</summary>
+    public string? ResultCountCaption
+    {
+        get => _resultCountCaption;
+        private set { _resultCountCaption = value; OnPropertyChanged(); }
+    }
 
     [RelayCommand]
     private async Task LoadAsync()
@@ -65,6 +92,9 @@ public sealed partial class SoldiersViewModel : ViewModelBase
             var result = await _sender.Send(new SearchSoldiersQuery(filter));
             Items.Clear();
             foreach (var s in result.Items) Items.Add(s);
+            ResultCountCaption = result.TotalCount > result.Items.Count
+                ? PersianDate.ToPersianDigits($"نمایش {result.Items.Count} از {result.TotalCount} نتیجه")
+                : null;
             PrintCommand.NotifyCanExecuteChanged();
             ExportPdfCommand.NotifyCanExecuteChanged();
         });
@@ -96,11 +126,13 @@ public sealed partial class SoldiersViewModel : ViewModelBase
     {
         if (Selected is null) return;
         if (!_dialogs.Confirm($"سرباز «{Selected.FirstName} {Selected.LastName}» حذف شود؟ این عملیات در گزارش حسابرسی ثبت می‌شود.")) return;
+        var deletedName = $"{Selected.FirstName} {Selected.LastName}";
         await RunAsync(async () =>
         {
             var r = await _sender.Send(new DeleteSoldierCommand(Selected.Id));
-            if (!r.IsSuccess) _dialogs.Error(r.Error);
-            else await LoadAsync();
+            if (!r.IsSuccess) { _dialogs.Error(r.Error); return; }
+            await LoadAsync();
+            _dialogs.Info($"سرباز «{deletedName}» حذف شد.");
         });
     }
 

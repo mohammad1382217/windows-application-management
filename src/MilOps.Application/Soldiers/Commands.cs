@@ -111,7 +111,7 @@ public class SoldierCommandHandlers :
 
             await _audit.AppendAsync(AuditAction.SoldierCreated, _user.UserId, _user.Username,
                 nameof(Soldier), soldier.Id.ToString(),
-                $"Created {soldier.FullName()} ({soldier.NationalCode})", ct);
+                $"ایجاد سرباز {soldier.FullName()} (کد ملی: {soldier.NationalCode})", ct);
 
             return Result.Success(soldier.Id);
         }
@@ -135,7 +135,7 @@ public class SoldierCommandHandlers :
             await _uow.SaveChangesAsync(ct);
 
             await _audit.AppendAsync(AuditAction.SoldierUpdated, _user.UserId, _user.Username,
-                nameof(Soldier), soldier.Id.ToString(), $"Updated {soldier.FullName()}", ct);
+                nameof(Soldier), soldier.Id.ToString(), $"ویرایش سرباز {soldier.FullName()}", ct);
 
             return Result.Success();
         }
@@ -153,7 +153,7 @@ public class SoldierCommandHandlers :
             await _uow.SaveChangesAsync(ct);
 
             await _audit.AppendAsync(AuditAction.SoldierDeleted, _user.UserId, _user.Username,
-                nameof(Soldier), soldier.Id.ToString(), $"Deleted {soldier.FullName()}", ct);
+                nameof(Soldier), soldier.Id.ToString(), $"حذف سرباز {soldier.FullName()}", ct);
 
             return Result.Success();
         }

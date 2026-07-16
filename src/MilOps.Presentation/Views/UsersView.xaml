@@ -53,6 +53,11 @@
                         <TextBlock Text="گذرواژه" Style="{StaticResource FieldLabel}" Margin="0,0,0,5"/>
                         <PasswordBox x:Name="NewPasswordBox" PasswordChanged="NewPasswordBox_PasswordChanged"
                                      FlowDirection="LeftToRight"/>
+                        <!-- Shown before a failed attempt, not just after — the
+                             requirement used to only surface via FieldErrors. -->
+                        <TextBlock Text="{Binding PasswordHint}" Foreground="{DynamicResource MutedBrush}"
+                                   FontSize="11" Margin="0,3,0,0"
+                                   Visibility="{Binding FieldErrors[Password], Converter={StaticResource NullToVisibilityConverter}, ConverterParameter=inverse}"/>
                         <TextBlock Style="{StaticResource FieldError}" Text="{Binding FieldErrors[Password]}"/>
                     </StackPanel>
                     <StackPanel Grid.Column="3" Margin="0,0,10,0">
@@ -70,9 +75,11 @@
                     BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,0,1">
                 <StackPanel Orientation="Horizontal">
                     <Button Content="🔐 بازنشانی گذرواژه" Style="{StaticResource PrimaryButton}"
-                            Command="{Binding ChangePasswordCommand}" Padding="14,7" Margin="0,0,8,0"/>
+                            Command="{Binding ChangePasswordCommand}" Padding="14,7" Margin="0,0,8,0"
+                            ToolTip="ابتدا یک کاربر را از فهرست انتخاب کنید"/>
                     <Button Content="✕ غیرفعال‌سازی" Style="{StaticResource DangerButton}"
-                            Command="{Binding DeactivateCommand}" Padding="14,7" Margin="0,0,8,0"/>
+                            Command="{Binding DeactivateCommand}" Padding="14,7" Margin="0,0,8,0"
+                            ToolTip="ابتدا یک کاربر را از فهرست انتخاب کنید"/>
                     <Button Content="بازخوانی" Style="{StaticResource SecondaryButton}"
                             Command="{Binding LoadCommand}" Padding="14,7" Margin="0,0,16,0"/>
                     <TextBlock Text="تغییر نقش به:" Style="{StaticResource FieldLabel}"
@@ -99,10 +106,28 @@
                     <DataGridTextColumn Header="نام کاربری" Binding="{Binding Username}" Width="160"/>
                     <DataGridTextColumn Header="نام کامل"   Binding="{Binding FullName}" Width="200"/>
                     <DataGridTextColumn Header="نقش"        Binding="{Binding Role, Converter={StaticResource EnumDescriptionConverter}}"     Width="130"/>
-                    <DataGridCheckBoxColumn Header="فعال"   Binding="{Binding IsActive}" Width="70"
-                                            ElementStyle="{StaticResource GridCheckBox}"/>
-                    <DataGridCheckBoxColumn Header="فعال‌سازی با توکن" Binding="{Binding IsActivated}" Width="130"
-                                            ElementStyle="{StaticResource GridCheckBox}"/>
+                    <!-- Single status column: two separate checkmarks (فعال + فعال‌سازی)
+                         used to read as "already usable" for a brand-new,
+                         not-yet-activated account. -->
+                    <DataGridTextColumn Header="وضعیت" Binding="{Binding StatusText}" Width="140">
+                        <DataGridTextColumn.ElementStyle>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="FontWeight" Value="SemiBold"/>
+                                <Setter Property="Foreground" Value="{DynamicResource TextBrush}"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding StatusText}" Value="غیرفعال">
+                                        <Setter Property="Foreground" Value="{DynamicResource DangerBrush}"/>
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding StatusText}" Value="در انتظار فعال‌سازی">
+                                        <Setter Property="Foreground" Value="#C9A227"/>
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding StatusText}" Value="فعال">
+                                        <Setter Property="Foreground" Value="#1E8449"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </DataGridTextColumn.ElementStyle>
+                    </DataGridTextColumn>
                 </DataGrid.Columns>
             </DataGrid>
 

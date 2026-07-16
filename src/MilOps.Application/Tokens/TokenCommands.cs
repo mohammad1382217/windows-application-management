@@ -83,7 +83,7 @@ public class TokenCommandHandlers :
 
             await _audit.AppendAsync(AuditAction.TokenGenerated, _user.UserId, _user.Username,
                 nameof(CommanderToken), token.Id.ToString(),
-                $"Token for {c.FirstName} {c.LastName} ({c.NationalCode})", ct);
+                $"صدور توکن برای {c.FirstName} {c.LastName} (کد ملی: {c.NationalCode})", ct);
 
             // Plaintext returned exactly once; only the hash is stored.
             return Result.Success(new GeneratedTokenDto(
@@ -106,7 +106,7 @@ public class TokenCommandHandlers :
             await _uow.SaveChangesAsync(ct);
 
             await _audit.AppendAsync(AuditAction.TokenRevoked, _user.UserId, _user.Username,
-                nameof(CommanderToken), token.Id.ToString(), $"Revoked: {c.Reason}", ct);
+                nameof(CommanderToken), token.Id.ToString(), $"ابطال توکن: {c.Reason}", ct);
             return Result.Success();
         }
         catch (DomainException ex) { return Result.Failure(ex.Code, ex.Message); }

@@ -11,10 +11,11 @@ using MilOps.Domain.Repositories;
 namespace MilOps.Application.Weapons;
 
 public record WeaponDto(int Id, string WeaponNumber, WeaponType Type, WeaponStatus Status,
-    string? Model, int? CurrentlyAssignedSoldierId);
+    string? Model, int? CurrentlyAssignedSoldierId, string? AssignedSoldierName = null);
 
 public record WeaponAssignmentHistoryDto(int Id, int SoldierId, int IssuedByUserId,
-    DateTime IssuedAtUtc, DateTime? ReturnedAtUtc, int? ReturnedAmmunition, string? Note);
+    DateTime IssuedAtUtc, DateTime? ReturnedAtUtc, int? ReturnedAmmunition, string? Note,
+    string? SoldierName = null);
 
 public record ListWeaponsQuery : IRequest<IReadOnlyList<WeaponDto>>, IAuthorizedRequest
 {
@@ -58,19 +59,26 @@ public class WeaponHandlers :
     IRequestHandler<ReturnWeaponCommand, Result>
 {
     private readonly IRepository<Weapon> _weapons;
+    private readonly IRepository<Soldier> _soldiers;
     private readonly IUnitOfWork _uow;
     private readonly ICurrentUser _user;
     private readonly IDateTime _time;
     private readonly IAuditRepository _audit;
 
-    public WeaponHandlers(IRepository<Weapon> weapons, IUnitOfWork uow, ICurrentUser user,
-        IDateTime time, IAuditRepository audit)
-    { _weapons = weapons; _uow = uow; _user = user; _time = time; _audit = audit; }
+    public WeaponHandlers(IRepository<Weapon> weapons, IRepository<Soldier> soldiers, IUnitOfWork uow,
+        ICurrentUser user, IDateTime time, IAuditRepository audit)
+    { _weapons = weapons; _soldiers = soldiers; _uow = uow; _user = user; _time = time; _audit = audit; }
 
     public async Task<IReadOnlyList<WeaponDto>> Handle(ListWeaponsQuery q, CancellationToken ct)
     {
-        var items = await _weapons.ListAsync(null, ct);
-        return items.Select(Map).ToList();
+        // History MUST be loaded: CurrentlyAssignedSoldierId is computed from it
+        // (open history row). Without the Include it always read as null, so
+        // the "تخصیص‌یافته به" column silently showed nothing for every weapon.
+        var items = await _weapons.ListAsync(new AllWeaponsWithHistorySpec(), ct);
+        var ids = items.Where(w => w.CurrentlyAssignedSoldierId.HasValue)
+            .Select(w => w.CurrentlyAssignedSoldierId!.Value).Distinct().ToList();
+        var names = await ResolveSoldierNamesAsync(ids, ct);
+        return items.Select(w => Map(w, names)).ToList();
     }
 
     public async Task<IReadOnlyList<WeaponAssignmentHistoryDto>> Handle(GetWeaponHistoryQuery q, CancellationToken ct)
@@ -79,10 +87,22 @@ public class WeaponHandlers :
         // navigation. Use a spec with an Include so the assignment rows are
         // actually fetched (otherwise the history always reads as empty).
         var w = await _weapons.FirstOrDefaultAsync(new WeaponWithHistorySpec(q.WeaponId), ct);
-        return w?.History.Select(h => new WeaponAssignmentHistoryDto(
+        if (w is null) return new List<WeaponAssignmentHistoryDto>();
+
+        var names = await ResolveSoldierNamesAsync(
+            w.History.Select(h => h.SoldierId).Distinct().ToList(), ct);
+        return w.History.Select(h => new WeaponAssignmentHistoryDto(
             h.Id, h.SoldierId, h.IssuedByUserId, h.IssuedAtUtc,
-            h.ReturnedAtUtc, h.ReturnedAmmunition, h.Note)).ToList()
-            ?? new List<WeaponAssignmentHistoryDto>();
+            h.ReturnedAtUtc, h.ReturnedAmmunition, h.Note,
+            names.GetValueOrDefault(h.SoldierId))).ToList();
+    }
+
+    private async Task<Dictionary<int, string>> ResolveSoldierNamesAsync(
+        IReadOnlyCollection<int> ids, CancellationToken ct)
+    {
+        if (ids.Count == 0) return new Dictionary<int, string>();
+        var found = await _soldiers.ListAsync(new SoldiersByIdsSpec(ids), ct);
+        return found.ToDictionary(s => s.Id, s => s.FullName());
     }
 
     public async Task<Result<int>> Handle(CreateWeaponCommand c, CancellationToken ct)
@@ -94,7 +114,7 @@ public class WeaponHandlers :
             _weapons.Add(weapon);
             await _uow.SaveChangesAsync(ct);
             await _audit.AppendAsync(AuditAction.WeaponIssued, _user.UserId, _user.Username,
-                nameof(Weapon), weapon.Id.ToString(), $"Registered weapon {weapon.WeaponNumber}", ct);
+                nameof(Weapon), weapon.Id.ToString(), $"ثبت سلاح {weapon.WeaponNumber}", ct);
             return Result.Success(weapon.Id);
         }
         catch (DomainException ex) { return Result.Failure<int>(ex.Code, ex.Message); }
@@ -110,8 +130,10 @@ public class WeaponHandlers :
             w.IssueTo(c.SoldierId, _user.UserId ?? 0, _time.UtcNow, c.Note);
             w.Touch(_user.Username);
             await _uow.SaveChangesAsync(ct);
+            var issuedToName = (await ResolveSoldierNamesAsync(new[] { c.SoldierId }, ct))
+                .GetValueOrDefault(c.SoldierId) ?? $"#{c.SoldierId}";
             await _audit.AppendAsync(AuditAction.WeaponIssued, _user.UserId, _user.Username,
-                nameof(Weapon), w.Id.ToString(), $"Issued {w.WeaponNumber} to soldier {c.SoldierId}", ct);
+                nameof(Weapon), w.Id.ToString(), $"تحویل {w.WeaponNumber} به {issuedToName}", ct);
             return Result.Success();
         }
         catch (DomainException ex) { return Result.Failure(ex.Code, ex.Message); }
@@ -129,14 +151,15 @@ public class WeaponHandlers :
             w.Touch(_user.Username);
             await _uow.SaveChangesAsync(ct);
             await _audit.AppendAsync(AuditAction.WeaponReturned, _user.UserId, _user.Username,
-                nameof(Weapon), w.Id.ToString(), $"Returned {w.WeaponNumber}", ct);
+                nameof(Weapon), w.Id.ToString(), $"بازگشت سلاح {w.WeaponNumber}", ct);
             return Result.Success();
         }
         catch (DomainException ex) { return Result.Failure(ex.Code, ex.Message); }
     }
 
-    private static WeaponDto Map(Weapon w) => new(w.Id, w.WeaponNumber, w.Type, w.Status,
-        w.Model, w.CurrentlyAssignedSoldierId);
+    private static WeaponDto Map(Weapon w, IReadOnlyDictionary<int, string> names) => new(
+        w.Id, w.WeaponNumber, w.Type, w.Status, w.Model, w.CurrentlyAssignedSoldierId,
+        w.CurrentlyAssignedSoldierId is { } sid ? names.GetValueOrDefault(sid) : null);
 }
 
 /// <summary>Eager-loads the assignment history for a single weapon.</summary>
@@ -147,4 +170,15 @@ internal sealed class WeaponWithHistorySpec : Specification<Weapon>
         Criteria = w => w.Id == weaponId;
         AddInclude(w => w.History);
     }
+}
+
+/// <summary>Eager-loads history for every weapon (needed for CurrentlyAssignedSoldierId).</summary>
+internal sealed class AllWeaponsWithHistorySpec : Specification<Weapon>
+{
+    public AllWeaponsWithHistorySpec() => AddInclude(w => w.History);
+}
+
+internal sealed class SoldiersByIdsSpec : Specification<Soldier>
+{
+    public SoldiersByIdsSpec(IReadOnlyCollection<int> ids) => Criteria = s => ids.Contains(s.Id);
 }

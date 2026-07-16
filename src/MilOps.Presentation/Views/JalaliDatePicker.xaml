@@ -135,7 +135,16 @@
                          Background="Transparent"
                          VerticalContentAlignment="Center"
                          LostFocus="DateTextBox_LostFocus"
-                         KeyDown="DateTextBox_KeyDown"/>
+                         KeyDown="DateTextBox_KeyDown"
+                         TextChanged="DateTextBox_TextChanged"/>
+
+                <!-- Placeholder: hints that typing a date directly is possible,
+                     not just picking one from the calendar popup. -->
+                <TextBlock x:Name="PlaceholderText" Grid.Column="0"
+                           Text="۱۴۰۳/۰۱/۰۱" FlowDirection="LeftToRight"
+                           IsHitTestVisible="False"
+                           Foreground="{DynamicResource MutedBrush}"
+                           Margin="10,0,0,0" VerticalAlignment="Center"/>
 
                 <Border Grid.Column="1"
                         BorderBrush="{DynamicResource BorderBrush}"
@@ -203,17 +212,31 @@
 
                 <StackPanel Width="280" FlowDirection="RightToLeft">
 
-                    <!-- Month / year navigation (LTR so arrows don't flip) -->
+                    <!-- Month / year navigation (LTR so arrows don't flip).
+                         Year buttons (double chevron) let a user reach a date years
+                         away (e.g. a birth year) without clicking prev-month 24+ times. -->
                     <Grid FlowDirection="LeftToRight" Margin="0,0,0,14">
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="36"/>
+                            <ColumnDefinition Width="30"/>
+                            <ColumnDefinition Width="30"/>
                             <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="36"/>
+                            <ColumnDefinition Width="30"/>
+                            <ColumnDefinition Width="30"/>
                         </Grid.ColumnDefinitions>
 
-                        <!-- Previous month (physical left) -->
-                        <Button Grid.Column="0" x:Name="PrevBtn"
-                                Style="{StaticResource CalNavBtn}"
+                        <!-- Previous year (physical far left) -->
+                        <Button Grid.Column="0" x:Name="PrevYearBtn"
+                                Style="{StaticResource CalNavBtn}" ToolTip="سال قبل"
+                                Click="PrevYear_Click">
+                            <Path Data="M 9,3 L 5,7 L 9,11 M 5,3 L 1,7 L 5,11"
+                                  Stroke="{DynamicResource MutedBrush}" StrokeThickness="2"
+                                  StrokeLineJoin="Round" StrokeStartLineCap="Round" StrokeEndLineCap="Round"
+                                  Fill="Transparent" Width="12" Height="8" Stretch="Uniform"/>
+                        </Button>
+
+                        <!-- Previous month -->
+                        <Button Grid.Column="1" x:Name="PrevBtn"
+                                Style="{StaticResource CalNavBtn}" ToolTip="ماه قبل"
                                 Click="PrevMonth_Click">
                             <Path Data="M 8,3 L 4,7 L 8,11"
                                   Stroke="{DynamicResource MutedBrush}" StrokeThickness="2"
@@ -221,16 +244,26 @@
                                   Fill="Transparent" Width="12" Height="8" Stretch="Uniform"/>
                         </Button>
 
-                        <TextBlock x:Name="MonthYearLabel" Grid.Column="1"
+                        <TextBlock x:Name="MonthYearLabel" Grid.Column="2"
                                    HorizontalAlignment="Center" VerticalAlignment="Center"
                                    FontWeight="SemiBold" FontSize="14.5"
                                    Foreground="{DynamicResource PrimaryBrush}"/>
 
-                        <!-- Next month (physical right) -->
-                        <Button Grid.Column="2" x:Name="NextBtn"
-                                Style="{StaticResource CalNavBtn}"
+                        <!-- Next month -->
+                        <Button Grid.Column="3" x:Name="NextBtn"
+                                Style="{StaticResource CalNavBtn}" ToolTip="ماه بعد"
                                 Click="NextMonth_Click">
                             <Path Data="M 4,3 L 8,7 L 4,11"
+                                  Stroke="{DynamicResource MutedBrush}" StrokeThickness="2"
+                                  StrokeLineJoin="Round" StrokeStartLineCap="Round" StrokeEndLineCap="Round"
+                                  Fill="Transparent" Width="12" Height="8" Stretch="Uniform"/>
+                        </Button>
+
+                        <!-- Next year (physical far right) -->
+                        <Button Grid.Column="4" x:Name="NextYearBtn"
+                                Style="{StaticResource CalNavBtn}" ToolTip="سال بعد"
+                                Click="NextYear_Click">
+                            <Path Data="M 5,3 L 9,7 L 5,11 M 1,3 L 5,7 L 1,11"
                                   Stroke="{DynamicResource MutedBrush}" StrokeThickness="2"
                                   StrokeLineJoin="Round" StrokeStartLineCap="Round" StrokeEndLineCap="Round"
                                   Fill="Transparent" Width="12" Height="8" Stretch="Uniform"/>

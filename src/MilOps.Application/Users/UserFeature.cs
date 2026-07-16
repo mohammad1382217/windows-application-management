@@ -14,7 +14,21 @@ using MilOps.Domain.ValueObjects;
 namespace MilOps.Application.Users;
 
 public record UserDto(int Id, string Username, string FullName, Role Role, bool IsActive,
-    bool IsActivated);
+    bool IsActivated)
+{
+    /// <summary>
+    /// Single-glance status for the grid. A brand-new account has IsActive=true
+    /// (the domain flag) but IsActivated=false (token not redeemed yet) — shown
+    /// as two separate checkmarks that used to read as "already usable" at a
+    /// glance, contradicting the creation dialog's own "not usable yet" text.
+    /// </summary>
+    public string StatusText => (IsActive, IsActivated) switch
+    {
+        (false, _) => "غیرفعال",
+        (true, false) => "در انتظار فعال‌سازی",
+        (true, true) => "فعال",
+    };
+}
 
 public record ListUsersQuery : IRequest<IReadOnlyList<UserDto>>, IAuthorizedRequest
 {
@@ -96,7 +110,8 @@ public class UserHandlers :
             await _uow.SaveChangesAsync(ct);
 
             await _audit.AppendAsync(AuditAction.UserCreated, _user.UserId, _user.Username,
-                nameof(User), user.Id.ToString(), $"Created user {user.Username} ({user.Role})", ct);
+                nameof(User), user.Id.ToString(),
+                $"ایجاد کاربر {user.Username} (نقش: {EnumDescriptions.Describe(user.Role)})", ct);
             return Result.Success(user.Id);
         }
         catch (DomainException ex) { return Result.Failure<int>(ex.Code, ex.Message); }
@@ -113,7 +128,7 @@ public class UserHandlers :
             await _uow.SaveChangesAsync(ct);
 
             await _audit.AppendAsync(AuditAction.PasswordChanged, _user.UserId, _user.Username,
-                nameof(User), user.Id.ToString(), $"Password changed for {user.Username}", ct);
+                nameof(User), user.Id.ToString(), $"تغییر گذرواژه کاربر {user.Username}", ct);
 
             return Result.Success();
         }
@@ -133,7 +148,7 @@ public class UserHandlers :
             await _uow.SaveChangesAsync(ct);
 
             await _audit.AppendAsync(AuditAction.UserDeactivated, _user.UserId, _user.Username,
-                nameof(User), user.Id.ToString(), $"Deactivated {user.Username}", ct);
+                nameof(User), user.Id.ToString(), $"غیرفعال‌سازی کاربر {user.Username}", ct);
 
             return Result.Success();
         }
@@ -156,7 +171,8 @@ public class UserHandlers :
 
             await _audit.AppendAsync(AuditAction.UserUpdated, _user.UserId, _user.Username,
                 nameof(User), user.Id.ToString(),
-                $"Role of {user.Username} changed {oldRole} -> {c.NewRole}", ct);
+                $"تغییر نقش {user.Username} از «{EnumDescriptions.Describe(oldRole)}» " +
+                $"به «{EnumDescriptions.Describe(c.NewRole)}»", ct);
 
             return Result.Success();
         }

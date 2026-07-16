@@ -82,23 +82,31 @@ public sealed partial class ScheduleBuilderViewModel : ViewModelBase
         if (Assignments.Count == 0) { ErrorMessage = "حداقل یک ردیف نگهبانی وارد کنید."; return; }
 
         var rows = new List<GuardAssignmentDto>();
-        foreach (var row in Assignments)
+        for (var i = 0; i < Assignments.Count; i++)
         {
+            var row = Assignments[i];
+            // Errors used to echo only the bad text back with no row reference —
+            // with several rows the user had to visually hunt for the offender.
+            var rowLabel = $"ردیف {PersianDate.ToPersianDigits((i + 1).ToString())}" +
+                (row.SelectedSoldier is { } s ? $" ({s.DisplayName})" : string.Empty);
+
             if (row.SelectedSoldier is not { } soldier)
             {
-                ErrorMessage = "برای هر ردیف یک سرباز از فهرست انتخاب کنید.";
+                ErrorMessage = $"{rowLabel}: یک سرباز از فهرست انتخاب کنید.";
                 return;
             }
             var sid = soldier.Id;
             TimeOnly? start = null, end = null;
             if (!string.IsNullOrWhiteSpace(row.ShiftStart))
             {
-                if (!TryParseTime(row.ShiftStart, out var t)) { ErrorMessage = $"فرمت ساعت شروع اشتباه است: {row.ShiftStart}  (مثال: ۰۸:۰۰)"; return; }
+                if (!TryParseTime(row.ShiftStart, out var t))
+                { ErrorMessage = $"{rowLabel}: فرمت ساعت شروع اشتباه است ({row.ShiftStart}) — مثال: ۰۸:۰۰"; return; }
                 start = t;
             }
             if (!string.IsNullOrWhiteSpace(row.ShiftEnd))
             {
-                if (!TryParseTime(row.ShiftEnd, out var t)) { ErrorMessage = $"فرمت ساعت پایان اشتباه است: {row.ShiftEnd}  (مثال: ۱۶:۰۰)"; return; }
+                if (!TryParseTime(row.ShiftEnd, out var t))
+                { ErrorMessage = $"{rowLabel}: فرمت ساعت پایان اشتباه است ({row.ShiftEnd}) — مثال: ۱۶:۰۰"; return; }
                 end = t;
             }
             rows.Add(new GuardAssignmentDto(sid, row.Post, row.Shift, start, end,

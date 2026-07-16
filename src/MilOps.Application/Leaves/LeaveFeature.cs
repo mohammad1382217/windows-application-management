@@ -11,7 +11,7 @@ using MilOps.Domain.Repositories;
 namespace MilOps.Application.Leaves;
 
 public record LeaveDto(int Id, int SoldierId, DateOnly StartDate, DateOnly EndDate,
-    LeaveStatus Status, string Reason, int? ApprovedByUserId);
+    LeaveStatus Status, string Reason, int? ApprovedByUserId, string? SoldierName = null);
 
 public record ListLeavesQuery(LeaveStatus? Status) : IRequest<IReadOnlyList<LeaveDto>>, IAuthorizedRequest
 {
@@ -53,20 +53,28 @@ public class LeaveHandlers :
     IRequestHandler<RejectLeaveCommand, Result>
 {
     private readonly IRepository<LeaveRecord> _leaves;
+    private readonly IRepository<Soldier> _soldiers;
     private readonly IUnitOfWork _uow;
     private readonly ICurrentUser _user;
     private readonly IDateTime _time;
     private readonly IAuditRepository _audit;
 
-    public LeaveHandlers(IRepository<LeaveRecord> leaves, IUnitOfWork uow, ICurrentUser user,
-        IDateTime time, IAuditRepository audit)
-    { _leaves = leaves; _uow = uow; _user = user; _time = time; _audit = audit; }
+    public LeaveHandlers(IRepository<LeaveRecord> leaves, IRepository<Soldier> soldiers, IUnitOfWork uow,
+        ICurrentUser user, IDateTime time, IAuditRepository audit)
+    { _leaves = leaves; _soldiers = soldiers; _uow = uow; _user = user; _time = time; _audit = audit; }
 
     public async Task<IReadOnlyList<LeaveDto>> Handle(ListLeavesQuery q, CancellationToken ct)
     {
         var spec = new LeaveListSpec(q.Status);
         var items = await _leaves.ListAsync(spec, ct);
-        return items.Select(Map).ToList();
+
+        var ids = items.Select(l => l.SoldierId).Distinct().ToList();
+        var names = ids.Count == 0
+            ? new Dictionary<int, string>()
+            : (await _soldiers.ListAsync(new SoldiersByIdsSpec(ids), ct))
+                .ToDictionary(s => s.Id, s => s.FullName());
+
+        return items.Select(l => Map(l, names)).ToList();
     }
 
     public async Task<bool> Handle(IsSoldierAvailableQuery q, CancellationToken ct)
@@ -85,9 +93,11 @@ public class LeaveHandlers :
             leave.CreatedBy = _user.Username;
             _leaves.Add(leave);
             await _uow.SaveChangesAsync(ct);
+            var soldierName = (await _soldiers.ListAsync(new SoldiersByIdsSpec(new[] { c.SoldierId }), ct))
+                .Select(s => s.FullName()).FirstOrDefault() ?? $"#{c.SoldierId}";
             await _audit.AppendAsync(AuditAction.LeaveCreated, _user.UserId, _user.Username,
                 nameof(LeaveRecord), leave.Id.ToString(),
-                $"Leave for soldier {c.SoldierId} ({c.StartDate:O}..{c.EndDate:O})", ct);
+                $"ثبت مرخصی {soldierName} ({c.StartDate:yyyy/MM/dd} تا {c.EndDate:yyyy/MM/dd})", ct);
             return Result.Success(leave.Id);
         }
         catch (DomainException ex) { return Result.Failure<int>(ex.Code, ex.Message); }
@@ -103,7 +113,7 @@ public class LeaveHandlers :
             l.Touch(_user.Username);
             await _uow.SaveChangesAsync(ct);
             await _audit.AppendAsync(AuditAction.LeaveApproved, _user.UserId, _user.Username,
-                nameof(LeaveRecord), l.Id.ToString(), "Leave approved", ct);
+                nameof(LeaveRecord), l.Id.ToString(), "تأیید مرخصی", ct);
             return Result.Success();
         }
         catch (DomainException ex) { return Result.Failure(ex.Code, ex.Message); }
@@ -119,14 +129,15 @@ public class LeaveHandlers :
             l.Touch(_user.Username);
             await _uow.SaveChangesAsync(ct);
             await _audit.AppendAsync(AuditAction.LeaveRejected, _user.UserId, _user.Username,
-                nameof(LeaveRecord), l.Id.ToString(), $"Rejected: {c.Reason}", ct);
+                nameof(LeaveRecord), l.Id.ToString(), $"رد مرخصی: {c.Reason}", ct);
             return Result.Success();
         }
         catch (DomainException ex) { return Result.Failure(ex.Code, ex.Message); }
     }
 
-    private static LeaveDto Map(LeaveRecord l) => new(l.Id, l.SoldierId, l.StartDate, l.EndDate,
-        l.Status, l.Reason, l.ApprovedByUserId);
+    private static LeaveDto Map(LeaveRecord l, IReadOnlyDictionary<int, string> names) => new(
+        l.Id, l.SoldierId, l.StartDate, l.EndDate, l.Status, l.Reason, l.ApprovedByUserId,
+        names.GetValueOrDefault(l.SoldierId));
 }
 
 internal sealed class LeaveListSpec : Specification<LeaveRecord>
@@ -136,6 +147,11 @@ internal sealed class LeaveListSpec : Specification<LeaveRecord>
         if (status.HasValue) Criteria = l => l.Status == status.Value;
         OrderByDescending = l => l.Id;
     }
+}
+
+internal sealed class SoldiersByIdsSpec : Specification<Soldier>
+{
+    public SoldiersByIdsSpec(IReadOnlyCollection<int> ids) => Criteria = s => ids.Contains(s.Id);
 }
 
 internal sealed class SoldierLeaveOnDateSpec : Specification<LeaveRecord>

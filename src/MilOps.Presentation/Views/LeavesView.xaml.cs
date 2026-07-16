@@ -8,7 +8,8 @@ public partial class LeavesView : UserControl
     public LeavesView() => InitializeComponent();
     private void LeavesView_Loaded(object sender, System.Windows.RoutedEventArgs e)
     {
-        if (DataContext is LeavesViewModel vm && vm.LoadCommand.CanExecute(null))
-            vm.LoadCommand.Execute(null);
+        if (DataContext is not LeavesViewModel vm) return;
+        if (vm.LoadCommand.CanExecute(null)) vm.LoadCommand.Execute(null);
+        if (vm.LoadSoldiersCommand.CanExecute(null)) vm.LoadSoldiersCommand.Execute(null);
     }
 }

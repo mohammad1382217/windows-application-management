@@ -40,6 +40,7 @@
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
@@ -60,7 +61,7 @@
                     </StackPanel>
                     <StackPanel Grid.Row="0" Grid.Column="2" Margin="0,0,10,10">
                         <TextBlock Text="کد ملی" Style="{StaticResource FieldLabel}" Margin="0,0,0,5"/>
-                        <TextBox Text="{Binding NationalCode}" FlowDirection="LeftToRight"/>
+                        <TextBox Text="{Binding NationalCode}" FlowDirection="LeftToRight" ToolTip="۱۰ رقم"/>
                         <TextBlock Style="{StaticResource FieldError}" Text="{Binding FieldErrors[NationalCode]}"/>
                     </StackPanel>
                     <StackPanel Grid.Row="0" Grid.Column="3" Margin="0,0,0,10">
@@ -69,34 +70,39 @@
                         <TextBlock Style="{StaticResource FieldError}" Text="{Binding FieldErrors[PersonnelCode]}"/>
                     </StackPanel>
 
-                    <StackPanel Grid.Row="1" Grid.Column="0" Margin="0,0,10,10">
+                    <!-- Divider: person info above, token settings below — the
+                         8 look-alike text boxes used to read as one undifferentiated block. -->
+                    <Border Grid.Row="1" Grid.ColumnSpan="4" Height="1"
+                            Background="{DynamicResource BorderBrush}" Margin="0,0,0,10"/>
+
+                    <StackPanel Grid.Row="2" Grid.Column="0" Margin="0,0,10,10">
                         <TextBlock Text="درجه" Style="{StaticResource FieldLabel}" Margin="0,0,0,5"/>
                         <TextBox Text="{Binding Rank}"/>
                         <TextBlock Style="{StaticResource FieldError}" Text="{Binding FieldErrors[Rank]}"/>
                     </StackPanel>
-                    <StackPanel Grid.Row="1" Grid.Column="1" Margin="0,0,10,10">
+                    <StackPanel Grid.Row="2" Grid.Column="1" Margin="0,0,10,10">
                         <TextBlock Text="شروع خدمت" Style="{StaticResource FieldLabel}" Margin="0,0,0,5"/>
                         <v:JalaliDatePicker SelectedDate="{Binding ServiceStart}"/>
                         <TextBlock Style="{StaticResource FieldError}" Text="{Binding FieldErrors[ServiceStartDate]}"/>
                     </StackPanel>
-                    <StackPanel Grid.Row="1" Grid.Column="2" Margin="0,0,10,10">
+                    <StackPanel Grid.Row="2" Grid.Column="2" Margin="0,0,10,10">
                         <TextBlock Text="پایان خدمت" Style="{StaticResource FieldLabel}" Margin="0,0,0,5"/>
                         <v:JalaliDatePicker SelectedDate="{Binding ServiceEnd}"/>
                         <TextBlock Style="{StaticResource FieldError}" Text="{Binding FieldErrors[ServiceEndDate]}"/>
                     </StackPanel>
-                    <StackPanel Grid.Row="1" Grid.Column="3" Margin="0,0,0,10">
+                    <StackPanel Grid.Row="2" Grid.Column="3" Margin="0,0,0,10">
                         <TextBlock Text="هدف مجوز" Style="{StaticResource FieldLabel}" Margin="0,0,0,5"/>
                         <ComboBox ItemsSource="{Binding Purposes}" SelectedItem="{Binding Purpose}"/>
                     </StackPanel>
 
-                    <StackPanel Grid.Row="2" Grid.Column="0" VerticalAlignment="Center">
+                    <StackPanel Grid.Row="3" Grid.Column="0" VerticalAlignment="Center">
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Text="اعتبار (روز):" Style="{StaticResource FieldLabel}" VerticalAlignment="Center" Margin="0,0,8,0"/>
                             <TextBox Text="{Binding ValidDays}" Width="70" FlowDirection="LeftToRight"/>
                         </StackPanel>
                         <TextBlock Style="{StaticResource FieldError}" Text="{Binding FieldErrors[ValidDays]}"/>
                     </StackPanel>
-                    <Button Grid.Row="2" Grid.Column="3" Content="🔑 صدور توکن"
+                    <Button Grid.Row="3" Grid.Column="3" Content="🔑 صدور توکن"
                             Style="{StaticResource PrimaryButton}"
                             Command="{Binding GenerateCommand}" IsEnabled="{Binding IsNotBusy}"
                             Padding="0,9" HorizontalAlignment="Stretch"/>
@@ -112,7 +118,8 @@
                         BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,0,1">
                     <StackPanel Orientation="Horizontal">
                         <Button Content="✕ ابطال توکن" Style="{StaticResource DangerButton}"
-                                Command="{Binding RevokeCommand}" Padding="14,7" Margin="0,0,8,0"/>
+                                Command="{Binding RevokeCommand}" Padding="14,7" Margin="0,0,8,0"
+                                ToolTip="فقط توکن‌های «فعال» قابل ابطال هستند"/>
                         <Button Content="بازخوانی" Style="{StaticResource SecondaryButton}"
                                 Command="{Binding LoadCommand}" Padding="14,7" Margin="0,0,16,0"/>
                         <TextBlock Text="فیلتر:" Style="{StaticResource FieldLabel}" VerticalAlignment="Center" Margin="0,0,8,0"/>

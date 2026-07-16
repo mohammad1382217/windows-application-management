@@ -77,13 +77,17 @@
                     <TextBlock Text="توکن فعال‌سازی (دریافتی از فرمانده)"
                                Style="{StaticResource FieldLabel}"
                                FontSize="13" Margin="0,0,0,6"/>
-                    <TextBox Text="{Binding ActivationToken, UpdateSourceTrigger=PropertyChanged}"
+                    <TextBox x:Name="ActivationTokenBox"
+                             Text="{Binding ActivationToken, UpdateSourceTrigger=PropertyChanged}"
                              FontSize="13" Padding="10,9"
                              FlowDirection="LeftToRight"/>
                     <Border Height="14"/>
+                    <!-- IsDefault here (not on the now-hidden login button below) so
+                         Enter submits the form the user is actually looking at. -->
                     <Button Content="فعال‌سازی حساب و ورود"
                             Style="{StaticResource AccentButton}"
                             Command="{Binding ActivateCommand}"
+                            IsDefault="{Binding IsActivationRequired}"
                             Padding="0,13" FontSize="14"/>
                     <Border Height="18"/>
                 </StackPanel>
@@ -92,7 +96,7 @@
                 <Button Content="ورود به سامانه"
                         Style="{StaticResource PrimaryButton}"
                         Command="{Binding LoginCommand}"
-                        IsDefault="True"
+                        IsDefault="{Binding IsActivationRequired, Converter={StaticResource InverseBoolConverter}}"
                         IsEnabled="{Binding IsNotBusy}"
                         Padding="0,13" FontSize="14"
                         Visibility="{Binding IsActivationRequired, Converter={StaticResource InverseBoolToVisConverter}, FallbackValue=Visible}"/>

@@ -26,41 +26,51 @@
         </Border>
 
         <!-- Add weapon form -->
-        <Border DockPanel.Dock="Top" Background="White" Padding="16,14"
+        <Border DockPanel.Dock="Top" Background="White" Padding="16,10,16,14"
                 BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1,0,1,1">
-            <StackPanel Orientation="Horizontal">
-                <Button Content="＋ ثبت سلاح" Style="{StaticResource AccentButton}"
-                        Command="{Binding AddCommand}" Padding="14,7" Margin="0,0,16,0"/>
-                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                    <TextBlock Text="مدل:" Style="{StaticResource FieldLabel}" Margin="0,0,6,0"/>
-                    <TextBox Text="{Binding NewModel, UpdateSourceTrigger=PropertyChanged}" Width="110" Margin="0,0,12,0"/>
-                    <TextBlock Text="نوع:" Style="{StaticResource FieldLabel}" Margin="0,0,6,0"/>
-                    <ComboBox ItemsSource="{Binding WeaponTypes}" SelectedItem="{Binding NewWeaponType}" Width="120" Margin="0,0,12,0"/>
-                    <TextBlock Text="شماره سلاح:" Style="{StaticResource FieldLabel}" Margin="0,0,6,0"/>
+            <StackPanel>
+                <TextBlock Text="ثبت سلاح جدید" Foreground="{DynamicResource MutedBrush}"
+                           FontSize="11" FontWeight="Bold" Margin="0,0,0,8"/>
+                <StackPanel Orientation="Horizontal">
                     <StackPanel>
-                        <TextBox Text="{Binding NewWeaponNumber, UpdateSourceTrigger=PropertyChanged}" Width="130"/>
+                        <TextBox x:Name="NewWeaponNumberBox"
+                                 Text="{Binding NewWeaponNumber, UpdateSourceTrigger=PropertyChanged}" Width="130"/>
                         <TextBlock Style="{StaticResource FieldError}" Text="{Binding FieldErrors[WeaponNumber]}" MaxWidth="130"/>
                     </StackPanel>
+                    <TextBlock Text="شماره سلاح:" Style="{StaticResource FieldLabel}" Margin="8,0,16,0" VerticalAlignment="Top"/>
+                    <ComboBox ItemsSource="{Binding WeaponTypes}" SelectedItem="{Binding NewWeaponType}" Width="120" Margin="0,0,6,0"/>
+                    <TextBlock Text="نوع:" Style="{StaticResource FieldLabel}" Margin="0,0,16,0" VerticalAlignment="Center"/>
+                    <TextBox Text="{Binding NewModel, UpdateSourceTrigger=PropertyChanged}" Width="110" Margin="0,0,6,0"/>
+                    <TextBlock Text="مدل:" Style="{StaticResource FieldLabel}" Margin="0,0,16,0" VerticalAlignment="Center"/>
+                    <Button Content="＋ ثبت سلاح" Style="{StaticResource AccentButton}"
+                            Command="{Binding AddCommand}" IsDefault="True" Padding="14,7"/>
                 </StackPanel>
             </StackPanel>
         </Border>
 
         <!-- Action toolbar -->
-        <Border DockPanel.Dock="Top" Background="#F8FAFC" Padding="14,10"
+        <Border DockPanel.Dock="Top" Background="#F8FAFC" Padding="14,8,14,10"
                 BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1,0,1,1">
-            <StackPanel Orientation="Horizontal">
-                <Button Content="تخصیص به سرباز" Style="{StaticResource PrimaryButton}"
-                        Command="{Binding IssueCommand}" Padding="14,7" Margin="0,0,8,0"/>
-                <Button Content="بازگرداندن" Style="{StaticResource SecondaryButton}"
-                        Command="{Binding ReturnCommand}" Padding="14,7" Margin="0,0,8,0"/>
-                <Button Content="سابقه" Style="{StaticResource SecondaryButton}"
-                        Command="{Binding HistoryCommand}" Padding="14,7" Margin="0,0,8,0"/>
-                <Button Content="⬇ PDF" Style="{StaticResource SecondaryButton}"
-                        Command="{Binding ExportPdfCommand}" Padding="14,7" Margin="0,0,8,0"
-                        ToolTip="ذخیره فهرست به‌صورت فایل PDF — بدون نیاز به چاپگر"/>
-                <Button Content="🖨 چاپ همه" Style="{StaticResource SecondaryButton}"
-                        Command="{Binding PrintAllCommand}" Padding="14,7"
-                        ToolTip="چاپ مستقیم با چاپگر متصل"/>
+            <StackPanel>
+                <TextBlock Text="عملیات روی سلاح انتخاب‌شده" Foreground="{DynamicResource MutedBrush}"
+                           FontSize="11" FontWeight="Bold" Margin="0,0,0,8"/>
+                <StackPanel Orientation="Horizontal">
+                    <Button Content="تخصیص به سرباز" Style="{StaticResource PrimaryButton}"
+                            Command="{Binding IssueCommand}" Padding="14,7" Margin="0,0,8,0"
+                            ToolTip="فقط برای سلاح‌های «موجود» در دسترس است"/>
+                    <Button Content="بازگرداندن" Style="{StaticResource SecondaryButton}"
+                            Command="{Binding ReturnCommand}" Padding="14,7" Margin="0,0,8,0"
+                            ToolTip="فقط برای سلاح‌های «تحویل‌داده‌شده» در دسترس است"/>
+                    <Button Content="سابقه" Style="{StaticResource SecondaryButton}"
+                            Command="{Binding HistoryCommand}" Padding="14,7" Margin="0,0,8,0"
+                            ToolTip="نمایش و چاپ سابقه تخصیص این سلاح"/>
+                    <Button Content="⬇ PDF" Style="{StaticResource SecondaryButton}"
+                            Command="{Binding ExportPdfCommand}" Padding="14,7" Margin="0,0,8,0"
+                            ToolTip="ذخیره فهرست به‌صورت فایل PDF — بدون نیاز به چاپگر"/>
+                    <Button Content="🖨 چاپ همه" Style="{StaticResource SecondaryButton}"
+                            Command="{Binding PrintAllCommand}" Padding="14,7"
+                            ToolTip="چاپ مستقیم با چاپگر متصل"/>
+                </StackPanel>
             </StackPanel>
         </Border>
 
@@ -80,7 +90,7 @@
                     <DataGridTextColumn Header="نوع"             Binding="{Binding Type,   Converter={StaticResource EnumDescriptionConverter}}"   Width="120"/>
                     <DataGridTextColumn Header="وضعیت"           Binding="{Binding Status, Converter={StaticResource EnumDescriptionConverter}}"   Width="110"/>
                     <DataGridTextColumn Header="مدل"             Binding="{Binding Model}"                        Width="120"/>
-                    <DataGridTextColumn Header="تخصیص‌یافته به"  Binding="{Binding CurrentlyAssignedSoldierId}"   Width="*"/>
+                    <DataGridTextColumn Header="تخصیص‌یافته به"  Binding="{Binding AssignedSoldierName, TargetNullValue=—}"   Width="*"/>
                 </DataGrid.Columns>
             </DataGrid>
         </Border>

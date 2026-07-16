@@ -87,6 +87,20 @@ public partial class JalaliDatePicker : UserControl
         BuildDays();
     }
 
+    // Jumping a whole year at a time is the difference between ~2 clicks and
+    // ~24 clicks when picking a date (e.g. a birth year) far from today.
+    private void PrevYear_Click(object sender, RoutedEventArgs e)
+    {
+        _viewYear--;
+        BuildDays();
+    }
+
+    private void NextYear_Click(object sender, RoutedEventArgs e)
+    {
+        _viewYear++;
+        BuildDays();
+    }
+
     private void Today_Click(object sender, RoutedEventArgs e)
     {
         SelectDate(DateTime.Today);
@@ -169,10 +183,15 @@ public partial class JalaliDatePicker : UserControl
             ? PersianDate.ToJalali(SelectedDate.Value)
             : string.Empty;
 
-        // Clear any previous invalid-input error border
+        // Clear any previous invalid-input error border/tooltip.
         if (TryFindResource("BorderBrush") is Brush normalBorder)
             OuterBorder.BorderBrush = normalBorder;
+        DateTextBox.ToolTip = null;
     }
+
+    private void DateTextBox_TextChanged(object sender, TextChangedEventArgs e) =>
+        PlaceholderText.Visibility = string.IsNullOrEmpty(DateTextBox.Text)
+            ? Visibility.Visible : Visibility.Collapsed;
 
     private void DateTextBox_LostFocus(object sender, RoutedEventArgs e)
         => CommitTextInput();
@@ -194,12 +213,15 @@ public partial class JalaliDatePicker : UserControl
         {
             SelectedDate = date.ToDateTime(TimeOnly.MinValue);
             OuterBorder.BorderBrush = (Brush)FindResource("BorderBrush");
+            DateTextBox.ToolTip = null;
         }
         else
         {
-            // Invalid input – restore from current SelectedDate
-            SyncTextFromDate();
+            // Keep the user's own (invalid) text on screen instead of silently
+            // reverting it — reverting while still flashing a red border sent
+            // contradictory signals (looks valid, flagged as wrong, forever).
             OuterBorder.BorderBrush = Brushes.Red;
+            DateTextBox.ToolTip = "فرمت تاریخ نامعتبر است — مثال: ۱۴۰۳/۰۱/۰۱";
         }
     }
 }

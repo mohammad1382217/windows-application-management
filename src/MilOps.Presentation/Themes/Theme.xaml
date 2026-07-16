@@ -187,6 +187,13 @@
                         <Trigger Property="IsEnabled" Value="False">
                             <Setter TargetName="bd" Property="Background" Value="#F2F4F7"/>
                         </Trigger>
+                        <!-- Locked (but still enabled) fields — e.g. national/personnel
+                             code once a soldier record is in edit mode — must look
+                             visibly different, or a user will click in, try to type,
+                             and think the app is frozen when nothing happens. -->
+                        <Trigger Property="IsReadOnly" Value="True">
+                            <Setter TargetName="bd" Property="Background" Value="#F2F4F7"/>
+                        </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
             </Setter.Value>

@@ -20,6 +20,7 @@
             <conv:JalaliDateConverter        x:Key="JalaliDateConverter" />
             <conv:JalaliDateTimeConverter    x:Key="JalaliDateTimeConverter" />
             <conv:PersianDigitsConverter     x:Key="PersianDigitsConverter" />
+            <conv:OneBasedPersianIndexConverter x:Key="OneBasedPersianIndexConverter" />
             <conv:EnumDescriptionConverter   x:Key="EnumDescriptionConverter" />
 
             <!-- Implicit DataTemplates: enum values display their Persian [Description].

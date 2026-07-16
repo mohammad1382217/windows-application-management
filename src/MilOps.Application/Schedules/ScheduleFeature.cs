@@ -117,7 +117,7 @@ public class ScheduleHandlers :
 
             await _audit.AppendAsync(AuditAction.ScheduleCreated, _user.UserId, _user.Username,
                 nameof(GuardSchedule), schedule.Id.ToString(),
-                $"Schedule for {c.Date:O} with {c.Assignments.Count} assignments", ct);
+                $"ثبت برنامه نگهبانی {c.Date:yyyy/MM/dd} با {c.Assignments.Count} نفر", ct);
 
             return Result.Success(schedule.Id);
         }
@@ -136,7 +136,7 @@ public class ScheduleHandlers :
             await _uow.SaveChangesAsync(ct);
 
             await _audit.AppendAsync(AuditAction.ScheduleApproved, _user.UserId, _user.Username,
-                nameof(GuardSchedule), s.Id.ToString(), $"Approved schedule for {s.Date:O}", ct);
+                nameof(GuardSchedule), s.Id.ToString(), $"تأیید برنامه نگهبانی {s.Date:yyyy/MM/dd}", ct);
             return Result.Success();
         }
         catch (DomainException ex) { return Result.Failure(ex.Code, ex.Message); }

@@ -22,9 +22,25 @@ public sealed partial class AuditViewModel : ViewModelBase
     public Array Actions => Enum.GetValues(typeof(AuditAction));
 
     private DateTime? _from;
-    public DateTime? From { get => _from; set { _from = value; OnPropertyChanged(); } }
+    public DateTime? From
+    {
+        get => _from;
+        set { _from = value; OnPropertyChanged(); ClearFromCommand.NotifyCanExecuteChanged(); }
+    }
     private DateTime? _to;
-    public DateTime? To { get => _to; set { _to = value; OnPropertyChanged(); } }
+    public DateTime? To
+    {
+        get => _to;
+        set { _to = value; OnPropertyChanged(); ClearToCommand.NotifyCanExecuteChanged(); }
+    }
+
+    [RelayCommand(CanExecute = nameof(CanClearFrom))]
+    private void ClearFrom() { From = null; _ = LoadAsync(); }
+    private bool CanClearFrom() => From is not null;
+
+    [RelayCommand(CanExecute = nameof(CanClearTo))]
+    private void ClearTo() { To = null; _ = LoadAsync(); }
+    private bool CanClearTo() => To is not null;
     private AuditAction? _actionFilter;
     public AuditAction? ActionFilter
     {

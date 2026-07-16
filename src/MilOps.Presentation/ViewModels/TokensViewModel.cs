@@ -95,14 +95,18 @@ public sealed partial class TokensViewModel : ViewModelBase
                 copied = false;
                 Serilog.Log.Warning(ex, "Clipboard unavailable while revealing token.");
             }
+            // The token is the one piece of text the user must actually find and
+            // copy in this dialog; fence it off from the surrounding sentence so
+            // it doesn't get lost if the clipboard copy silently failed.
             _dialogs.Info(
                 "توکن ایجاد شد — آن را در جای امنی ذخیره کنید.\n\n" +
                 $"دارنده: {r.Value.FirstName} {r.Value.LastName}\n" +
                 $"هدف: {Common.EnumText.Describe(r.Value.Purpose)}\n" +
                 $"انقضا: {Common.PersianDate.ToJalaliDateTime(r.Value.ExpiresAtUtc)}\n\n" +
-                (copied
-                    ? $"توکن (در کلیپ‌بورد کپی شد):\n{r.Value.PlaintextToken}\n\n"
-                    : $"توکن (کپی خودکار ناموفق بود — همین حالا آن را یادداشت کنید):\n{r.Value.PlaintextToken}\n\n") +
+                (copied ? "(توکن در کلیپ‌بورد کپی شد)" : "(کپی خودکار ناموفق بود — همین حالا آن را یادداشت کنید)") +
+                "\n——————————————————\n" +
+                r.Value.PlaintextToken +
+                "\n——————————————————\n\n" +
                 "این توکن دیگر نمایش داده نخواهد شد. فقط نسخه هش‌شده ذخیره می‌شود.",
                 "توکن ایجاد شد");
             await LoadAsync();
@@ -113,8 +117,12 @@ public sealed partial class TokensViewModel : ViewModelBase
     private async Task RevokeAsync()
     {
         if (Selected is null) return;
-        var reason = InputDialog.Prompt(
-            "دلیل ابطال این توکن؟", "ابطال توکن", "دیگر نیازی ندارد");
+        // Irreversible action: the previous flow had no confirm step, and the
+        // reason box started pre-filled with IsDefault="True" on OK — a single
+        // stray Enter press revoked the token instantly with no "are you sure".
+        if (!_dialogs.Confirm(
+            $"توکن «{Selected.Preview}» ابطال شود؟ این عملیات را نمی‌توان بازگرداند.")) return;
+        var reason = InputDialog.Prompt("دلیل ابطال این توکن؟", "ابطال توکن", "");
         if (string.IsNullOrWhiteSpace(reason)) return;
 
         await RunAsync(async () =>

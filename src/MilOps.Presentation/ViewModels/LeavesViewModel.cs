@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.Input;
 using MediatR;
 using MilOps.Application.Leaves;
+using MilOps.Application.Soldiers;
 using MilOps.Domain.Enums;
 using MilOps.Presentation.Common;
 using MilOps.Presentation.Services;
@@ -18,7 +19,11 @@ public sealed partial class LeavesViewModel : ViewModelBase
 
     public ObservableCollection<LeaveDto> Items { get; } = new();
 
-    public int NewSoldierId { get; set; }
+    /// <summary>Active soldiers offered by the new-request picker.</summary>
+    public ObservableCollection<SoldierDto> Soldiers { get; } = new();
+
+    // Picked from the soldier list — no more free-typed IDs.
+    public SoldierDto? NewSoldier { get; set; }
     // Nullable: the date pickers can be cleared by the user; Request validates.
     public DateTime? NewStart { get; set; } = DateTime.Today;
     public DateTime? NewEnd { get; set; } = DateTime.Today.AddDays(3);
@@ -66,17 +71,29 @@ public sealed partial class LeavesViewModel : ViewModelBase
     }
 
     [RelayCommand]
+    private async Task LoadSoldiersAsync()
+    {
+        await RunAsync(async () =>
+        {
+            var filter = new SoldierSearchRequest(null, null, true, null, 1, 500);
+            var result = await _sender.Send(new SearchSoldiersQuery(filter));
+            Soldiers.Clear();
+            foreach (var s in result.Items.OrderBy(s => s.LastName)) Soldiers.Add(s);
+        });
+    }
+
+    [RelayCommand]
     private async Task RequestAsync()
     {
-        if (NewSoldierId <= 0) { ErrorMessage = "شناسه سرباز الزامی است."; return; }
+        if (NewSoldier is not { } soldier) { ErrorMessage = "یک سرباز از فهرست انتخاب کنید."; return; }
         if (NewStart is null || NewEnd is null) { ErrorMessage = "تاریخ شروع و پایان مرخصی را وارد کنید."; return; }
         await RunAsync(async () =>
         {
-            var r = await _sender.Send(new CreateLeaveCommand(NewSoldierId,
+            var r = await _sender.Send(new CreateLeaveCommand(soldier.Id,
                 DateOnly.FromDateTime(NewStart.Value), DateOnly.FromDateTime(NewEnd.Value), NewReason));
             if (!r.IsSuccess) { ErrorMessage = r.Error; return; }
-            NewReason = string.Empty; NewSoldierId = 0;
-            OnPropertyChanged(nameof(NewReason)); OnPropertyChanged(nameof(NewSoldierId));
+            NewReason = string.Empty; NewSoldier = null;
+            OnPropertyChanged(nameof(NewReason)); OnPropertyChanged(nameof(NewSoldier));
             await LoadAsync();
         });
     }
@@ -85,6 +102,11 @@ public sealed partial class LeavesViewModel : ViewModelBase
     private async Task ApproveAsync()
     {
         if (Selected is null) return;
+        // Mirrors the schedule-approve confirmation: an irreversible, audited
+        // decision sitting one click away in a dense toolbar needs a safety net.
+        if (!_dialogs.Confirm(
+            $"مرخصی «{Selected.SoldierName ?? $"#{Selected.SoldierId}"}» تأیید شود؟ " +
+            "این عملیات در گزارش حسابرسی ثبت می‌شود و از این صفحه قابل بازگردانی نیست.")) return;
         await RunAsync(async () =>
         {
             var r = await _sender.Send(new ApproveLeaveCommand(Selected.Id));
@@ -143,7 +165,7 @@ public sealed partial class LeavesViewModel : ViewModelBase
             Items.Select(l => new[]
             {
                 PersianDate.ToPersianDigits(l.Id.ToString()),
-                PersianDate.ToPersianDigits(l.SoldierId.ToString()),
+                l.SoldierName ?? PersianDate.ToPersianDigits(l.SoldierId.ToString()),
                 PersianDate.ToJalali(l.StartDate), PersianDate.ToJalali(l.EndDate),
                 EnumText.Describe(l.Status), l.Reason
             }));

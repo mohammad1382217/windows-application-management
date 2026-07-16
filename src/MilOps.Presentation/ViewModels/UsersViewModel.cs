@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.Input;
 using MediatR;
+using MilOps.Application.Authentication;
 using MilOps.Application.Users;
 using MilOps.Domain.Enums;
 using MilOps.Presentation.Services;
@@ -22,6 +23,9 @@ public sealed partial class UsersViewModel : ViewModelBase
     public string NewPassword { get; set; } = string.Empty;
     public Role NewRole { get; set; } = Role.Soldier;
 
+    /// <summary>Shown under the password box BEFORE a failed attempt, not just after.</summary>
+    public string PasswordHint { get; }
+
     /// <summary>Target role for the "change role" action on the selected user.</summary>
     public Role RoleForChange { get; set; } = Role.Soldier;
 
@@ -38,7 +42,11 @@ public sealed partial class UsersViewModel : ViewModelBase
         }
     }
 
-    public UsersViewModel(ISender sender, IDialogService dialogs) { _sender = sender; _dialogs = dialogs; }
+    public UsersViewModel(ISender sender, IDialogService dialogs, AuthenticationOptions authOptions)
+    {
+        _sender = sender; _dialogs = dialogs;
+        PasswordHint = Common.PersianDate.ToPersianDigits($"حداقل {authOptions.MinPasswordLength} کاراکتر");
+    }
 
     [RelayCommand]
     private async Task LoadAsync()
@@ -76,13 +84,15 @@ public sealed partial class UsersViewModel : ViewModelBase
     private async Task ChangePasswordAsync()
     {
         if (Selected is null) return;
-        var pw = InputDialog.Prompt($"گذرواژه جدید برای «{Selected.Username}»:", "بازنشانی گذرواژه", "");
-        if (string.IsNullOrWhiteSpace(pw)) return;
+        var pw = PasswordPromptDialog.Prompt(
+            $"گذرواژه جدید برای «{Selected.Username}»:", "بازنشانی گذرواژه", PasswordHint);
+        if (pw is null) return; // cancelled
+        if (string.IsNullOrWhiteSpace(pw)) { _dialogs.Warning("گذرواژه نمی‌تواند خالی باشد."); return; }
         await RunAsync(async () =>
         {
             var r = await _sender.Send(new ChangePasswordCommand(Selected.Id, pw));
             if (!r.IsSuccess) _dialogs.Error(r.Error);
-            else _dialogs.Info("گذرواژه به‌روزرسانی شد و در گزارش حسابرسی ثبت گردید.");
+            else _dialogs.Info("گذرواژه به‌روزرسانی شد و در گزارش حسابرسی ثبت گردید.", "بازنشانی گذرواژه");
         });
     }
 
@@ -90,7 +100,9 @@ public sealed partial class UsersViewModel : ViewModelBase
     private async Task DeactivateAsync()
     {
         if (Selected is null) return;
-        if (!_dialogs.Confirm($"کاربر «{Selected.Username}» غیرفعال شود؟ پس از آن امکان ورود به سامانه را نخواهد داشت.")) return;
+        if (!_dialogs.Confirm(
+            $"کاربر «{Selected.Username}» غیرفعال شود؟ پس از آن امکان ورود به سامانه را نخواهد داشت.\n" +
+            "این عملیات از طریق این صفحه قابل بازگردانی نیست.")) return;
         await RunAsync(async () =>
         {
             var r = await _sender.Send(new DeactivateUserCommand(Selected.Id));
@@ -104,7 +116,7 @@ public sealed partial class UsersViewModel : ViewModelBase
         if (Selected is null) return;
         if (Selected.Role == RoleForChange)
         {
-            _dialogs.Info("کاربر هم‌اکنون همین نقش را دارد.");
+            _dialogs.Info("کاربر هم‌اکنون همین نقش را دارد.", "تغییر نقش");
             return;
         }
         if (!_dialogs.Confirm(

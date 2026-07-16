@@ -67,10 +67,10 @@
                         <Button Content="✕" Style="{StaticResource SecondaryButton}"
                                 Command="{Binding ClearHealthFilterCommand}"
                                 ToolTip="حذف فیلتر سلامت" Padding="8,7" Margin="0,0,8,0"/>
-                        <Grid>
+                        <Grid Margin="0,0,4,0">
                             <TextBox Text="{Binding Search, UpdateSourceTrigger=PropertyChanged}"
                                      Width="200" Padding="10,7" FlowDirection="RightToLeft"
-                                     ToolTip="جست‌وجو در نام، کد ملی و کد پرسنلی">
+                                     ToolTip="جست‌وجو در نام، کد ملی و کد پرسنلی — نتیجه خودکار به‌روز می‌شود">
                                 <TextBox.InputBindings>
                                     <KeyBinding Key="Return" Command="{Binding LoadCommand}"/>
                                 </TextBox.InputBindings>
@@ -81,9 +81,12 @@
                                        VerticalAlignment="Center" Margin="12,0,12,0"
                                        Visibility="{Binding Search, Converter={StaticResource NullToVisibilityConverter}, ConverterParameter=inverse}"/>
                         </Grid>
+                        <Button Content="✕" Style="{StaticResource SecondaryButton}"
+                                Command="{Binding ClearSearchCommand}"
+                                ToolTip="پاک‌کردن جست‌وجو" Padding="8,7" Margin="0,0,8,0"/>
                         <Button Content="🔍" Style="{StaticResource SecondaryButton}"
                                 Command="{Binding LoadCommand}" ToolTip="اجرای جست‌وجو"
-                                Padding="12,7" Margin="8,0,0,0"/>
+                                Padding="12,7"/>
                     </StackPanel>
                 </Grid>
             </Border>
@@ -93,23 +96,40 @@
                        Foreground="{DynamicResource DangerBrush}" Margin="14,6,14,0" TextWrapping="Wrap"
                        Visibility="{Binding ErrorMessage, Converter={StaticResource NullToCollapsedConverter}}"/>
 
+            <!-- Shown only when the 200-row server cap actually truncated results,
+                 so a partial list is never mistaken for "everyone". -->
+            <TextBlock DockPanel.Dock="Top" Text="{Binding ResultCountCaption}"
+                       Foreground="{DynamicResource MutedBrush}" FontSize="12" Margin="14,8,14,0"
+                       Visibility="{Binding ResultCountCaption, Converter={StaticResource NullToCollapsedConverter}}"/>
+
             <!-- Data -->
-            <DataGrid FlowDirection="RightToLeft"
-                      ItemsSource="{Binding Items}" SelectedItem="{Binding Selected}"
-                      AutoGenerateColumns="False" IsReadOnly="True"
-                      CanUserAddRows="False" CanUserDeleteRows="False">
-                <DataGrid.Columns>
-                    <DataGridTextColumn Header="کد پرسنلی"  Binding="{Binding PersonnelCode}"  Width="100"/>
-                    <DataGridTextColumn Header="نام"         Binding="{Binding FirstName}"       Width="110"/>
-                    <DataGridTextColumn Header="نام خانوادگی" Binding="{Binding LastName}"       Width="130"/>
-                    <DataGridTextColumn Header="درجه"        Binding="{Binding Rank}"            Width="100"/>
-                    <DataGridTextColumn Header="کد ملی"      Binding="{Binding NationalCode}"    Width="120"/>
-                    <DataGridTextColumn Header="یگان/بخش"    Binding="{Binding DepartmentName}"  Width="120"/>
-                    <DataGridTextColumn Header="سلامت"       Binding="{Binding HealthType, Converter={StaticResource EnumDescriptionConverter}}"      Width="100"/>
-                    <DataGridCheckBoxColumn Header="فعال"    Binding="{Binding IsActive}"        Width="60"
-                                            ElementStyle="{StaticResource GridCheckBox}"/>
-                </DataGrid.Columns>
-            </DataGrid>
+            <Grid>
+                <DataGrid FlowDirection="RightToLeft"
+                          ItemsSource="{Binding Items}" SelectedItem="{Binding Selected}"
+                          AutoGenerateColumns="False" IsReadOnly="True"
+                          CanUserAddRows="False" CanUserDeleteRows="False"
+                          MouseDoubleClick="DataGrid_MouseDoubleClick">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="کد پرسنلی"  Binding="{Binding PersonnelCode}"  Width="100"/>
+                        <DataGridTextColumn Header="نام"         Binding="{Binding FirstName}"       Width="110"/>
+                        <DataGridTextColumn Header="نام خانوادگی" Binding="{Binding LastName}"       Width="130"/>
+                        <DataGridTextColumn Header="درجه"        Binding="{Binding Rank}"            Width="100"/>
+                        <DataGridTextColumn Header="کد ملی"      Binding="{Binding NationalCode}"    Width="120"/>
+                        <DataGridTextColumn Header="یگان/بخش"    Binding="{Binding DepartmentName}"  Width="*" MinWidth="120"/>
+                        <DataGridTextColumn Header="سلامت"       Binding="{Binding HealthType, Converter={StaticResource EnumDescriptionConverter}}"      Width="100"/>
+                        <DataGridCheckBoxColumn Header="فعال"    Binding="{Binding IsActive}"        Width="60"
+                                                ElementStyle="{StaticResource GridCheckBox}"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+
+                <!-- Busy overlay: search/print/delete previously gave zero feedback,
+                     so a slow operation looked like a frozen screen. -->
+                <Border Background="#66FFFFFF"
+                        Visibility="{Binding IsBusy, Converter={StaticResource BoolToVisConverter}}">
+                    <ProgressBar IsIndeterminate="True" Width="160" Height="4"
+                                 VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                </Border>
+            </Grid>
 
         </DockPanel>
     </Border>
