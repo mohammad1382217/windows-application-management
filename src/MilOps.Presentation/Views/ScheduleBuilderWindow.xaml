@@ -28,7 +28,7 @@
                         <TextBlock Text="📋" FontSize="22" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                     </Border>
                     <StackPanel VerticalAlignment="Center" Margin="0,0,14,0">
-                        <TextBlock Text="افزودن برنامه نگهبانی" Foreground="White" FontSize="17" FontWeight="Bold"
+                        <TextBlock Text="{Binding WindowTitle}" Foreground="White" FontSize="17" FontWeight="Bold"
                                    TextAlignment="Right"/>
                         <TextBlock Text="تعیین پست‌ها، شیفت‌ها و نگهبانان برای یک روز" Foreground="#90B8D8"
                                    FontSize="11" Margin="0,4,0,0" TextAlignment="Right"/>
@@ -51,9 +51,9 @@
                                Visibility="{Binding ErrorMessage, Converter={StaticResource NullToCollapsedConverter}}"/>
                     <Button Grid.Column="1" Content="ذخیره برنامه" Style="{StaticResource PrimaryButton}"
                             Command="{Binding SaveCommand}" IsEnabled="{Binding IsNotBusy}"
-                            Padding="22,10" Margin="0,0,10,0"/>
+                            MinHeight="40" Padding="22,0" Margin="0,0,10,0"/>
                     <Button Grid.Column="2" Content="انصراف" Style="{StaticResource SecondaryButton}"
-                            Command="{Binding CancelCommand}" Padding="16,10"/>
+                            Command="{Binding CancelCommand}" MinHeight="40" Padding="16,0"/>
                 </Grid>
             </Border>
 
@@ -86,7 +86,7 @@
                         </Grid.ColumnDefinitions>
                         <Button Grid.Column="0" Content="＋ افزودن ردیف"
                                 Style="{StaticResource AccentButton}"
-                                Command="{Binding AddRowCommand}" Padding="14,7"/>
+                                Command="{Binding AddRowCommand}"/>
                         <Border Grid.Column="1" Height="1"
                                 Background="{DynamicResource BorderBrush}"
                                 Margin="12,0,0,0" VerticalAlignment="Center"/>
@@ -195,7 +195,7 @@
                                     <TextBox Grid.Column="12" Margin="0,0,8,0"
                                              Text="{Binding Note, UpdateSourceTrigger=PropertyChanged}"/>
 
-                                    <Button Grid.Column="13" Content="✕" Width="30" Height="30"
+                                    <Button Grid.Column="13" Content="✕" Width="30" Height="30" MinHeight="0"
                                             Style="{StaticResource DangerButton}" Padding="0"
                                             CommandParameter="{Binding}"
                                             Command="{Binding DataContext.RemoveRowCommand,

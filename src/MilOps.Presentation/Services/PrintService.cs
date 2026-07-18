@@ -254,7 +254,7 @@ public sealed class PrintService : IPrintService
     {
         var para = new Paragraph(new Run(text))
         {
-            TextAlignment = TextAlignment.Right,
+            TextAlignment = TextAlignment.Center,
         };
         if (isBold)      para.FontWeight = FontWeights.Bold;
         if (foreground != null) para.Foreground = foreground;
@@ -263,7 +263,7 @@ public sealed class PrintService : IPrintService
         {
             BorderBrush     = Brushes.DarkSlateGray,
             BorderThickness = new Thickness(0.5),
-            Padding         = new Thickness(5, 3, 5, 3),
+            Padding         = new Thickness(5, 4, 5, 4),
         };
     }
 

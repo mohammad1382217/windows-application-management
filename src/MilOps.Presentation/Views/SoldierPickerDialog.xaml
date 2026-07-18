@@ -42,9 +42,9 @@
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
             <Button x:Name="OkButton" Grid.Column="0" Content="تأیید" Style="{StaticResource PrimaryButton}"
-                    Padding="0,10" IsDefault="True" IsEnabled="False" Click="Ok_Click"/>
+                    MinHeight="38" IsDefault="True" IsEnabled="False" Click="Ok_Click"/>
             <Button Grid.Column="2" Content="انصراف" Style="{StaticResource SecondaryButton}"
-                    Padding="0,10" IsCancel="True" Click="Cancel_Click"/>
+                    MinHeight="38" IsCancel="True" Click="Cancel_Click"/>
         </Grid>
 
     </StackPanel>

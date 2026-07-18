@@ -44,18 +44,20 @@
                         <TextBlock Text="از تاریخ" Style="{StaticResource FieldLabel}" Margin="0,0,0,5"/>
                         <StackPanel Orientation="Horizontal">
                             <v:JalaliDatePicker SelectedDate="{Binding From}" Width="150"/>
-                            <Button Content="✕" Style="{StaticResource SecondaryButton}"
+                            <Button Content="✕" Style="{StaticResource IconButton}"
                                     Command="{Binding ClearFromCommand}"
-                                    ToolTip="حذف فیلتر از‌تاریخ" Padding="8,5" Margin="4,0,0,0"/>
+                                    ToolTip="حذف فیلتر از‌تاریخ" Margin="6,0,0,0"
+                                    Visibility="{Binding From, Converter={StaticResource NullToVisibilityConverter}}"/>
                         </StackPanel>
                     </StackPanel>
                     <StackPanel Grid.Column="1" Margin="0,0,12,0">
                         <TextBlock Text="تا تاریخ" Style="{StaticResource FieldLabel}" Margin="0,0,0,5"/>
                         <StackPanel Orientation="Horizontal">
                             <v:JalaliDatePicker SelectedDate="{Binding To}" Width="150"/>
-                            <Button Content="✕" Style="{StaticResource SecondaryButton}"
+                            <Button Content="✕" Style="{StaticResource IconButton}"
                                     Command="{Binding ClearToCommand}"
-                                    ToolTip="حذف فیلتر تا‌تاریخ" Padding="8,5" Margin="4,0,0,0"/>
+                                    ToolTip="حذف فیلتر تا‌تاریخ" Margin="6,0,0,0"
+                                    Visibility="{Binding To, Converter={StaticResource NullToVisibilityConverter}}"/>
                         </StackPanel>
                     </StackPanel>
                     <StackPanel Grid.Column="2" Margin="0,0,12,0">
@@ -68,26 +70,27 @@
                                            VerticalAlignment="Center" Margin="12,0,12,0"
                                            Visibility="{Binding ActionFilter, Converter={StaticResource NullToVisibilityConverter}, ConverterParameter=inverse}"/>
                             </Grid>
-                            <Button Content="✕" Style="{StaticResource SecondaryButton}"
+                            <Button Content="✕" Style="{StaticResource IconButton}"
                                     Command="{Binding ClearActionFilterCommand}"
-                                    ToolTip="حذف فیلتر عملیات" Padding="8,5" Margin="4,0,0,0"/>
+                                    ToolTip="حذف فیلتر عملیات" Margin="6,0,0,0"
+                                    Visibility="{Binding ActionFilter, Converter={StaticResource NullToVisibilityConverter}}"/>
                         </StackPanel>
                     </StackPanel>
 
                     <StackPanel Grid.Column="4" Orientation="Horizontal" VerticalAlignment="Bottom">
                         <Button Content="🔍 جست‌وجو" Style="{StaticResource PrimaryButton}"
                                 Command="{Binding LoadCommand}" IsEnabled="{Binding IsNotBusy}"
-                                Padding="14,7" Margin="0,0,8,0"
+                                Margin="0,0,8,0"
                                 ToolTip="اعمال فیلترها و بازخوانی فهرست"/>
                         <Button Content="🛡 بررسی سلامت گزارش" Style="{StaticResource SecondaryButton}"
                                 Command="{Binding VerifyCommand}" IsEnabled="{Binding IsNotBusy}"
-                                Padding="14,7" Margin="0,0,8,0"
+                                Margin="0,0,8,0"
                                 ToolTip="بررسی می‌کند که هیچ‌یک از سوابق حسابرسی ویرایش یا حذف نشده باشد (زنجیره امضای HMAC)"/>
                         <Button Content="⬇ خروجی PDF" Style="{StaticResource PrimaryButton}"
-                                Command="{Binding ExportPdfCommand}" Padding="14,7" Margin="0,0,8,0"
+                                Command="{Binding ExportPdfCommand}" Margin="0,0,8,0"
                                 ToolTip="ذخیره گزارش به‌صورت فایل PDF در قطع A5 — بدون نیاز به چاپگر"/>
                         <Button Content="🖨 چاپ" Style="{StaticResource SecondaryButton}"
-                                Command="{Binding PrintCommand}" Padding="14,7"
+                                Command="{Binding PrintCommand}"
                                 ToolTip="چاپ مستقیم با چاپگر متصل"/>
                     </StackPanel>
                 </Grid>

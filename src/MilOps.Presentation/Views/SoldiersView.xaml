@@ -40,53 +40,57 @@
                     <!-- Actions (visual right in RTL grid) -->
                     <StackPanel Grid.Column="0" Orientation="Horizontal">
                         <Button Content="＋ افزودن" Style="{StaticResource AccentButton}"
-                                Command="{Binding AddCommand}" Padding="14,7" Margin="0,0,8,0"/>
+                                Command="{Binding AddCommand}" Margin="0,0,8,0"/>
                         <Button Content="✎ ویرایش" Style="{StaticResource PrimaryButton}"
-                                Command="{Binding EditCommand}" Padding="14,7" Margin="0,0,8,0"/>
+                                Command="{Binding EditCommand}" Margin="0,0,8,0"/>
                         <Button Content="✕ حذف" Style="{StaticResource DangerButton}"
-                                Command="{Binding DeleteCommand}" Padding="14,7" Margin="0,0,8,0"/>
+                                Command="{Binding DeleteCommand}"/>
+                        <Border Style="{StaticResource ToolbarSeparator}" Margin="12,4"/>
                         <Button Content="⬇ PDF" Style="{StaticResource SecondaryButton}"
-                                Command="{Binding ExportPdfCommand}" Padding="14,7" Margin="0,0,8,0"
+                                Command="{Binding ExportPdfCommand}" Margin="0,0,8,0"
                                 ToolTip="ذخیره فهرست به‌صورت فایل PDF — بدون نیاز به چاپگر"/>
                         <Button Content="🖨 چاپ" Style="{StaticResource SecondaryButton}"
-                                Command="{Binding PrintCommand}" Padding="14,7"
+                                Command="{Binding PrintCommand}"
                                 ToolTip="چاپ مستقیم با چاپگر متصل"/>
                     </StackPanel>
 
                     <!-- Search + filter (visual left) -->
                     <StackPanel Grid.Column="2" Orientation="Horizontal">
-                        <Grid Margin="0,0,4,0">
+                        <Grid Margin="0,0,8,0">
                             <ComboBox ItemsSource="{Binding HealthTypes}" SelectedItem="{Binding HealthFilter}"
-                                      ToolTip="فیلتر وضعیت سلامت" Width="130"/>
+                                      ToolTip="فیلتر وضعیت سلامت" Width="140"/>
                             <!-- Placeholder shown while no filter is selected -->
                             <TextBlock Text="وضعیت سلامت" IsHitTestVisible="False"
                                        Foreground="{DynamicResource MutedBrush}" FontSize="12"
                                        VerticalAlignment="Center" Margin="12,0,12,0"
                                        Visibility="{Binding HealthFilter, Converter={StaticResource NullToVisibilityConverter}, ConverterParameter=inverse}"/>
                         </Grid>
-                        <Button Content="✕" Style="{StaticResource SecondaryButton}"
+                        <!-- Appears only once a filter is actually applied -->
+                        <Button Content="✕" Style="{StaticResource IconButton}"
                                 Command="{Binding ClearHealthFilterCommand}"
-                                ToolTip="حذف فیلتر سلامت" Padding="8,7" Margin="0,0,8,0"/>
-                        <Grid Margin="0,0,4,0">
-                            <TextBox Text="{Binding Search, UpdateSourceTrigger=PropertyChanged}"
-                                     Width="200" Padding="10,7" FlowDirection="RightToLeft"
+                                ToolTip="حذف فیلتر سلامت" Margin="0,0,8,0"
+                                Visibility="{Binding HealthFilter, Converter={StaticResource NullToVisibilityConverter}}"/>
+                        <Grid>
+                            <TextBox Style="{StaticResource SearchBox}"
+                                     Text="{Binding Search, UpdateSourceTrigger=PropertyChanged}"
+                                     Width="230" FlowDirection="RightToLeft"
                                      ToolTip="جست‌وجو در نام، کد ملی و کد پرسنلی — نتیجه خودکار به‌روز می‌شود">
                                 <TextBox.InputBindings>
                                     <KeyBinding Key="Return" Command="{Binding LoadCommand}"/>
                                 </TextBox.InputBindings>
                             </TextBox>
-                            <!-- Placeholder shown while the box is empty -->
-                            <TextBlock Text="🔍 جست‌وجوی نام، کد ملی، کد پرسنلی…" IsHitTestVisible="False"
+                            <!-- Placeholder shown while the box is empty (icon lives in the template) -->
+                            <TextBlock Text="جست‌وجوی نام، کد ملی، کد پرسنلی…" IsHitTestVisible="False"
                                        Foreground="{DynamicResource MutedBrush}" FontSize="12"
-                                       VerticalAlignment="Center" Margin="12,0,12,0"
+                                       VerticalAlignment="Center" Margin="34,0,28,0"
                                        Visibility="{Binding Search, Converter={StaticResource NullToVisibilityConverter}, ConverterParameter=inverse}"/>
+                            <!-- Clear lives INSIDE the box, logical end = physical left -->
+                            <Button Content="✕" Style="{StaticResource InlineClearButton}"
+                                    Command="{Binding ClearSearchCommand}"
+                                    ToolTip="پاک‌کردن جست‌وجو"
+                                    HorizontalAlignment="Right" Margin="0,0,7,0"
+                                    Visibility="{Binding Search, Converter={StaticResource NullToVisibilityConverter}}"/>
                         </Grid>
-                        <Button Content="✕" Style="{StaticResource SecondaryButton}"
-                                Command="{Binding ClearSearchCommand}"
-                                ToolTip="پاک‌کردن جست‌وجو" Padding="8,7" Margin="0,0,8,0"/>
-                        <Button Content="🔍" Style="{StaticResource SecondaryButton}"
-                                Command="{Binding LoadCommand}" ToolTip="اجرای جست‌وجو"
-                                Padding="12,7"/>
                     </StackPanel>
                 </Grid>
             </Border>

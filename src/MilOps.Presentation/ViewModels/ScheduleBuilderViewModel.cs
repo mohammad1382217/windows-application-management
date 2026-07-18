@@ -51,7 +51,47 @@ public sealed partial class ScheduleBuilderViewModel : ViewModelBase
     private string _remarks = string.Empty;
     public string Remarks { get => _remarks; set { _remarks = value; OnPropertyChanged(); } }
 
+    /// <summary>When set (before Initialize), the builder edits this schedule instead of creating one.</summary>
+    public int? EditScheduleId { get; set; }
+    public bool IsEditMode => EditScheduleId is not null;
+    public string WindowTitle => IsEditMode ? "ویرایش برنامه نگهبانی" : "افزودن برنامه نگهبانی";
+
     public ScheduleBuilderViewModel(ISender sender) => _sender = sender;
+
+    /// <summary>Loads the soldier picker, then (in edit mode) the schedule being edited.</summary>
+    [RelayCommand]
+    private async Task InitializeAsync()
+    {
+        await LoadSoldiersAsync();
+        if (EditScheduleId is { } id) await LoadForEditAsync(id);
+    }
+
+    private async Task LoadForEditAsync(int scheduleId)
+    {
+        await RunAsync(async () =>
+        {
+            var dto = await _sender.Send(new GetScheduleByIdQuery(scheduleId));
+            if (dto is null) { ErrorMessage = "برنامه یافت نشد."; return; }
+
+            Date = dto.Date.ToDateTime(TimeOnly.MinValue);
+            Remarks = dto.Remarks ?? string.Empty;
+            Assignments.Clear();
+            foreach (var a in dto.Assignments)
+            {
+                Assignments.Add(new AssignmentRowVm
+                {
+                    // Soldiers no longer guard-eligible aren't in the picker; their
+                    // rows open unselected so the user consciously re-assigns them.
+                    SelectedSoldier = Soldiers.FirstOrDefault(s => s.Id == a.SoldierId),
+                    Post = a.Post,
+                    Shift = a.Shift,
+                    ShiftStart = a.ShiftStart?.ToString("HH\\:mm"),
+                    ShiftEnd = a.ShiftEnd?.ToString("HH\\:mm"),
+                    Note = a.Note,
+                });
+            }
+        });
+    }
 
     [RelayCommand]
     private async Task LoadSoldiersAsync()
@@ -115,11 +155,18 @@ public sealed partial class ScheduleBuilderViewModel : ViewModelBase
 
         await RunAsync(async () =>
         {
-            var r = await _sender.Send(new CreateScheduleCommand(
-                DateOnly.FromDateTime(Date),
-                string.IsNullOrWhiteSpace(Remarks) ? null : Remarks,
-                rows));
-            if (!r.IsSuccess) { ErrorMessage = r.Error; return; }
+            var date = DateOnly.FromDateTime(Date);
+            var remarks = string.IsNullOrWhiteSpace(Remarks) ? null : Remarks;
+            if (EditScheduleId is { } id)
+            {
+                var r = await _sender.Send(new UpdateScheduleCommand(id, date, remarks, rows));
+                if (!r.IsSuccess) { ErrorMessage = r.Error; return; }
+            }
+            else
+            {
+                var r = await _sender.Send(new CreateScheduleCommand(date, remarks, rows));
+                if (!r.IsSuccess) { ErrorMessage = r.Error; return; }
+            }
             Saved?.Invoke();
         });
 

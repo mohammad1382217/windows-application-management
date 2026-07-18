@@ -105,7 +105,7 @@
                     <Button Grid.Row="3" Grid.Column="3" Content="🔑 صدور توکن"
                             Style="{StaticResource PrimaryButton}"
                             Command="{Binding GenerateCommand}" IsEnabled="{Binding IsNotBusy}"
-                            Padding="0,9" HorizontalAlignment="Stretch"/>
+                            HorizontalAlignment="Stretch"/>
                 </Grid>
             </DockPanel>
         </Border>
@@ -118,10 +118,10 @@
                         BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,0,1">
                     <StackPanel Orientation="Horizontal">
                         <Button Content="✕ ابطال توکن" Style="{StaticResource DangerButton}"
-                                Command="{Binding RevokeCommand}" Padding="14,7" Margin="0,0,8,0"
+                                Command="{Binding RevokeCommand}" Margin="0,0,8,0"
                                 ToolTip="فقط توکن‌های «فعال» قابل ابطال هستند"/>
                         <Button Content="بازخوانی" Style="{StaticResource SecondaryButton}"
-                                Command="{Binding LoadCommand}" Padding="14,7" Margin="0,0,16,0"/>
+                                Command="{Binding LoadCommand}" Margin="0,0,16,0"/>
                         <TextBlock Text="فیلتر:" Style="{StaticResource FieldLabel}" VerticalAlignment="Center" Margin="0,0,8,0"/>
                         <ComboBox ItemsSource="{Binding Statuses}" SelectedItem="{Binding StatusFilter}" Width="130"/>
                     </StackPanel>

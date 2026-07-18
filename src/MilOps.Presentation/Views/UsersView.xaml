@@ -66,7 +66,7 @@
                     </StackPanel>
                     <Button Grid.Column="4" Content="＋ افزودن" Style="{StaticResource AccentButton}"
                             Command="{Binding CreateCommand}" IsEnabled="{Binding IsNotBusy}"
-                            Padding="14,7" VerticalAlignment="Top" Margin="0,21,0,0"/>
+                            VerticalAlignment="Top" Margin="0,21,0,0"/>
                 </Grid>
             </Border>
 
@@ -75,20 +75,20 @@
                     BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,0,1">
                 <StackPanel Orientation="Horizontal">
                     <Button Content="🔐 بازنشانی گذرواژه" Style="{StaticResource PrimaryButton}"
-                            Command="{Binding ChangePasswordCommand}" Padding="14,7" Margin="0,0,8,0"
+                            Command="{Binding ChangePasswordCommand}" Margin="0,0,8,0"
                             ToolTip="ابتدا یک کاربر را از فهرست انتخاب کنید"/>
                     <Button Content="✕ غیرفعال‌سازی" Style="{StaticResource DangerButton}"
-                            Command="{Binding DeactivateCommand}" Padding="14,7" Margin="0,0,8,0"
+                            Command="{Binding DeactivateCommand}" Margin="0,0,8,0"
                             ToolTip="ابتدا یک کاربر را از فهرست انتخاب کنید"/>
                     <Button Content="بازخوانی" Style="{StaticResource SecondaryButton}"
-                            Command="{Binding LoadCommand}" Padding="14,7" Margin="0,0,16,0"/>
+                            Command="{Binding LoadCommand}" Margin="0,0,16,0"/>
                     <TextBlock Text="تغییر نقش به:" Style="{StaticResource FieldLabel}"
                                VerticalAlignment="Center" Margin="0,0,8,0"/>
                     <ComboBox ItemsSource="{Binding Roles}" SelectedItem="{Binding RoleForChange}"
                               Width="120" Margin="0,0,4,0"/>
                     <Button Content="🎖 اعمال نقش" Style="{StaticResource SecondaryButton}"
                             Command="{Binding ChangeRoleCommand}"
-                            ToolTip="تغییر نقش کاربر انتخاب‌شده" Padding="14,7"/>
+                            ToolTip="تغییر نقش کاربر انتخاب‌شده"/>
                 </StackPanel>
             </Border>
 

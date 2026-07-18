@@ -66,6 +66,15 @@ public class GuardSchedule : AuditableEntity
     public void RemoveAssignment(int assignmentId) =>
         _assignments.RemoveAll(a => a.Id == assignmentId);
 
+    public void UpdateDetails(DateOnly date, string? remarks)
+    {
+        Date = date;
+        Remarks = remarks;
+    }
+
+    /// <summary>Drops every assignment so an edit can rebuild the board from scratch.</summary>
+    public void ClearAssignments() => _assignments.Clear();
+
     public void SetExtraDuty(string? armedForceMorning1, string? armedForceMorning2,
         string? armedForceMorning3, string? watchman, string? armament,
         string? refuge, string? shelterManager)

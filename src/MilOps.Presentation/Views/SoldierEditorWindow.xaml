@@ -51,10 +51,10 @@
                                Visibility="{Binding ErrorMessage, Converter={StaticResource NullToCollapsedConverter}}"/>
                     <Button Grid.Row="1" Grid.Column="0" Content="ذخیره" Style="{StaticResource PrimaryButton}"
                             Command="{Binding SaveCommand}" IsDefault="True"
-                            IsEnabled="{Binding IsNotBusy}" Padding="0,11" Margin="0,0,8,0"/>
+                            IsEnabled="{Binding IsNotBusy}" MinHeight="40" Margin="0,0,8,0"/>
                     <Button Grid.Row="1" Grid.Column="1" Content="انصراف" Style="{StaticResource SecondaryButton}"
                             Command="{Binding CancelCommand}" IsCancel="True"
-                            IsEnabled="{Binding IsNotBusy}" Padding="0,11" Margin="8,0,0,0"/>
+                            IsEnabled="{Binding IsNotBusy}" MinHeight="40" Margin="8,0,0,0"/>
                 </Grid>
             </Border>
 

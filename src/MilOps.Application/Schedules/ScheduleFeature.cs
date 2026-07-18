@@ -50,10 +50,31 @@ public record ApproveScheduleCommand(int Id) : IRequest<Result>, IAuthorizedRequ
     public Permission RequiredPermission => Permission.ScheduleApprove;
 }
 
+/// <summary>Replaces an existing schedule's date, remarks and full assignment list.</summary>
+public record UpdateScheduleCommand(
+    int Id, DateOnly Date, string? Remarks, IReadOnlyList<GuardAssignmentDto> Assignments)
+    : IRequest<Result>, IAuthorizedRequest
+{
+    public Permission RequiredPermission => Permission.ScheduleWrite;
+}
+
 public class CreateScheduleValidator : AbstractValidator<CreateScheduleCommand>
 {
     public CreateScheduleValidator()
     {
+        RuleFor(x => x.Assignments).NotNull();
+        RuleForEach(x => x.Assignments).ChildRules(a =>
+        {
+            a.RuleFor(x => x.SoldierId).GreaterThan(0);
+        });
+    }
+}
+
+public class UpdateScheduleValidator : AbstractValidator<UpdateScheduleCommand>
+{
+    public UpdateScheduleValidator()
+    {
+        RuleFor(x => x.Id).GreaterThan(0);
         RuleFor(x => x.Assignments).NotNull();
         RuleForEach(x => x.Assignments).ChildRules(a =>
         {
@@ -67,6 +88,7 @@ public class ScheduleHandlers :
     IRequestHandler<GetScheduleByIdQuery, GuardScheduleDto?>,
     IRequestHandler<ListSchedulesQuery, IReadOnlyList<GuardScheduleSummaryDto>>,
     IRequestHandler<CreateScheduleCommand, Result<int>>,
+    IRequestHandler<UpdateScheduleCommand, Result>,
     IRequestHandler<ApproveScheduleCommand, Result>
 {
     private readonly IRepository<GuardSchedule> _schedules;
@@ -122,6 +144,32 @@ public class ScheduleHandlers :
             return Result.Success(schedule.Id);
         }
         catch (DomainException ex) { return Result.Failure<int>(ex.Code, ex.Message); }
+    }
+
+    public async Task<Result> Handle(UpdateScheduleCommand c, CancellationToken ct)
+    {
+        var s = await _schedules.FirstOrDefaultAsync(new ScheduleByIdSpec(c.Id), ct);
+        if (s is null) return Result.Failure("NOT_FOUND", "برنامه یافت نشد.");
+        try
+        {
+            s.UpdateDetails(c.Date, c.Remarks);
+            s.ClearAssignments();
+            foreach (var a in c.Assignments)
+            {
+                var hours = a.ShiftStart is { } st && a.ShiftEnd is { } en
+                    ? TimeRange.Create(st, en) : null;
+                s.Assign(a.SoldierId, a.Post, a.Shift, hours, a.Note);
+            }
+            s.Touch(_user.Username);
+            await _uow.SaveChangesAsync(ct);
+
+            await _audit.AppendAsync(AuditAction.ScheduleUpdated, _user.UserId, _user.Username,
+                nameof(GuardSchedule), s.Id.ToString(),
+                $"ویرایش برنامه نگهبانی {c.Date:yyyy/MM/dd} با {c.Assignments.Count} نفر", ct);
+
+            return Result.Success();
+        }
+        catch (DomainException ex) { return Result.Failure(ex.Code, ex.Message); }
     }
 
     public async Task<Result> Handle(ApproveScheduleCommand c, CancellationToken ct)

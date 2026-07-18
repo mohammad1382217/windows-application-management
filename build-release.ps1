@@ -58,7 +58,9 @@ if ($LASTEXITCODE -ne 0) { throw "Solution build failed." }
 # 2. Publish self-contained single-file
 # ---------------------------------------------------------------------------
 Write-Host "`n[2/5] Publishing self-contained single-file (win-x64)..." -ForegroundColor Yellow
-dotnet publish $presentation -c $Configuration --no-build `
+# NOTE: no --no-build here. The solution build above compiles WITHOUT a RID,
+# so the win-x64 outputs would be stale; publish must compile for win-x64 itself.
+dotnet publish $presentation -c $Configuration `
     -p:PublishProfile=SelfContainedWinX64 -p:RuntimeIdentifier=win-x64
 if ($LASTEXITCODE -ne 0) { throw "Publish failed." }
 

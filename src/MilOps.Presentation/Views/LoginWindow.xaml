@@ -88,7 +88,7 @@
                             Style="{StaticResource AccentButton}"
                             Command="{Binding ActivateCommand}"
                             IsDefault="{Binding IsActivationRequired}"
-                            Padding="0,13" FontSize="14"/>
+                            MinHeight="46" FontSize="14"/>
                     <Border Height="18"/>
                 </StackPanel>
 
@@ -98,7 +98,7 @@
                         Command="{Binding LoginCommand}"
                         IsDefault="{Binding IsActivationRequired, Converter={StaticResource InverseBoolConverter}}"
                         IsEnabled="{Binding IsNotBusy}"
-                        Padding="0,13" FontSize="14"
+                        MinHeight="46" FontSize="14"
                         Visibility="{Binding IsActivationRequired, Converter={StaticResource InverseBoolToVisConverter}, FallbackValue=Visible}"/>
 
                 <!-- Error message -->

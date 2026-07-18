@@ -48,7 +48,7 @@
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                     <Button Content="خروج" Command="{Binding LogoutCommand}"
                             IsEnabled="{Binding IsNotBusy}"
-                            Style="{StaticResource DangerButton}" Padding="16,6" Margin="0,0,12,0"/>
+                            Style="{StaticResource DangerButton}" MinHeight="32" Padding="16,0" Margin="0,0,12,0"/>
                     <TextBlock Text="{Binding UserBanner}"
                                Foreground="{DynamicResource MutedBrush}" FontSize="12"
                                VerticalAlignment="Center"/>

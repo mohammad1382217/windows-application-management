@@ -66,7 +66,7 @@
                     </StackPanel>
                     <Button Grid.Column="5" Content="＋ درخواست مرخصی" Style="{StaticResource AccentButton}"
                             Command="{Binding RequestCommand}" IsDefault="True"
-                            Padding="14,7" VerticalAlignment="Top" Margin="0,20,0,0"/>
+                            VerticalAlignment="Top" Margin="0,22,0,0"/>
                 </Grid>
             </Border>
 
@@ -75,30 +75,33 @@
                     BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,0,1">
                 <StackPanel Orientation="Horizontal">
                     <Button Content="✓ تأیید" Style="{StaticResource AccentButton}"
-                            Command="{Binding ApproveCommand}" Padding="14,7" Margin="0,0,8,0"
+                            Command="{Binding ApproveCommand}" Margin="0,0,8,0"
                             ToolTip="فقط برای درخواست‌های «در انتظار» در دسترس است"/>
                     <Button Content="✕ رد" Style="{StaticResource DangerButton}"
-                            Command="{Binding RejectCommand}" Padding="14,7" Margin="0,0,8,0"
+                            Command="{Binding RejectCommand}"
                             ToolTip="فقط برای درخواست‌های «در انتظار» در دسترس است"/>
+                    <Border Style="{StaticResource ToolbarSeparator}" Margin="12,4"/>
                     <Button Content="⬇ PDF" Style="{StaticResource SecondaryButton}"
-                            Command="{Binding ExportPdfCommand}" Padding="14,7" Margin="0,0,8,0"
+                            Command="{Binding ExportPdfCommand}" Margin="0,0,8,0"
                             ToolTip="ذخیره سوابق به‌صورت فایل PDF — بدون نیاز به چاپگر"/>
                     <Button Content="🖨 چاپ" Style="{StaticResource SecondaryButton}"
-                            Command="{Binding PrintCommand}" Padding="14,7" Margin="0,0,8,0"
+                            Command="{Binding PrintCommand}" Margin="0,0,8,0"
                             ToolTip="چاپ مستقیم با چاپگر متصل"/>
                     <Button Content="بازخوانی" Style="{StaticResource SecondaryButton}"
-                            Command="{Binding LoadCommand}" Padding="14,7" Margin="0,0,16,0"/>
+                            Command="{Binding LoadCommand}" Margin="0,0,16,0"/>
                     <TextBlock Text="فیلتر وضعیت:" Style="{StaticResource FieldLabel}" VerticalAlignment="Center" Margin="0,0,8,0"/>
                     <Grid>
-                        <ComboBox ItemsSource="{Binding Statuses}" SelectedItem="{Binding StatusFilter}" Width="130"/>
+                        <ComboBox ItemsSource="{Binding Statuses}" SelectedItem="{Binding StatusFilter}" Width="140"/>
                         <TextBlock Text="همه وضعیت‌ها" IsHitTestVisible="False"
                                    Foreground="{DynamicResource MutedBrush}" FontSize="12"
                                    VerticalAlignment="Center" Margin="12,0,12,0"
                                    Visibility="{Binding StatusFilter, Converter={StaticResource NullToVisibilityConverter}, ConverterParameter=inverse}"/>
                     </Grid>
-                    <Button Content="✕" Style="{StaticResource SecondaryButton}"
+                    <!-- Appears only once a filter is actually applied -->
+                    <Button Content="✕" Style="{StaticResource IconButton}"
                             Command="{Binding ClearStatusFilterCommand}"
-                            ToolTip="حذف فیلتر وضعیت" Padding="8,7" Margin="4,0,0,0"/>
+                            ToolTip="حذف فیلتر وضعیت" Margin="8,0,0,0"
+                            Visibility="{Binding StatusFilter, Converter={StaticResource NullToVisibilityConverter}}"/>
                 </StackPanel>
             </Border>
 
