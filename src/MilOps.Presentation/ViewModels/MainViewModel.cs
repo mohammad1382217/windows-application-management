@@ -28,13 +28,15 @@ public sealed partial class MainViewModel : ViewModelBase
 
     private static readonly Dictionary<Type, string> NavKeys = new()
     {
-        [typeof(SoldiersViewModel)]  = "soldiers",
-        [typeof(SchedulesViewModel)] = "schedules",
-        [typeof(WeaponsViewModel)]   = "weapons",
-        [typeof(LeavesViewModel)]    = "leaves",
-        [typeof(TokensViewModel)]    = "tokens",
-        [typeof(UsersViewModel)]     = "users",
-        [typeof(AuditViewModel)]     = "audit",
+        [typeof(SoldiersViewModel)]    = "soldiers",
+        [typeof(AttendanceViewModel)]  = "attendance",
+        [typeof(SchedulesViewModel)]   = "schedules",
+        [typeof(WeaponsViewModel)]     = "weapons",
+        [typeof(LeavesViewModel)]      = "leaves",
+        [typeof(TokensViewModel)]      = "tokens",
+        [typeof(UsersViewModel)]       = "users",
+        [typeof(AuditViewModel)]       = "audit",
+        [typeof(SettingsViewModel)]    = "settings",
     };
 
     public MainViewModel(IServiceProvider services, ICurrentUser user,
@@ -70,22 +72,26 @@ public sealed partial class MainViewModel : ViewModelBase
             _activeNav = value;
             OnPropertyChanged();
             OnPropertyChanged(nameof(IsSoldiersActive));
+            OnPropertyChanged(nameof(IsAttendanceActive));
             OnPropertyChanged(nameof(IsSchedulesActive));
             OnPropertyChanged(nameof(IsWeaponsActive));
             OnPropertyChanged(nameof(IsLeavesActive));
             OnPropertyChanged(nameof(IsTokensActive));
             OnPropertyChanged(nameof(IsUsersActive));
             OnPropertyChanged(nameof(IsAuditActive));
+            OnPropertyChanged(nameof(IsSettingsActive));
         }
     }
 
-    public bool IsSoldiersActive  => ActiveNav == "soldiers";
-    public bool IsSchedulesActive => ActiveNav == "schedules";
-    public bool IsWeaponsActive   => ActiveNav == "weapons";
-    public bool IsLeavesActive    => ActiveNav == "leaves";
-    public bool IsTokensActive    => ActiveNav == "tokens";
-    public bool IsUsersActive     => ActiveNav == "users";
-    public bool IsAuditActive     => ActiveNav == "audit";
+    public bool IsSoldiersActive   => ActiveNav == "soldiers";
+    public bool IsAttendanceActive => ActiveNav == "attendance";
+    public bool IsSchedulesActive  => ActiveNav == "schedules";
+    public bool IsWeaponsActive    => ActiveNav == "weapons";
+    public bool IsLeavesActive     => ActiveNav == "leaves";
+    public bool IsTokensActive     => ActiveNav == "tokens";
+    public bool IsUsersActive      => ActiveNav == "users";
+    public bool IsAuditActive      => ActiveNav == "audit";
+    public bool IsSettingsActive   => ActiveNav == "settings";
 
     public ViewModelBase? Current
     {
@@ -103,18 +109,21 @@ public sealed partial class MainViewModel : ViewModelBase
     public bool CanManageUsers => _user.Has(Permission.UserManage);
     public bool CanManageTokens => _user.Has(Permission.TokenManage);
     public bool CanManageSoldiers => _user.Has(Permission.SoldierRead);
+    public bool CanManageAttendance => _user.Has(Permission.AttendanceRead);
     public bool CanManageSchedules => _user.Has(Permission.ScheduleRead);
     public bool CanManageWeapons => _user.Has(Permission.WeaponRead);
     public bool CanManageLeaves => _user.Has(Permission.LeaveRead);
     public bool CanViewAudit => _user.Has(Permission.AuditRead);
 
     [RelayCommand] private void ShowSoldiers() => Navigate<SoldiersViewModel>("سربازان");
+    [RelayCommand] private void ShowAttendance() => Navigate<AttendanceViewModel>("آمار و حضور و غیاب");
     [RelayCommand] private void ShowSchedules() => Navigate<SchedulesViewModel>("برنامه نگهبانی روزانه");
     [RelayCommand] private void ShowWeapons() => Navigate<WeaponsViewModel>("تسلیحات و مهمات");
     [RelayCommand] private void ShowLeaves() => Navigate<LeavesViewModel>("مدیریت مرخصی");
     [RelayCommand] private void ShowTokens() => Navigate<TokensViewModel>("توکن‌های فرمانده");
     [RelayCommand] private void ShowUsers() => Navigate<UsersViewModel>("مدیریت کاربران");
     [RelayCommand] private void ShowAudit() => Navigate<AuditViewModel>("گزارش حسابرسی");
+    [RelayCommand] private void ShowSettings() => Navigate<SettingsViewModel>("تنظیمات");
 
     private void Navigate<T>(string title) where T : ViewModelBase
     {

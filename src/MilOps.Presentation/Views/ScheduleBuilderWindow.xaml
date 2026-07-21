@@ -36,6 +36,14 @@
                 </DockPanel>
             </Border>
 
+            <!-- Locked-state banner: shown when an Approved/Printed schedule is loaded -->
+            <Border DockPanel.Dock="Top" Background="#FFF4E5" Padding="18,10"
+                    BorderBrush="#F0C36D" BorderThickness="0,0,0,1"
+                    Visibility="{Binding IsLocked, Converter={StaticResource BoolToVisConverter}}">
+                <TextBlock Text="⚠ این برنامه نهایی شده و غیرقابل ویرایش است. برای ویرایش، ابتدا آن را از فهرست بازگشایی کنید."
+                           Foreground="#8A5A00" FontSize="12" TextAlignment="Right"/>
+            </Border>
+
             <!-- Bottom action bar -->
             <Border DockPanel.Dock="Bottom" Background="#F4F7FA"
                     BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,1,0,0"
@@ -59,7 +67,7 @@
 
             <!-- Main scrollable area -->
             <ScrollViewer VerticalScrollBarVisibility="Auto" Background="White">
-                <StackPanel Margin="22,18">
+                <StackPanel Margin="22,18" IsEnabled="{Binding IsNotLocked}">
 
                     <!-- Date + Remarks -->
                     <Grid Margin="0,0,0,18">

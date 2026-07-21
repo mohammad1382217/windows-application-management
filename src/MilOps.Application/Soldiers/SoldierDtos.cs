@@ -31,7 +31,14 @@ public record SoldierSearchRequest(
     bool? IsActive,
     string? Department,
     int Page = 1,
-    int PageSize = 50);
+    int PageSize = 50,
+    string? Rank = null,
+    DateOnly? EntryDateFrom = null,
+    DateOnly? EntryDateTo = null,
+    DateOnly? ServiceStartFrom = null,
+    DateOnly? ServiceStartTo = null,
+    DateOnly? ServiceEndFrom = null,
+    DateOnly? ServiceEndTo = null);
 
 public record PagedResult<T>(IReadOnlyList<T> Items, int TotalCount, int Page, int PageSize)
 {

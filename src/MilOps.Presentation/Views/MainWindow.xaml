@@ -11,6 +11,12 @@
         <DataTemplate DataType="{x:Type vm:SoldiersViewModel}">
             <v:SoldiersView/>
         </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:AttendanceViewModel}">
+            <v:AttendanceView/>
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:SettingsViewModel}">
+            <v:SettingsView/>
+        </DataTemplate>
         <DataTemplate DataType="{x:Type vm:SchedulesViewModel}">
             <v:SchedulesView/>
         </DataTemplate>
@@ -116,6 +122,21 @@
                         </Button>
 
                         <Button HorizontalAlignment="Stretch" HorizontalContentAlignment="Right"
+                                Content="📝  آمار و حضور" ToolTip="آمار و حضور و غیاب"
+                                Command="{Binding ShowAttendanceCommand}"
+                                Visibility="{Binding CanManageAttendance, Converter={StaticResource BoolToVisConverter}}">
+                            <Button.Style>
+                                <Style TargetType="Button" BasedOn="{StaticResource NavItem}">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsAttendanceActive}" Value="True">
+                                            <Setter Property="FontWeight" Value="Bold"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                        </Button>
+
+                        <Button HorizontalAlignment="Stretch" HorizontalContentAlignment="Right"
                                 Content="📅  برنامه نگهبانی" ToolTip="برنامه نگهبانی"
                                 Command="{Binding ShowSchedulesCommand}"
                                 Visibility="{Binding CanManageSchedules, Converter={StaticResource BoolToVisConverter}}">
@@ -198,6 +219,20 @@
                                 <Style TargetType="Button" BasedOn="{StaticResource NavItem}">
                                     <Style.Triggers>
                                         <DataTrigger Binding="{Binding IsAuditActive}" Value="True">
+                                            <Setter Property="FontWeight" Value="Bold"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                        </Button>
+
+                        <Button HorizontalAlignment="Stretch" HorizontalContentAlignment="Right"
+                                Content="🛠  تنظیمات" ToolTip="تنظیمات"
+                                Command="{Binding ShowSettingsCommand}">
+                            <Button.Style>
+                                <Style TargetType="Button" BasedOn="{StaticResource NavItem}">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsSettingsActive}" Value="True">
                                             <Setter Property="FontWeight" Value="Bold"/>
                                         </DataTrigger>
                                     </Style.Triggers>

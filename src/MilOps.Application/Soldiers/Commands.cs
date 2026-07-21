@@ -28,7 +28,7 @@ public record CreateSoldierCommand(
 public record UpdateSoldierCommand(
     int Id, string FirstName, string LastName, string? FatherName, string Rank,
     HealthType HealthType, DateOnly EntryDate, DateOnly ServiceStartDate,
-    DateOnly ServiceEndDate, string DepartmentName, bool IsActive)
+    DateOnly ServiceEndDate, bool IsActive)
     : IRequest<Result>, IAuthorizedRequest
 {
     public Permission RequiredPermission => Permission.SoldierWrite;
@@ -82,14 +82,15 @@ public class SoldierCommandHandlers :
     IRequestHandler<DeleteSoldierCommand, Result>
 {
     private readonly IRepository<Soldier> _soldiers;
+    private readonly IRepository<DepartmentHistory> _deptHistory;
     private readonly IUnitOfWork _uow;
     private readonly ICurrentUser _user;
     private readonly IDateTime _time;
     private readonly IAuditRepository _audit;
 
-    public SoldierCommandHandlers(IRepository<Soldier> soldiers, IUnitOfWork uow,
-        ICurrentUser user, IDateTime time, IAuditRepository audit)
-    { _soldiers = soldiers; _uow = uow; _user = user; _time = time; _audit = audit; }
+    public SoldierCommandHandlers(IRepository<Soldier> soldiers, IRepository<DepartmentHistory> deptHistory,
+        IUnitOfWork uow, ICurrentUser user, IDateTime time, IAuditRepository audit)
+    { _soldiers = soldiers; _deptHistory = deptHistory; _uow = uow; _user = user; _time = time; _audit = audit; }
 
     public async Task<Result<int>> Handle(CreateSoldierCommand c, CancellationToken ct)
     {
@@ -107,6 +108,12 @@ public class SoldierCommandHandlers :
 
             soldier.CreatedBy = _user.Username;
             _soldiers.Add(soldier);
+            // Soldier.Id is DB-generated; save first so the history row's FK is valid.
+            await _uow.SaveChangesAsync(ct);
+
+            var history = DepartmentHistory.Open(soldier.Id, c.DepartmentName, c.EntryDate);
+            history.CreatedBy = _user.Username;
+            _deptHistory.Add(history);
             await _uow.SaveChangesAsync(ct);
 
             await _audit.AppendAsync(AuditAction.SoldierCreated, _user.UserId, _user.Username,
@@ -130,7 +137,7 @@ public class SoldierCommandHandlers :
                 PersonName.Create(c.LastName, "Last name"),
                 c.FatherName is null ? null : PersonName.Create(c.FatherName, "Father name"),
                 c.Rank, c.HealthType, c.EntryDate, c.ServiceStartDate, c.ServiceEndDate,
-                c.DepartmentName, c.IsActive);
+                c.IsActive);
             soldier.Touch(_user.Username);
             await _uow.SaveChangesAsync(ct);
 

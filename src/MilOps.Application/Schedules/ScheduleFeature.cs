@@ -50,6 +50,12 @@ public record ApproveScheduleCommand(int Id) : IRequest<Result>, IAuthorizedRequ
     public Permission RequiredPermission => Permission.ScheduleApprove;
 }
 
+/// <summary>Unlocks an Approved schedule back to Draft (Commander-only).</summary>
+public record ReopenScheduleCommand(int Id) : IRequest<Result>, IAuthorizedRequest
+{
+    public Permission RequiredPermission => Permission.ScheduleReopen;
+}
+
 /// <summary>Replaces an existing schedule's date, remarks and full assignment list.</summary>
 public record UpdateScheduleCommand(
     int Id, DateOnly Date, string? Remarks, IReadOnlyList<GuardAssignmentDto> Assignments)
@@ -89,7 +95,8 @@ public class ScheduleHandlers :
     IRequestHandler<ListSchedulesQuery, IReadOnlyList<GuardScheduleSummaryDto>>,
     IRequestHandler<CreateScheduleCommand, Result<int>>,
     IRequestHandler<UpdateScheduleCommand, Result>,
-    IRequestHandler<ApproveScheduleCommand, Result>
+    IRequestHandler<ApproveScheduleCommand, Result>,
+    IRequestHandler<ReopenScheduleCommand, Result>
 {
     private readonly IRepository<GuardSchedule> _schedules;
     private readonly IRepository<Soldier> _soldiers;
@@ -185,6 +192,23 @@ public class ScheduleHandlers :
 
             await _audit.AppendAsync(AuditAction.ScheduleApproved, _user.UserId, _user.Username,
                 nameof(GuardSchedule), s.Id.ToString(), $"تأیید برنامه نگهبانی {s.Date:yyyy/MM/dd}", ct);
+            return Result.Success();
+        }
+        catch (DomainException ex) { return Result.Failure(ex.Code, ex.Message); }
+    }
+
+    public async Task<Result> Handle(ReopenScheduleCommand c, CancellationToken ct)
+    {
+        var s = await _schedules.FirstOrDefaultAsync(new ScheduleByIdSpec(c.Id), ct);
+        if (s is null) return Result.Failure("NOT_FOUND", "برنامه یافت نشد.");
+        try
+        {
+            s.Reopen();
+            s.Touch(_user.Username);
+            await _uow.SaveChangesAsync(ct);
+
+            await _audit.AppendAsync(AuditAction.ScheduleReopened, _user.UserId, _user.Username,
+                nameof(GuardSchedule), s.Id.ToString(), $"بازگشایی برنامه نگهبانی {s.Date:yyyy/MM/dd}", ct);
             return Result.Success();
         }
         catch (DomainException ex) { return Result.Failure(ex.Code, ex.Message); }

@@ -30,6 +30,9 @@ public partial class SoldierEditorWindow : Window
         Closed += OnClosed;
     }
 
+    private void SoldierEditorWindow_Loaded(object sender, RoutedEventArgs e) =>
+        MaxHeight = SystemParameters.WorkArea.Height * 0.92;
+
     private void OnSaved() { DialogResult = true; Close(); }
     private void OnCancelled() { DialogResult = false; Close(); }
 

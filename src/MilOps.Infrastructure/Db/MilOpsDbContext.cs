@@ -124,6 +124,8 @@ public class MilOpsDbContext : DbContext
     public DbSet<User> Users => Set<User>();
     public DbSet<AuthSession> AuthSessions => Set<AuthSession>();
     public DbSet<Soldier> Soldiers => Set<Soldier>();
+    public DbSet<DepartmentHistory> DepartmentHistoryEntries => Set<DepartmentHistory>();
+    public DbSet<AttendanceRecord> AttendanceRecords => Set<AttendanceRecord>();
     public DbSet<CommanderToken> Tokens => Set<CommanderToken>();
     public DbSet<GuardSchedule> GuardSchedules => Set<GuardSchedule>();
     public DbSet<GuardAssignment> GuardAssignments => Set<GuardAssignment>();
@@ -202,6 +204,36 @@ public class MilOpsDbContext : DbContext
             e.OwnsOne(x => x.FatherName, n => n.Property(p => p.Value).HasColumnName("FatherName").HasMaxLength(60));
             e.OwnsOne(x => x.NationalCode, n => n.Property(p => p.Value).HasColumnName("NationalCode").HasMaxLength(10).IsRequired());
             e.OwnsOne(x => x.PersonnelCode, n => n.Property(p => p.Value).HasColumnName("PersonnelCode").HasMaxLength(12).IsRequired());
+        });
+
+        // DepartmentHistory
+        b.Entity<DepartmentHistory>(e =>
+        {
+            e.ToTable("department_history");
+            e.HasKey(x => x.Id);
+            e.Property(x => x.DepartmentName).HasMaxLength(80).IsRequired();
+            e.Property(x => x.EffectiveFrom).HasConversion<string>();
+            e.Property(x => x.EffectiveTo).HasConversion<string>();
+            e.Property(x => x.CreatedBy).HasMaxLength(80);
+            e.Property(x => x.UpdatedBy).HasMaxLength(80);
+            e.Property(x => x.RowVersion).IsConcurrencyToken();
+            e.HasIndex(x => new { x.SoldierId, x.EffectiveFrom });
+            e.HasOne<Soldier>().WithMany().HasForeignKey(x => x.SoldierId).OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // AttendanceRecord
+        b.Entity<AttendanceRecord>(e =>
+        {
+            e.ToTable("attendance_records");
+            e.HasKey(x => x.Id);
+            e.Property(x => x.Date).HasConversion<string>();
+            e.Property(x => x.Status).HasConversion<string>().HasMaxLength(20).IsRequired();
+            e.Property(x => x.Reason).HasMaxLength(500);
+            e.Property(x => x.CreatedBy).HasMaxLength(80);
+            e.Property(x => x.UpdatedBy).HasMaxLength(80);
+            e.Property(x => x.RowVersion).IsConcurrencyToken();
+            e.HasIndex(x => new { x.SoldierId, x.Date }).IsUnique();
+            e.HasOne<Soldier>().WithMany().HasForeignKey(x => x.SoldierId).OnDelete(DeleteBehavior.Cascade);
         });
 
         // CommanderToken

@@ -3,10 +3,11 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:v="clr-namespace:MilOps.Presentation.Views"
         Title="{Binding WindowTitle, FallbackValue='ویرایش سرباز'}"
-        Width="480" SizeToContent="Height" MaxHeight="860"
+        Width="480" MinWidth="480" SizeToContent="Height" MinHeight="420"
         WindowStartupLocation="CenterOwner"
-        ResizeMode="NoResize"
-        Background="{DynamicResource SurfaceBrush}">
+        ResizeMode="CanResizeWithGrip"
+        Background="{DynamicResource SurfaceBrush}"
+        Loaded="SoldierEditorWindow_Loaded">
     <Border CornerRadius="0" ClipToBounds="True">
         <DockPanel>
 
@@ -134,7 +135,9 @@
                         </Grid.ColumnDefinitions>
                         <StackPanel Grid.Column="0">
                             <TextBlock Text="یگان / بخش" Style="{StaticResource FieldLabel}" Margin="0,0,0,5"/>
-                            <TextBox Text="{Binding DepartmentName, UpdateSourceTrigger=PropertyChanged}"/>
+                            <TextBox Text="{Binding DepartmentName, UpdateSourceTrigger=PropertyChanged}"
+                                     IsReadOnly="{Binding IsEditMode}"
+                                     ToolTip="{Binding DepartmentFieldToolTip}"/>
                         </StackPanel>
                         <StackPanel Grid.Column="2">
                             <TextBlock Text="وضعیت سلامت *" Style="{StaticResource FieldLabel}" Margin="0,0,0,5"/>

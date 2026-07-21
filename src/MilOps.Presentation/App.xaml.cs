@@ -46,6 +46,7 @@ public partial class App : System.Windows.Application
                 services.AddSingleton<IDialogService, DialogService>();
                 services.AddSingleton<IPrintService, PrintService>();
                 services.AddSingleton<ISessionTokenStore, SessionTokenStore>();
+                services.AddSingleton<IAppSettingsStore, AppSettingsStore>();
 
                 // Windows
                 services.AddTransient<LoginWindow>();
@@ -63,6 +64,9 @@ public partial class App : System.Windows.Application
                 services.AddTransient<LeavesViewModel>();
                 services.AddTransient<UsersViewModel>();
                 services.AddTransient<AuditViewModel>();
+                services.AddTransient<AttendanceViewModel>();
+                services.AddTransient<ChangeDepartmentViewModel>();
+                services.AddTransient<SettingsViewModel>();
             })
             .Build();
     }

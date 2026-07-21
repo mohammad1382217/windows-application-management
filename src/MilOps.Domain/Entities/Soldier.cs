@@ -58,7 +58,7 @@ public class Soldier : AuditableEntity
     public void Update(
         PersonName firstName, PersonName lastName, PersonName? fatherName,
         string rank, HealthType healthType, DateOnly entryDate,
-        DateOnly serviceStartDate, DateOnly serviceEndDate, string departmentName,
+        DateOnly serviceStartDate, DateOnly serviceEndDate,
         bool isActive)
     {
         if (serviceEndDate <= serviceStartDate)
@@ -73,8 +73,22 @@ public class Soldier : AuditableEntity
         EntryDate = entryDate;
         ServiceStartDate = serviceStartDate;
         ServiceEndDate = serviceEndDate;
-        DepartmentName = departmentName?.Trim() ?? string.Empty;
         IsActive = isActive;
+    }
+
+    /// <summary>
+    /// Changes the soldier's department. This is a dedicated, audited action
+    /// (see ChangeSoldierDepartmentCommand) rather than part of the general
+    /// Update(...) so every department transition gets its own history row.
+    /// </summary>
+    public void ChangeDepartment(string newDepartmentName)
+    {
+        var trimmed = newDepartmentName?.Trim() ?? string.Empty;
+        if (string.IsNullOrWhiteSpace(trimmed))
+            throw new DomainException("DEPARTMENT_NAME_REQUIRED", "Department name is required.");
+        if (trimmed == DepartmentName)
+            throw new DomainException("DEPARTMENT_UNCHANGED", "Soldier is already in this department.");
+        DepartmentName = trimmed;
     }
 
     /// <summary>Whether this soldier may be assigned to guard duty right now.</summary>

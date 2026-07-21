@@ -65,7 +65,9 @@
                             Binding="{Binding Date, Converter={StaticResource JalaliDateConverter}}"/>
                         <DataGridTextColumn Header="تعداد نفرات" Width="120"
                             Binding="{Binding AssignmentCount, Converter={StaticResource PersianDigitsConverter}}"/>
-                        <DataGridTemplateColumn Header="عملیات" Width="240">
+                        <DataGridTextColumn Header="وضعیت" Width="90"
+                            Binding="{Binding Status, Converter={StaticResource EnumDescriptionConverter}}"/>
+                        <DataGridTemplateColumn Header="عملیات" Width="380">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center"
@@ -82,6 +84,21 @@
                                                     RelativeSource={RelativeSource AncestorType=DataGrid}}"
                                                 CommandParameter="{Binding}"
                                                 ToolTip="ویرایش ردیف‌های این برنامه"/>
+                                        <Button Content="✓ ثبت نهایی" Style="{StaticResource AccentButton}"
+                                                MinHeight="0" Height="30" Padding="12,0" FontSize="12" Margin="8,0,0,0"
+                                                Command="{Binding DataContext.FinalizeCommand,
+                                                    RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                                CommandParameter="{Binding}"
+                                                ToolTip="قفل‌کردن برنامه پس از ثبت نهایی"/>
+                                        <Button Content="⟲ بازگشایی" Style="{StaticResource SecondaryButton}"
+                                                MinHeight="0" Height="30" Padding="12,0" FontSize="12" Margin="8,0,0,0"
+                                                Command="{Binding DataContext.ReopenCommand,
+                                                    RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                                CommandParameter="{Binding}"
+                                                ToolTip="بازگرداندن برنامه به حالت پیش‌نویس (فقط فرمانده)"
+                                                Visibility="{Binding DataContext.CanManageReopen,
+                                                    RelativeSource={RelativeSource AncestorType=DataGrid},
+                                                    Converter={StaticResource BoolToVisConverter}}"/>
                                     </StackPanel>
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>

@@ -1,6 +1,7 @@
 <UserControl x:Class="MilOps.Presentation.Views.SoldiersView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:v="clr-namespace:MilOps.Presentation.Views"
              FlowDirection="RightToLeft"
              Loaded="SoldiersView_Loaded">
     <Border Margin="16" CornerRadius="12" ClipToBounds="True"
@@ -50,8 +51,14 @@
                                 Command="{Binding ExportPdfCommand}" Margin="0,0,8,0"
                                 ToolTip="ذخیره فهرست به‌صورت فایل PDF — بدون نیاز به چاپگر"/>
                         <Button Content="🖨 چاپ" Style="{StaticResource SecondaryButton}"
-                                Command="{Binding PrintCommand}"
+                                Command="{Binding PrintCommand}" Margin="0,0,8,0"
                                 ToolTip="چاپ مستقیم با چاپگر متصل"/>
+                        <Border Style="{StaticResource ToolbarSeparator}" Margin="12,4"/>
+                        <Button Content="📄 گزارش کامل" Style="{StaticResource SecondaryButton}"
+                                Command="{Binding ExportFullReportPdfCommand}" Margin="0,0,8,0"
+                                ToolTip="خروجی PDF کل سوابق سرباز انتخاب‌شده (بخش، نگهبانی، مرخصی، حضور و غیاب)"/>
+                        <Button Content="🔍 فیلترها" Style="{StaticResource SecondaryButton}"
+                                Command="{Binding ExpandFiltersCommand}"/>
                     </StackPanel>
 
                     <!-- Search + filter (visual left) -->
@@ -93,6 +100,34 @@
                         </Grid>
                     </StackPanel>
                 </Grid>
+            </Border>
+
+            <!-- Extended filter panel (collapsible) -->
+            <Border DockPanel.Dock="Top" Background="#F8FAFC" Padding="14,12"
+                    BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,0,1"
+                    Visibility="{Binding IsFiltersExpanded, Converter={StaticResource BoolToVisConverter}}">
+                <StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                        <TextBlock Text="درجه:" Style="{StaticResource FieldLabel}" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                        <TextBox Text="{Binding Rank, UpdateSourceTrigger=PropertyChanged}" Width="110" Margin="0,0,16,0"/>
+                        <TextBlock Text="یگان/بخش:" Style="{StaticResource FieldLabel}" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                        <TextBox Text="{Binding DepartmentFilter, UpdateSourceTrigger=PropertyChanged}" Width="140" Margin="0,0,16,0"/>
+                        <TextBlock Text="وضعیت فعال:" Style="{StaticResource FieldLabel}" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                        <ComboBox ItemsSource="{Binding ActiveFilterOptions}" SelectedItem="{Binding ActiveFilterOption}"
+                                  DisplayMemberPath="Key" Width="110"/>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="بازه تاریخ:" Style="{StaticResource FieldLabel}" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                        <ComboBox ItemsSource="{Binding DateFilterFieldOptions}" SelectedItem="{Binding DateFilterFieldOption}"
+                                  DisplayMemberPath="Key" Width="120" Margin="0,0,10,0"/>
+                        <TextBlock Text="از" Style="{StaticResource FieldLabel}" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                        <v:JalaliDatePicker SelectedDate="{Binding DateFrom}" Width="140" Margin="0,0,10,0"/>
+                        <TextBlock Text="تا" Style="{StaticResource FieldLabel}" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                        <v:JalaliDatePicker SelectedDate="{Binding DateTo}" Width="140" Margin="0,0,16,0"/>
+                        <Button Content="پاک‌کردن فیلترها" Style="{StaticResource SecondaryButton}"
+                                Command="{Binding ClearAllFiltersCommand}" Padding="12,6"/>
+                    </StackPanel>
+                </StackPanel>
             </Border>
 
             <!-- Error -->

@@ -19,6 +19,9 @@ public sealed partial class SoldierEditorViewModel : ViewModelBase
     public bool IsEditMode => _id is not null;
     public string WindowTitle => IsEditMode ? "ویرایش سرباز" : "افزودن سرباز جدید";
     public string? CodeFieldToolTip => IsEditMode ? "کد ملی و کد پرسنلی در حالت ویرایش قابل تغییر نیستند." : null;
+    public string? DepartmentFieldToolTip => IsEditMode
+        ? "برای تغییر بخش از دکمهٔ «تغییر بخش» در صفحهٔ آمار و حضور و غیاب استفاده کنید."
+        : null;
 
     public string FirstName { get; set; } = string.Empty;
     public string LastName { get; set; } = string.Empty;
@@ -63,7 +66,7 @@ public sealed partial class SoldierEditorViewModel : ViewModelBase
             {
                 var r = await _sender.Send(new UpdateSoldierCommand(
                     id, FirstName, LastName, FatherName, Rank, HealthType,
-                    entry, start, end, DepartmentName, IsActive));
+                    entry, start, end, IsActive));
                 if (!r.IsSuccess) { ErrorMessage = r.Error; return; }
             }
             else

@@ -41,6 +41,13 @@ public enum Permission
     ReportPrint = 1 << 14,
     AuditRead = 1 << 15,
     DataExport = 1 << 16,
+
+    // Schedule reopen (commander only)
+    ScheduleReopen = 1 << 17,
+
+    // Attendance
+    AttendanceRead = 1 << 18,
+    AttendanceWrite = 1 << 19,
 }
 
 /// <summary>Static role-to-permission mapping (RBAC).</summary>
@@ -60,7 +67,8 @@ public static class RolePermissions
             Permission.RegisterRead | Permission.RegisterWrite |
             Permission.WeaponRead | Permission.WeaponWrite |
             Permission.LeaveRead | Permission.LeaveWrite | Permission.LeaveApprove |
-            Permission.ReportPrint | Permission.AuditRead,
+            Permission.ReportPrint | Permission.AuditRead |
+            Permission.AttendanceRead | Permission.AttendanceWrite,
 
         // سرباز: sees the guard schedule and can view/request leaves.
         [Role.Soldier] =

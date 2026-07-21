@@ -56,6 +56,11 @@ public sealed partial class ScheduleBuilderViewModel : ViewModelBase
     public bool IsEditMode => EditScheduleId is not null;
     public string WindowTitle => IsEditMode ? "ویرایش برنامه نگهبانی" : "افزودن برنامه نگهبانی";
 
+    private ScheduleStatus? _status;
+    /// <summary>True once an Approved/Printed schedule is loaded — the board becomes read-only.</summary>
+    public bool IsLocked => _status is ScheduleStatus.Approved or ScheduleStatus.Printed;
+    public bool IsNotLocked => !IsLocked;
+
     public ScheduleBuilderViewModel(ISender sender) => _sender = sender;
 
     /// <summary>Loads the soldier picker, then (in edit mode) the schedule being edited.</summary>
@@ -75,6 +80,10 @@ public sealed partial class ScheduleBuilderViewModel : ViewModelBase
 
             Date = dto.Date.ToDateTime(TimeOnly.MinValue);
             Remarks = dto.Remarks ?? string.Empty;
+            _status = dto.Status;
+            OnPropertyChanged(nameof(IsLocked));
+            OnPropertyChanged(nameof(IsNotLocked));
+            SaveCommand.NotifyCanExecuteChanged();
             Assignments.Clear();
             foreach (var a in dto.Assignments)
             {
@@ -115,7 +124,9 @@ public sealed partial class ScheduleBuilderViewModel : ViewModelBase
     [RelayCommand]
     private void RemoveRow(AssignmentRowVm row) => Assignments.Remove(row);
 
-    [RelayCommand]
+    private bool CanSave() => IsNotLocked;
+
+    [RelayCommand(CanExecute = nameof(CanSave))]
     private async Task SaveAsync()
     {
         ErrorMessage = null;

@@ -38,5 +38,33 @@ public sealed class DatabaseInitializer
             _db.Users.Add(commander);
             await _db.SaveChangesAsync(ct);
         }
+
+        await BackfillDepartmentHistoryAsync(ct);
+    }
+
+    /// <summary>
+    /// One-time, idempotent backfill: soldiers created before department
+    /// history existed have a DepartmentName but no history rows. Opens one
+    /// row per such soldier using EntryDate as an imperfect proxy for
+    /// EffectiveFrom — history before this point may be incomplete for
+    /// soldiers who changed departments prior to this feature shipping.
+    /// </summary>
+    private async Task BackfillDepartmentHistoryAsync(CancellationToken ct)
+    {
+        var soldierIdsWithHistory = await _db.DepartmentHistoryEntries
+            .Select(h => h.SoldierId).Distinct().ToListAsync(ct);
+
+        var missing = await _db.Soldiers
+            .Where(s => !soldierIdsWithHistory.Contains(s.Id))
+            .ToListAsync(ct);
+        if (missing.Count == 0) return;
+
+        foreach (var soldier in missing)
+        {
+            var history = DepartmentHistory.Open(soldier.Id, soldier.DepartmentName, soldier.EntryDate);
+            history.CreatedBy = "system-seed";
+            _db.DepartmentHistoryEntries.Add(history);
+        }
+        await _db.SaveChangesAsync(ct);
     }
 }

@@ -89,3 +89,10 @@ public enum GuardPost
     [Description("مسئول پناهگاه")] ShelterManager = 14,
     [Description("صبحگاه نیروهای مسلح")] ArmedForceMorning = 15
 }
+
+public enum AttendanceStatus
+{
+    [Description("حاضر")] Present = 1,
+    [Description("غایب")] Absent = 2,
+    [Description("تأخیر")] Late = 3
+}

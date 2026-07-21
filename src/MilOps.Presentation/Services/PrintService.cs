@@ -32,6 +32,15 @@ public interface IPrintService
 
     FlowDocument BuildTableReport(string title, string subtitle,
         IEnumerable<string> headers, IEnumerable<IEnumerable<string>> rows);
+
+    /// <summary>
+    /// Builds a multi-section A5 report: free-text header lines (e.g. a bio
+    /// block), followed by one heading + table per section. Sections with no
+    /// rows still render a "بدون سابقه" placeholder row rather than vanishing.
+    /// </summary>
+    FlowDocument BuildMultiSectionReport(string title, string subtitle,
+        IEnumerable<string>? headerLines,
+        IEnumerable<(string SectionTitle, string[] Headers, IEnumerable<string[]> Rows)> sections);
 }
 
 public sealed class PrintService : IPrintService
@@ -44,6 +53,10 @@ public sealed class PrintService : IPrintService
     // Estedad embedded font (handles Persian + Latin glyphs)
     private static readonly FontFamily AppFont =
         new(new Uri("pack://application:,,,/"), "./Fonts/#Estedad");
+
+    private readonly IAppSettingsStore _settings;
+
+    public PrintService(IAppSettingsStore settings) => _settings = settings;
 
     // ── Public API ────────────────────────────────────────────────────────────
 
@@ -62,10 +75,12 @@ public sealed class PrintService : IPrintService
 
     public bool ExportToPdf(FlowDocument document, string suggestedFileName)
     {
+        var folder = _settings.Load().ExportFolder;
         var dlg = new SaveFileDialog
         {
             Filter   = "PDF (*.pdf)|*.pdf",
-            FileName = suggestedFileName
+            FileName = suggestedFileName,
+            InitialDirectory = folder is not null && Directory.Exists(folder) ? folder : null
         };
         if (dlg.ShowDialog() != true) return false;
 
@@ -226,6 +241,121 @@ public sealed class PrintService : IPrintService
         doc.Blocks.Add(table);
 
         // Footer: Jalali print date + machine name
+        string jalaliNow = PersianDate.ToJalali(DateTime.Now);
+        doc.Blocks.Add(new Paragraph(
+            new Run($"تاریخ چاپ: {jalaliNow}  —  {Environment.MachineName}"))
+        {
+            FontSize      = 8,
+            Foreground    = Brushes.Gray,
+            TextAlignment = TextAlignment.Right,
+            Margin        = new Thickness(0, 10, 0, 0),
+        });
+
+        return doc;
+    }
+
+    public FlowDocument BuildMultiSectionReport(
+        string title,
+        string subtitle,
+        IEnumerable<string>? headerLines,
+        IEnumerable<(string SectionTitle, string[] Headers, IEnumerable<string[]> Rows)> sections)
+    {
+        double usable = A5Width - PageMargin * 2;
+
+        var doc = new FlowDocument
+        {
+            FontFamily    = AppFont,
+            FontSize      = 10,
+            PageWidth     = A5Width,
+            PageHeight    = A5Height,
+            PagePadding   = new Thickness(PageMargin),
+            ColumnWidth   = usable,
+            FlowDirection = FlowDirection.RightToLeft,
+        };
+
+        doc.Blocks.Add(new Paragraph(new Run(title))
+        {
+            FontSize      = 15,
+            FontWeight    = FontWeights.Bold,
+            TextAlignment = TextAlignment.Right,
+            Margin        = new Thickness(0, 0, 0, 2),
+        });
+
+        if (!string.IsNullOrWhiteSpace(subtitle))
+            doc.Blocks.Add(new Paragraph(new Run(subtitle))
+            {
+                FontSize      = 10,
+                Foreground    = Brushes.DimGray,
+                TextAlignment = TextAlignment.Right,
+                Margin        = new Thickness(0, 0, 0, 6),
+            });
+
+        if (headerLines is not null)
+            foreach (var line in headerLines)
+                doc.Blocks.Add(new Paragraph(new Run(line))
+                {
+                    FontSize      = 11,
+                    TextAlignment = TextAlignment.Right,
+                    Margin        = new Thickness(0, 0, 0, 2),
+                });
+
+        var primaryBrush = (Brush)WpfApp.Current.FindResource("PrimaryBrush")!;
+
+        foreach (var section in sections)
+        {
+            doc.Blocks.Add(new Paragraph(new Run(section.SectionTitle))
+            {
+                FontSize      = 12,
+                FontWeight    = FontWeights.Bold,
+                Foreground    = primaryBrush,
+                TextAlignment = TextAlignment.Right,
+                Margin        = new Thickness(0, 14, 0, 4),
+            });
+
+            double colWidth = usable / Math.Max(section.Headers.Length, 1);
+            var table = new Table
+            {
+                CellSpacing     = 0,
+                BorderBrush     = Brushes.DarkSlateGray,
+                BorderThickness = new Thickness(0.5),
+            };
+            foreach (var _ in section.Headers)
+                table.Columns.Add(new TableColumn { Width = new GridLength(colWidth) });
+
+            var headerGroup = new TableRowGroup { Background = primaryBrush };
+            var headerRow = new TableRow();
+            foreach (var h in section.Headers)
+                headerRow.Cells.Add(MakeCell(h, isBold: true, Brushes.White));
+            headerGroup.Rows.Add(headerRow);
+            table.RowGroups.Add(headerGroup);
+
+            var bodyGroup = new TableRowGroup();
+            var stripe = false;
+            var stripeBg = new SolidColorBrush(Color.FromRgb(0xF4, 0xF6, 0xFA));
+            var rowList = section.Rows.ToList();
+            if (rowList.Count == 0)
+            {
+                var placeholder = new TableRow { Background = Brushes.White };
+                var cell = MakeCell("بدون سابقه");
+                cell.ColumnSpan = section.Headers.Length;
+                placeholder.Cells.Add(cell);
+                bodyGroup.Rows.Add(placeholder);
+            }
+            else
+            {
+                foreach (var row in rowList)
+                {
+                    var tr = new TableRow { Background = stripe ? stripeBg : Brushes.White };
+                    foreach (var cell in row)
+                        tr.Cells.Add(MakeCell(cell ?? "—"));
+                    bodyGroup.Rows.Add(tr);
+                    stripe = !stripe;
+                }
+            }
+            table.RowGroups.Add(bodyGroup);
+            doc.Blocks.Add(table);
+        }
+
         string jalaliNow = PersianDate.ToJalali(DateTime.Now);
         doc.Blocks.Add(new Paragraph(
             new Run($"تاریخ چاپ: {jalaliNow}  —  {Environment.MachineName}"))

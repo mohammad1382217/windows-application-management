@@ -30,5 +30,8 @@ public enum AuditAction
     [Description("صدور داده")] DataExported = 24,
     [Description("تغییر تنظیمات")] ConfigChanged = 25,
     [Description("باز کردن قفل پایگاه داده")] DbUnlocked = 26,
+    [Description("بازگشایی برنامه")] ScheduleReopened = 27,
+    [Description("ثبت حضور‌وغیاب")] AttendanceRecorded = 28,
+    [Description("تغییر بخش")] DepartmentChanged = 29,
     [Description("سایر")] Other = 99
 }

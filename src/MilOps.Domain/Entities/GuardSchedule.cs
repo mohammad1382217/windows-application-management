@@ -43,6 +43,14 @@ public class GuardSchedule : AuditableEntity
         };
     }
 
+    /// <summary>Blocks content mutation once the schedule has left Draft.</summary>
+    private void EnsureDraft()
+    {
+        if (Status != ScheduleStatus.Draft)
+            throw new DomainException("SCHEDULE_NOT_DRAFT",
+                "Only a draft schedule can be edited. Reopen it first.");
+    }
+
     /// <summary>
     /// Assign a soldier to a post for a shift. One soldier may not occupy the
     /// same post+shift twice; a soldier may not be on two posts in the same shift.
@@ -51,6 +59,7 @@ public class GuardSchedule : AuditableEntity
         int soldierId, GuardPost post, ShiftNumber shift,
         TimeRange? shiftHours = null, string? note = null)
     {
+        EnsureDraft();
         if (_assignments.Any(a => a.SoldierId == soldierId && a.Shift == shift))
             throw new DomainException("SCHEDULE_DOUBLE_SHIFT",
                 "A soldier cannot be assigned to two posts in the same shift.");
@@ -63,22 +72,31 @@ public class GuardSchedule : AuditableEntity
         return assignment;
     }
 
-    public void RemoveAssignment(int assignmentId) =>
+    public void RemoveAssignment(int assignmentId)
+    {
+        EnsureDraft();
         _assignments.RemoveAll(a => a.Id == assignmentId);
+    }
 
     public void UpdateDetails(DateOnly date, string? remarks)
     {
+        EnsureDraft();
         Date = date;
         Remarks = remarks;
     }
 
     /// <summary>Drops every assignment so an edit can rebuild the board from scratch.</summary>
-    public void ClearAssignments() => _assignments.Clear();
+    public void ClearAssignments()
+    {
+        EnsureDraft();
+        _assignments.Clear();
+    }
 
     public void SetExtraDuty(string? armedForceMorning1, string? armedForceMorning2,
         string? armedForceMorning3, string? watchman, string? armament,
         string? refuge, string? shelterManager)
     {
+        EnsureDraft();
         ArmedForceMorning1 = armedForceMorning1;
         ArmedForceMorning2 = armedForceMorning2;
         ArmedForceMorning3 = armedForceMorning3;
@@ -100,4 +118,16 @@ public class GuardSchedule : AuditableEntity
     }
 
     public void MarkPrinted() => Status = ScheduleStatus.Printed;
+
+    /// <summary>Unlocks an Approved schedule back to Draft so it can be edited again.</summary>
+    public void Reopen()
+    {
+        if (Status == ScheduleStatus.Draft)
+            throw new DomainException("SCHEDULE_ALREADY_DRAFT", "Schedule is already a draft.");
+        if (Status == ScheduleStatus.Printed)
+            throw new DomainException("SCHEDULE_PRINTED_LOCKED", "A printed schedule cannot be reopened.");
+        Status = ScheduleStatus.Draft;
+        ApprovedByUserId = null;
+        ApprovedAtUtc = null;
+    }
 }

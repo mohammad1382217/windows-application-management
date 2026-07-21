@@ -29,7 +29,25 @@ public class SoldierSpecification : Specification<Soldier>
             Criteria = Predicate.And(Criteria, s => s.IsActive == f.IsActive.Value);
 
         if (!string.IsNullOrWhiteSpace(f.Department))
-            Criteria = Predicate.And(Criteria, s => s.DepartmentName == f.Department);
+            Criteria = Predicate.And(Criteria, s => s.DepartmentName.Contains(f.Department));
+
+        if (!string.IsNullOrWhiteSpace(f.Rank))
+            Criteria = Predicate.And(Criteria, s => s.Rank.Contains(f.Rank));
+
+        if (f.EntryDateFrom.HasValue)
+            Criteria = Predicate.And(Criteria, s => s.EntryDate >= f.EntryDateFrom.Value);
+        if (f.EntryDateTo.HasValue)
+            Criteria = Predicate.And(Criteria, s => s.EntryDate <= f.EntryDateTo.Value);
+
+        if (f.ServiceStartFrom.HasValue)
+            Criteria = Predicate.And(Criteria, s => s.ServiceStartDate >= f.ServiceStartFrom.Value);
+        if (f.ServiceStartTo.HasValue)
+            Criteria = Predicate.And(Criteria, s => s.ServiceStartDate <= f.ServiceStartTo.Value);
+
+        if (f.ServiceEndFrom.HasValue)
+            Criteria = Predicate.And(Criteria, s => s.ServiceEndDate >= f.ServiceEndFrom.Value);
+        if (f.ServiceEndTo.HasValue)
+            Criteria = Predicate.And(Criteria, s => s.ServiceEndDate <= f.ServiceEndTo.Value);
 
         OrderByDescending = s => s.Id;
         ApplyPaging(Math.Max(0, (f.Page - 1) * f.PageSize), f.PageSize);
