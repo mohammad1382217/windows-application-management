@@ -30,6 +30,9 @@ public interface IPrintService
     /// </summary>
     bool ExportToPdf(FlowDocument document, string suggestedFileName);
 
+    /// <summary>Dialog-free PDF export straight to an exact path — no SaveFileDialog prompt.</summary>
+    void ExportToPdfFile(FlowDocument document, string path);
+
     FlowDocument BuildTableReport(string title, string subtitle,
         IEnumerable<string> headers, IEnumerable<IEnumerable<string>> rows);
 

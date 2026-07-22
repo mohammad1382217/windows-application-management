@@ -57,7 +57,7 @@
                         <ColumnDefinition Width="140"/>
                         <ColumnDefinition Width="120"/>
                         <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="180"/>
+                        <ColumnDefinition Width="260"/>
                     </Grid.ColumnDefinitions>
                     <TextBlock Grid.Column="0" Text="کد پرسنلی" Style="{StaticResource FieldLabel}" FontSize="11"/>
                     <TextBlock Grid.Column="1" Text="نام" Style="{StaticResource FieldLabel}" FontSize="11"/>
@@ -110,6 +110,11 @@
                                                 MinHeight="0" Height="28" Padding="8,0" FontSize="11"
                                                 CommandParameter="{Binding}"
                                                 Command="{Binding DataContext.ChangeDepartmentCommand,
+                                                    RelativeSource={RelativeSource AncestorType=ItemsControl}}"/>
+                                        <Button Content="ثبت مرخصی" Style="{StaticResource SecondaryButton}"
+                                                MinHeight="0" Height="28" Padding="8,0" FontSize="11" Margin="6,0,0,0"
+                                                CommandParameter="{Binding}"
+                                                Command="{Binding DataContext.RecordLeaveCommand,
                                                     RelativeSource={RelativeSource AncestorType=ItemsControl}}"/>
                                         <Button Content="گزارش" Style="{StaticResource SecondaryButton}"
                                                 MinHeight="0" Height="28" Padding="8,0" FontSize="11" Margin="6,0,0,0"

@@ -66,6 +66,7 @@ public partial class App : System.Windows.Application
                 services.AddTransient<AuditViewModel>();
                 services.AddTransient<AttendanceViewModel>();
                 services.AddTransient<ChangeDepartmentViewModel>();
+                services.AddTransient<LeaveQuickViewModel>();
                 services.AddTransient<SettingsViewModel>();
             })
             .Build();

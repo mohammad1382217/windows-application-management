@@ -128,6 +128,18 @@ public sealed partial class AttendanceViewModel : ViewModelBase
             row.DepartmentName = dlg.NewDepartmentValue;
     }
 
+    /// <summary>Records a leave for this soldier right from the roll-call row, without
+    /// leaving the Attendance screen — the leave is created and approved immediately.</summary>
+    [RelayCommand]
+    private void RecordLeave(AttendanceRowVm? row)
+    {
+        if (row is null) return;
+        var dlg = new LeaveQuickDialog(row.SoldierId, $"{row.LastName} {row.FirstName}", Date)
+        { Owner = System.Windows.Application.Current.MainWindow };
+        if (dlg.ShowDialog() == true)
+            _dialogs.Info($"مرخصی {row.LastName} {row.FirstName} ثبت شد.");
+    }
+
     [RelayCommand]
     private async Task ExportSoldierReportAsync(AttendanceRowVm? row)
     {

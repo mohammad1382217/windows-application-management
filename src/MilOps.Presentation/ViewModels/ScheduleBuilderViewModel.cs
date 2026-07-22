@@ -7,6 +7,7 @@ using MilOps.Application.Schedules;
 using MilOps.Application.Soldiers;
 using MilOps.Domain.Enums;
 using MilOps.Presentation.Common;
+using MilOps.Presentation.Services;
 
 namespace MilOps.Presentation.ViewModels;
 
@@ -33,6 +34,9 @@ public sealed class AssignmentRowVm : INotifyPropertyChanged
 public sealed partial class ScheduleBuilderViewModel : ViewModelBase
 {
     private readonly ISender _sender;
+    private readonly IPrintService _print;
+    private readonly IAppSettingsStore _settings;
+    private readonly IDialogService _dialogs;
 
     public event Action? Saved;
     public event Action? Cancelled;
@@ -61,7 +65,8 @@ public sealed partial class ScheduleBuilderViewModel : ViewModelBase
     public bool IsLocked => _status is ScheduleStatus.Approved or ScheduleStatus.Printed;
     public bool IsNotLocked => !IsLocked;
 
-    public ScheduleBuilderViewModel(ISender sender) => _sender = sender;
+    public ScheduleBuilderViewModel(ISender sender, IPrintService print, IAppSettingsStore settings, IDialogService dialogs)
+    { _sender = sender; _print = print; _settings = settings; _dialogs = dialogs; }
 
     /// <summary>Loads the soldier picker, then (in edit mode) the schedule being edited.</summary>
     [RelayCommand]
@@ -126,11 +131,11 @@ public sealed partial class ScheduleBuilderViewModel : ViewModelBase
 
     private bool CanSave() => IsNotLocked;
 
-    [RelayCommand(CanExecute = nameof(CanSave))]
-    private async Task SaveAsync()
+    /// <summary>Validates the rows; returns null and sets ErrorMessage on the first problem.</summary>
+    private List<GuardAssignmentDto>? BuildRowsOrNull()
     {
         ErrorMessage = null;
-        if (Assignments.Count == 0) { ErrorMessage = "حداقل یک ردیف نگهبانی وارد کنید."; return; }
+        if (Assignments.Count == 0) { ErrorMessage = "حداقل یک ردیف نگهبانی وارد کنید."; return null; }
 
         var rows = new List<GuardAssignmentDto>();
         for (var i = 0; i < Assignments.Count; i++)
@@ -144,45 +149,105 @@ public sealed partial class ScheduleBuilderViewModel : ViewModelBase
             if (row.SelectedSoldier is not { } soldier)
             {
                 ErrorMessage = $"{rowLabel}: یک سرباز از فهرست انتخاب کنید.";
-                return;
+                return null;
             }
             var sid = soldier.Id;
             TimeOnly? start = null, end = null;
             if (!string.IsNullOrWhiteSpace(row.ShiftStart))
             {
                 if (!TryParseTime(row.ShiftStart, out var t))
-                { ErrorMessage = $"{rowLabel}: فرمت ساعت شروع اشتباه است ({row.ShiftStart}) — مثال: ۰۸:۰۰"; return; }
+                { ErrorMessage = $"{rowLabel}: فرمت ساعت شروع اشتباه است ({row.ShiftStart}) — مثال: ۰۸:۰۰"; return null; }
                 start = t;
             }
             if (!string.IsNullOrWhiteSpace(row.ShiftEnd))
             {
                 if (!TryParseTime(row.ShiftEnd, out var t))
-                { ErrorMessage = $"{rowLabel}: فرمت ساعت پایان اشتباه است ({row.ShiftEnd}) — مثال: ۱۶:۰۰"; return; }
+                { ErrorMessage = $"{rowLabel}: فرمت ساعت پایان اشتباه است ({row.ShiftEnd}) — مثال: ۱۶:۰۰"; return null; }
                 end = t;
             }
             rows.Add(new GuardAssignmentDto(sid, row.Post, row.Shift, start, end,
                 string.IsNullOrWhiteSpace(row.Note) ? null : row.Note));
         }
+        return rows;
+    }
+
+    /// <summary>Creates or updates the schedule (always leaves it in Draft). Returns the id on success.</summary>
+    private async Task<int?> PersistAsync(List<GuardAssignmentDto> rows)
+    {
+        var date = DateOnly.FromDateTime(Date);
+        var remarks = string.IsNullOrWhiteSpace(Remarks) ? null : Remarks;
+        if (EditScheduleId is { } id)
+        {
+            var r = await _sender.Send(new UpdateScheduleCommand(id, date, remarks, rows));
+            if (!r.IsSuccess) { ErrorMessage = r.Error; return null; }
+            return id;
+        }
+        else
+        {
+            var r = await _sender.Send(new CreateScheduleCommand(date, remarks, rows));
+            if (!r.IsSuccess) { ErrorMessage = r.Error; return null; }
+            EditScheduleId = r.Value;
+            return r.Value;
+        }
+    }
+
+    /// <summary>"ذخیره موقت" — persists the board as a Draft; the schedule stays fully editable.</summary>
+    [RelayCommand(CanExecute = nameof(CanSave))]
+    private async Task SaveAsync()
+    {
+        var rows = BuildRowsOrNull();
+        if (rows is null) return;
 
         await RunAsync(async () =>
         {
-            var date = DateOnly.FromDateTime(Date);
-            var remarks = string.IsNullOrWhiteSpace(Remarks) ? null : Remarks;
-            if (EditScheduleId is { } id)
-            {
-                var r = await _sender.Send(new UpdateScheduleCommand(id, date, remarks, rows));
-                if (!r.IsSuccess) { ErrorMessage = r.Error; return; }
-            }
-            else
-            {
-                var r = await _sender.Send(new CreateScheduleCommand(date, remarks, rows));
-                if (!r.IsSuccess) { ErrorMessage = r.Error; return; }
-            }
+            var id = await PersistAsync(rows);
+            if (id is null) return;
             Saved?.Invoke();
         });
 
         // This window has no per-field error placements; fold any pipeline
         // validation failures into the single visible error line.
+        if (ErrorMessage is null && FieldErrors.Count > 0)
+            ErrorMessage = string.Join("\n", FieldErrors.Values.Distinct());
+    }
+
+    /// <summary>
+    /// "ثبت نهایی" — saves the board, locks it (Approve), then auto-exports the
+    /// PDF to the configured export folder with no save dialog, so the operator
+    /// never has to remember a separate export step after finalizing.
+    /// </summary>
+    [RelayCommand(CanExecute = nameof(CanSave))]
+    private async Task FinalizeAsync()
+    {
+        var rows = BuildRowsOrNull();
+        if (rows is null) return;
+        if (!_dialogs.Confirm("این برنامه ثبت نهایی و قفل می‌شود. ادامه می‌دهید؟")) return;
+
+        await RunAsync(async () =>
+        {
+            var id = await PersistAsync(rows);
+            if (id is null) return;
+
+            var approve = await _sender.Send(new ApproveScheduleCommand(id.Value));
+            if (!approve.IsSuccess) { ErrorMessage = approve.Error; return; }
+
+            var dto = await _sender.Send(new GetScheduleByIdQuery(id.Value));
+            if (dto is not null)
+            {
+                try
+                {
+                    var path = ScheduleReport.ExportToDefaultFolder(_print, _settings, dto);
+                    _dialogs.Info($"برنامه ثبت نهایی شد و فایل PDF ذخیره شد:\n{path}");
+                }
+                catch (Exception ex)
+                {
+                    Serilog.Log.Error(ex, "Auto PDF export failed after schedule finalize.");
+                    _dialogs.Warning("برنامه ثبت نهایی شد اما ذخیره خودکار PDF ناموفق بود.");
+                }
+            }
+            Saved?.Invoke();
+        });
+
         if (ErrorMessage is null && FieldErrors.Count > 0)
             ErrorMessage = string.Join("\n", FieldErrors.Values.Distinct());
     }

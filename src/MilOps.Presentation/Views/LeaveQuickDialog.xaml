@@ -1,0 +1,69 @@
+<Window x:Class="MilOps.Presentation.Views.LeaveQuickDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:v="clr-namespace:MilOps.Presentation.Views"
+        Title="ثبت مرخصی"
+        Width="380" SizeToContent="Height"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="NoResize"
+        Background="White"
+        FlowDirection="RightToLeft">
+    <StackPanel>
+
+        <!-- Header -->
+        <Border Padding="20,16">
+            <Border.Background>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                    <GradientStop Color="#145A32" Offset="0"/>
+                    <GradientStop Color="#1E8449" Offset="1"/>
+                </LinearGradientBrush>
+            </Border.Background>
+            <StackPanel>
+                <TextBlock Text="ثبت مرخصی" Foreground="White" FontSize="14" FontWeight="SemiBold"/>
+                <TextBlock Text="{Binding SoldierDisplayName}" Foreground="#C8EAD6" FontSize="12" Margin="0,4,0,0"/>
+            </StackPanel>
+        </Border>
+
+        <!-- Fields -->
+        <StackPanel Margin="20,18,20,0">
+            <Grid Margin="0,0,0,14">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="12"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <StackPanel Grid.Column="0">
+                    <TextBlock Text="از تاریخ" Style="{StaticResource FieldLabel}" Margin="0,0,0,5"/>
+                    <v:JalaliDatePicker SelectedDate="{Binding StartDate}"/>
+                </StackPanel>
+                <StackPanel Grid.Column="2">
+                    <TextBlock Text="تا تاریخ" Style="{StaticResource FieldLabel}" Margin="0,0,0,5"/>
+                    <v:JalaliDatePicker SelectedDate="{Binding EndDate}"/>
+                </StackPanel>
+            </Grid>
+
+            <TextBlock Text="علت" Style="{StaticResource FieldLabel}" Margin="0,0,0,5"/>
+            <TextBox Text="{Binding Reason, UpdateSourceTrigger=PropertyChanged}" Padding="10,9"/>
+            <TextBlock Style="{StaticResource FieldError}" Text="{Binding FieldErrors[Reason]}"/>
+
+            <TextBlock Text="{Binding ErrorMessage}" Foreground="{DynamicResource DangerBrush}"
+                       TextWrapping="Wrap" Margin="0,8,0,0"
+                       Visibility="{Binding ErrorMessage, Converter={StaticResource NullToCollapsedConverter}}"/>
+        </StackPanel>
+
+        <!-- Actions -->
+        <Grid Margin="20,16,20,20">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="10"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <Button Grid.Column="0" Content="ثبت" Style="{StaticResource PrimaryButton}"
+                    MinHeight="38" IsDefault="True" IsEnabled="{Binding IsNotBusy}"
+                    Command="{Binding SaveCommand}"/>
+            <Button Grid.Column="2" Content="انصراف" Style="{StaticResource SecondaryButton}"
+                    MinHeight="38" IsCancel="True" Command="{Binding CancelCommand}"/>
+        </Grid>
+
+    </StackPanel>
+</Window>

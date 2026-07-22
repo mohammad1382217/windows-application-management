@@ -19,6 +19,8 @@ public sealed partial class SchedulesViewModel : ViewModelBase
     private readonly ISender _sender;
     private readonly IDialogService _dialogs;
     private readonly ICurrentUser _user;
+    private readonly IPrintService _print;
+    private readonly IAppSettingsStore _settings;
 
     public ObservableCollection<GuardScheduleSummaryDto> Schedules { get; } = new();
 
@@ -33,8 +35,9 @@ public sealed partial class SchedulesViewModel : ViewModelBase
             FinalizeCommand.NotifyCanExecuteChanged(); ReopenCommand.NotifyCanExecuteChanged(); }
     }
 
-    public SchedulesViewModel(ISender sender, IDialogService dialogs, ICurrentUser user)
-    { _sender = sender; _dialogs = dialogs; _user = user; }
+    public SchedulesViewModel(ISender sender, IDialogService dialogs, ICurrentUser user,
+        IPrintService print, IAppSettingsStore settings)
+    { _sender = sender; _dialogs = dialogs; _user = user; _print = print; _settings = settings; }
 
     [RelayCommand]
     private async Task LoadSchedulesAsync()
@@ -98,6 +101,21 @@ public sealed partial class SchedulesViewModel : ViewModelBase
         {
             var r = await _sender.Send(new ApproveScheduleCommand(row.Id));
             if (!r.IsSuccess) { _dialogs.Error(r.Error); return; }
+
+            var dto = await _sender.Send(new GetScheduleByIdQuery(row.Id));
+            if (dto is not null)
+            {
+                try
+                {
+                    var path = ScheduleReport.ExportToDefaultFolder(_print, _settings, dto);
+                    _dialogs.Info($"برنامه ثبت نهایی شد و فایل PDF ذخیره شد:\n{path}");
+                }
+                catch (Exception ex)
+                {
+                    Serilog.Log.Error(ex, "Auto PDF export failed after schedule finalize.");
+                    _dialogs.Warning("برنامه ثبت نهایی شد اما ذخیره خودکار PDF ناموفق بود.");
+                }
+            }
             await LoadSchedulesAsync();
         });
     }

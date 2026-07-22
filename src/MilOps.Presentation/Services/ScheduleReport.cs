@@ -1,3 +1,4 @@
+using System.IO;
 using System.Windows.Documents;
 using MilOps.Application.Schedules;
 using MilOps.Presentation.Common;
@@ -24,5 +25,26 @@ public static class ScheduleReport
                     ? PersianDate.ToPersianDigits($"{s:HH:mm}–{e:HH:mm}") : "—",
                 a.Note ?? "—"
             }));
+    }
+
+    /// <summary>
+    /// Silently exports the schedule PDF into the app's configured export
+    /// folder (or a MilOps subfolder under Documents if none is set) with no
+    /// save dialog — used right after "ثبت نهایی" so finalizing a schedule
+    /// always leaves a PDF behind without an extra manual step. Returns the
+    /// full path written.
+    /// </summary>
+    public static string ExportToDefaultFolder(IPrintService print, IAppSettingsStore settings, GuardScheduleDto dto)
+    {
+        var folder = settings.Load().ExportFolder;
+        if (string.IsNullOrWhiteSpace(folder) || !Directory.Exists(folder))
+            folder = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "MilOps");
+        Directory.CreateDirectory(folder);
+
+        var fileName = $"لوح پستی {PersianDate.ToJalali(dto.Date)}.pdf".Replace('/', '-');
+        var path = Path.Combine(folder, fileName);
+        print.ExportToPdfFile(Build(print, dto), path);
+        return path;
     }
 }

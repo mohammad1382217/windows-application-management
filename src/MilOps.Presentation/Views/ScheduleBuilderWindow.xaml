@@ -53,14 +53,20 @@
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
                     <TextBlock Grid.Column="0" Text="{Binding ErrorMessage}" TextWrapping="Wrap"
                                Foreground="{DynamicResource DangerBrush}" VerticalAlignment="Center"
                                Visibility="{Binding ErrorMessage, Converter={StaticResource NullToCollapsedConverter}}"/>
-                    <Button Grid.Column="1" Content="ذخیره برنامه" Style="{StaticResource PrimaryButton}"
+                    <Button Grid.Column="1" Content="ذخیره موقت" Style="{StaticResource SecondaryButton}"
                             Command="{Binding SaveCommand}" IsEnabled="{Binding IsNotBusy}"
+                            ToolTip="ذخیره پیش‌نویس — همچنان قابل ویرایش می‌ماند"
                             MinHeight="40" Padding="22,0" Margin="0,0,10,0"/>
-                    <Button Grid.Column="2" Content="انصراف" Style="{StaticResource SecondaryButton}"
+                    <Button Grid.Column="2" Content="✓ ثبت نهایی" Style="{StaticResource AccentButton}"
+                            Command="{Binding FinalizeCommand}" IsEnabled="{Binding IsNotBusy}"
+                            ToolTip="ذخیره، قفل‌کردن برنامه و ذخیره خودکار PDF"
+                            MinHeight="40" Padding="22,0" Margin="0,0,10,0"/>
+                    <Button Grid.Column="3" Content="انصراف" Style="{StaticResource SecondaryButton}"
                             Command="{Binding CancelCommand}" MinHeight="40" Padding="16,0"/>
                 </Grid>
             </Border>
